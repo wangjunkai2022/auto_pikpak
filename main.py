@@ -361,17 +361,30 @@ def start(email, password):
     # reward(access_token, aliyungf_tc, user_agent, device_id, captcha_token)
 
 
+def get_mail():
+    url = "https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/null/"
+
+    headers = {
+        "X-RapidAPI-Key": "8c604eef5cmsh08e21830e63f229p165756jsn230c555d562c",
+        "X-RapidAPI-Host": "privatix-temp-mail-v1.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    print(response.json())
+
+
 if __name__ == "__main__":
 
-    print("COPYRIGHT@纸鸢花的花语，程序仅供交流学习，请勿用于商业用途。")
-    print("@Eoyz369 | 适配青龙使用 ")
-    print("该程序为自动完成PIKPAK安装拓展任务而写，所以每个账号只有一次机会，但不掉。")
-
-    while 1:
-        # email = os.getenv("pikpakNAME")
-        # password = os.getenv("pikpakPWD")
-        email = "woyaseg395@hidelux.com"
-        password = "''''"
-
-        start(email, password)
-        break
+    # print("COPYRIGHT@纸鸢花的花语，程序仅供交流学习，请勿用于商业用途。")
+    # print("@Eoyz369 | 适配青龙使用 ")
+    # print("该程序为自动完成PIKPAK安装拓展任务而写，所以每个账号只有一次机会，但不掉。")
+    get_mail()
+    # while 1:
+    #     # email = os.getenv("pikpakNAME")
+    #     # password = os.getenv("pikpakPWD")
+    #     email = "woyaseg395@hidelux.com"
+    #     password = "''''"
+    # 
+    #     start(email, password)
+    #     break
