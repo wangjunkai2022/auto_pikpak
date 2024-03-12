@@ -4,15 +4,6 @@ import time
 
 import requests
 
-
-# md5加密字符串
-def get_hash(str):
-    obj = hashlib.md5()
-    obj.update(str.encode("utf-8"))
-    result = obj.hexdigest()
-    return result
-
-
 class PikPak:
     client_secret = "dbw2OtmVEeuUvIptb1Coyg"
     mail = ""
@@ -677,7 +668,7 @@ class PikPak:
         self.__set_activation_code()
 
     # 直接登陆增加邀请
-    def run_log_2invite(self):
+    def run_login_2invite(self):
         self.__login()
         time.sleep(5)
         self.__get_active_invite()
