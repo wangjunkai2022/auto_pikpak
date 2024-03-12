@@ -2,7 +2,7 @@ import json
 import os
 from threading import Lock
 
-# 获取反编译中的apk包中的sign数组
+# 获取包中的sign数组
 # 假设G是一个全局变量，用于存储JSON数组
 G = None
 G_lock = Lock()
