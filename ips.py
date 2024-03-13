@@ -70,7 +70,7 @@ async def check_proxy(proxy):
     return
 
 
-async def main():
+async def get_pikpak_proyxs():
     ips = await get_proxy_list()
     # proxies = []
     tasks = [check_proxy(proxy) for proxy in ips]
@@ -139,7 +139,7 @@ def ipTest():
 
 if __name__ == '__main__':
     # main()
-    asyncio.run(main())
+    asyncio.run(get_pikpak_proyxs())
     # ipTest()
     # url = "https://filesamples.com/samples/video/mp4/sample_1920x1080.mp4"
     # req = requests.get(str(url), headers=
