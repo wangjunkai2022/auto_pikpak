@@ -28,9 +28,15 @@ class PikPak:
     captcha_token_callback = None
     mail_code_callback = None
 
+    client_version = "1.42.8"
+    # 手机型号
+    phone_model = "SM-G988N"
+    # 手机品牌
+    phone_name = "Samsung"
+
     # 仿制captcha_sign
     def __get_sign(self, time_str):
-        begin_str = self.client_id + "1.42.8com.pikcloud.pikpak" + self.device_id + time_str
+        begin_str = self.client_id + f"{self.client_version}com.pikcloud.pikpak" + self.device_id + time_str
         salts = [
             {'alg': 'md5', 'salt': 'Nw9cvH5q2DqkDTJG73'},
             {'alg': 'md5', 'salt': 'o+N/zglOE4td/6kmjQldcaT'},
@@ -69,7 +75,7 @@ class PikPak:
     def __user_agent(self):
         # 创建随机UA
         t = time.time()
-        ua = f"ANDROID-com.pikcloud.pikpak/1.42.8 accessmode/ devicename/Samsung_Sm-g988n appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/SM-G988N networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/1.42.8 providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
+        ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
         return ua
 
     def __init__(self, mail, pd, captcha_token_callback=None, main_callback=None, proxy=None, invite=None, run=False):
@@ -98,7 +104,7 @@ class PikPak:
                 "timestamp": time_str,
                 "email": self.mail,
                 "user_id": self.user_id,
-                "client_version": "1.42.8",
+                "client_version": self.client_version,
                 "package_name": "com.pikcloud.pikpak",
                 # "captcha_sign": "1." + self.get_sign(),
             }
@@ -286,12 +292,12 @@ class PikPak:
                 "language_system": self.language,
                 "language_app": self.language,
                 "build_version_release": "7.1.2",
-                "phoneModel": "SM-G988N",
-                "build_manufacturer": "SAMSUNG",
+                "phoneModel": self.phone_model,
+                "build_manufacturer": self.phone_name.upper(),
                 "build_sdk_int": "25",
                 "channel": "official",
                 "versionCode": "10182",
-                "versionName": "1.42.8",
+                "versionName": self.client_version,
                 "installFrom": "other",
                 "country": self.country,
             },
@@ -372,7 +378,7 @@ class PikPak:
         headers = {
             "Channel-Id": "official",
             "Version-Code": "10182",
-            "Version-Name": "1.42.8",
+            "Version-Name": self.client_version,
             "System-Version": "25",
             "Mobile-Type": "android",
             "App-Type": "android",
@@ -381,19 +387,19 @@ class PikPak:
             "Language-System": self.language,
             "X-System-Language": self.language,
             "Build-Version-Release": "7.1.2",
-            "Phone-Model": "SM-G988N",
-            "Build-Manufacturer": "SAMSUNG",
+            "Phone-Model": self.phone_model,
+            "Build-Manufacturer": self.phone_name.upper(),
             "Build-Sdk-Int": "25",
             "Country": self.country,
             "Product_Flavor_Name": "cha",
             "X-Device-Id": self.device_id,
             "Language-App": self.language,
             "X-Client-Id": self.client_id,
-            "X-Client-Version": "1.42.8",
+            "X-Client-Version": self.client_version,
             "x-client-id": self.client_id,
             "accept-language": self.language,
             "x-device-id": self.device_id,
-            "x-client-version": "1.42.8",
+            "x-client-version": self.client_version,
             "Host": "access.mypikpak.com",
             "Connection": "Keep-Alive",
             "Accept-Encoding": "gzip",
@@ -416,7 +422,7 @@ class PikPak:
         url = "https://config.mypikpak.com/config/v1/globalConfig"
         payload = {
             "data": {
-                "version": "1.42.8",
+                "version": self.client_version,
                 "versioncode": "10182",
                 "install_from": "other",
                 "device_id": self.device_id,
@@ -432,7 +438,7 @@ class PikPak:
         headers = {
             "channel-id": "official",
             "version-code": "10182",
-            "version-name": "1.42.8",
+            "version-name": self.client_version,
             "system-version": "25",
             "mobile-type": "android",
             "app-type": "android",
@@ -441,15 +447,15 @@ class PikPak:
             "language-system": self.language,
             "x-system-language": self.language,
             "build-version-release": "7.1.2",
-            "phone-model": "SM-G988N",
-            "build-manufacturer": "SAMSUNG",
+            "phone-model": self.phone_model,
+            "build-manufacturer": self.phone_name.upper(),
             "build-sdk-int": "25",
             "country": self.country,
             "product_flavor_name": "cha",
             "x-device-id": self.device_id,
             "language-app": self.language,
             "x-client-id": self.client_id,
-            "x-client-version": "1.42.8",
+            "x-client-version": self.client_version,
             "x-user-id": self.user_id,
             "content-type": "application/json; charset=utf-8",
             "accept-encoding": "gzip",
@@ -471,7 +477,7 @@ class PikPak:
         url = "https://api-drive.mypikpak.com/operating/v1/content"
         payload = {
             "data": {
-                "version": "1.42.8",
+                "version": self.client_version,
                 "versioncode": "10182",
                 "install_from": "other",
                 "device_id": self.device_id,
@@ -522,12 +528,12 @@ class PikPak:
                 "userSub": "regional",
                 "language_system": self.language,
                 "build_version_release": "7.1.2",
-                "phoneModel": "SM-G988N",
-                "build_manufacturer": "SAMSUNG",
+                "phoneModel": self.phone_model,
+                "build_manufacturer": self.phone_name.upper(),
                 "build_sdk_int": "25",
                 "channel": "official",
                 "versionCode": "10182",
-                "versionName": "1.42.8",
+                "versionName": self.client_version,
                 "country": self.country,
                 "language": self.language,
             }
@@ -564,7 +570,7 @@ class PikPak:
         url = "https://api-drive.mypikpak.com/operating/v1/report"
         payload = {
             "data": {
-                "version": "1.42.8",
+                "version": self.client_version,
                 "versioncode": "10182",
                 "install_from": "other",
                 "device_id": self.device_id,
@@ -621,12 +627,12 @@ class PikPak:
                 "language_system": self.language,
                 "language_app": self.language,
                 "build_version_release": "7.1.2",
-                "phoneModel": "SM-G988N",
-                "build_manufacturer": "SAMSUNG",
+                "phoneModel": self.phone_model,
+                "build_manufacturer": self.phone_name.upper(),
                 "build_sdk_int": "25",
                 "channel": "official",
                 "versionCode": "10182",
-                "versionName": "1.42.8",
+                "versionName": self.client_version,
                 "country": self.country,
                 "install_from": "other",
             }
