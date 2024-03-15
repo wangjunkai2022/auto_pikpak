@@ -9,9 +9,9 @@ if __name__ == "__main__":
     get_future = asyncio.ensure_future(get_pikpak_proyxs())  # 相当于开启一个future
     loop.run_until_complete(get_future)  # 事件循环
     ips = get_future.result()
-    mail = "wipit83288@darkse.com"
+    mail = "dacefey738@darkse.com"
     pd = "098poi"
-    invite = 92196679
+    invite = 65394041
     for ip in ips:
         try:
             proxy = ip.split(" ")[0]
