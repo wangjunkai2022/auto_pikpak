@@ -33,6 +33,11 @@ class PikPak:
     phone_model = "SM-G988N"
     # 手机品牌
     phone_name = "Samsung"
+    # 是否已经注册
+    isReqMail = None
+
+    # 是否成功填写邀请码
+    isInvise = False
 
     # 仿制captcha_sign
     def __get_sign(self, time_str):
@@ -78,11 +83,13 @@ class PikPak:
         ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
         return ua
 
-    def __init__(self, mail, pd, captcha_token_callback=None, main_callback=None, proxy=None, invite=None, run=False):
+    def __init__(self, mail, pd, captcha_token_callback=None, main_callback=None, proxy=None, invite=None, run=False,
+                 isReqMail=None):
         self.mail = mail
         self.pd = pd
         self.captcha_token_callback = captcha_token_callback or self.__input_captcha_token
         self.mail_code_callback = main_callback or self.__input_mail_code
+        self.isReqMail = isReqMail
         if proxy:
             self.set_proxy(proxy)
         if invite:
@@ -141,8 +148,8 @@ class PikPak:
         print(f"您输入的 captcha_token 是:\n{captcha_token}")
         return captcha_token
 
-    def __input_mail_code(self):
-        code = str(input("请输入游戏中收到的验证码:\n"))
+    def __input_mail_code(self, mail):
+        code = str(input(f"请输入邮箱{mail}中收到的验证码:\n"))
         print(f"您输入的验证码是:\n{code}")
         return code
 
@@ -179,7 +186,7 @@ class PikPak:
 
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
-        code = str(self.mail_code_callback())
+        code = self.mail_code_callback(self.mail)
         url = "https://user.mypikpak.com/v1/auth/verification/verify"
         payload = {
             "client_id": self.client_id,
@@ -240,6 +247,7 @@ class PikPak:
             print(f"注册登陆成功:\n{res_json}")
             self.user_id = res_json.get("sub")
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
+            self.isReqMail = self.mail
 
     def __login(self):
         url = "https://user.mypikpak.com/v1/auth/signin"
@@ -369,6 +377,9 @@ class PikPak:
                 self.__set_activation_code()
             print(f"填写邀请结果返回 Error \n{res_json}")
             return
+        error = res_json.get("error")
+        if not error or error == "":
+            self.isInvise = True
         print(f"填写邀请结果返回:\n{res_json}")
 
     # 获取当前设备
@@ -668,6 +679,9 @@ class PikPak:
 
     # 注册并登陆增加邀请
     def run_req_2invite(self):
+        if self.isReqMail:
+            self.run_login_2invite()
+            return
         self.__send_code()
         self.__set_mail_2_code()
         self.__signup()
@@ -710,7 +724,7 @@ class PikPak:
 
 
 if __name__ == "__main__":
-    email = "mahawo3320@cmheia.com"
+    email = "b1HUzLijXBtdvkwo@cevipsa.com"
     password = "098poi"
     pikpak_ = PikPak(email, password)
     # pikpak_.set_proxy("114.132.202.246:8080")

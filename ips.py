@@ -32,7 +32,7 @@ async def get_proxy_list():
         8: None,
         9: None,
     }
-    now_time = datetime.datetime.now()
+    now_time = datetime.datetime.utcnow()
     # 格式化时间字符串
     str_time = now_time.strftime("%Y-%m-%d")
     domain = "checkerproxy.net"
