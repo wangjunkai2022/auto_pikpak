@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import datetime
 import os
+import threading
+
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -17,20 +19,22 @@ import json
 
 from concurrent.futures import ProcessPoolExecutor
 
+from httpx_socks import AsyncProxyTransport
+
 pattern = r"\?page=[a-z0-9]+"
 
 
-async def get_proxy_list():
+def get_proxy_list():
     types = {
-        1: None,
-        2: "http",
+        1: "http",
+        2: "https",
         3: None,
-        4: 'https',
-        5: 'socks5',
-        6: None,
-        7: "http",  # http/https
-        8: None,
-        9: None,
+        4: 'socks5',
+        # 5: 'socks5',
+        # 6: None,
+        # 7: "http",  # http/https
+        # 8: None,
+        # 9: None,
     }
     now_time = datetime.datetime.utcnow()
     # 格式化时间字符串
@@ -45,7 +49,8 @@ async def get_proxy_list():
         for ip_data in data:
             if ip_data['addr']:
                 proxy_type = types[ip_data["type"]]
-                if proxy_type == "http":
+                # if proxy_type == "http":
+                if proxy_type:
                     ips.append(f"{ip_data['addr']} {proxy_type}")
 
     return ips
@@ -56,14 +61,20 @@ async def check_proxy(proxy):
         # url = 'https://google.com'
         # timeout = httpx.Timeout(connect=1, read=1, write=1, pool=None)
         proxy_data = proxy.split()
-        url = f'{proxy_data[1]}://inapp.mypikpak.com/ping'
-        async with httpx.AsyncClient(proxies={
-            f"{proxy_data[1]}://": f"{proxy_data[1]}://{proxy_data[0]}"
-        }) as client:
-            response = await client.get(url, timeout=2)
-            if response.status_code == 200:
-                print(f'{proxy} is working')
-                return proxy
+        url = f'https://inapp.mypikpak.com/ping'
+        # transport = AsyncProxyTransport.from_url(f"{proxy_data[1]}://{proxy_data[0]}")
+        # async with httpx.AsyncClient(transport=transport) as client:
+        #     response = await client.get(url, timeout=2)
+        #     if response.status_code == 200:
+        #         print(f'{proxy} is working')
+        #         return proxy
+        response = requests.request("GET", url, proxies={
+            "http": f"{proxy_data[1]}://{proxy_data[0]}",
+            "https": f"{proxy_data[1]}://{proxy_data[0]}",
+        }, timeout=2, verify=False)
+        if response.status_code == 200:
+            print(f'{proxy} is working')
+            return proxy
     except Exception as error:
         print(f'error:\t{error}\t{proxy} is not working')
         pass
@@ -71,7 +82,7 @@ async def check_proxy(proxy):
 
 
 async def get_pikpak_proyxs():
-    ips = await get_proxy_list()
+    ips = get_proxy_list()
     # proxies = []
     tasks = [check_proxy(proxy) for proxy in ips]
     proxies = await asyncio.gather(*tasks)
@@ -137,9 +148,54 @@ def ipTest():
         f.write(input_str)  # 将字符串写入文件中
 
 
+def pingPikpak(proxy, ok_ips):
+    try:
+        proxy_data = proxy.split()
+        url = f'https://inapp.mypikpak.com/ping'
+        # transport = AsyncProxyTransport.from_url(f"{proxy_data[1]}://{proxy_data[0]}")
+        # async with httpx.AsyncClient(transport=transport) as client:
+        #     response = await client.get(url, timeout=2)
+        #     if response.status_code == 200:
+        #         print(f'{proxy} is working')
+        #         return proxy
+        response = requests.request("GET", url, proxies={
+            "http": f"{proxy_data[1]}://{proxy_data[0]}",
+            "https": f"{proxy_data[1]}://{proxy_data[0]}",
+        }, timeout=2, verify=False)
+        if response.status_code == 200:
+            print(f'{proxy} is working')
+            ok_ips.append(proxy_data)
+            return True
+    except:
+        print(f"{proxy} 失败")
+    return False
+
+
+def thread_get_all_ip():
+    ips = get_proxy_list()
+    # index_count = 10
+    # ips = [ips[i:i + index_count] for i in range(0, len(ips), index_count)]
+    ok_ips = []
+    ths = []
+    for _ips in ips:
+        # for __ips in _ips:
+        th = threading.Thread(target=pingPikpak, args=(_ips, ok_ips))
+        # for t in ths:  # 循环启动10个线程
+        th.start()
+        ths.append(th)
+        # for t in ths:  # 等待10个线程结束
+        #     t.join()
+    for th in ths:
+        th.join()
+        
+    print(ok_ips)
+    return ok_ips
+
+
 if __name__ == '__main__':
+    thread_get_all_ip()
     # main()
-    asyncio.run(get_pikpak_proyxs())
+    # asyncio.run(get_pikpak_proyxs())
     # ipTest()
     # url = "https://filesamples.com/samples/video/mp4/sample_1920x1080.mp4"
     # req = requests.get(str(url), headers=

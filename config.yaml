@@ -1,5 +1,13 @@
+# 免费邮箱API
 mail:
   api: api
+
+# 请求
+requests:
+  # 超时设置
+  out_time: 120
+  # 重试次数
+  retry: 10
 
 invites:
   - mail: wiwaret166@talmetry.com

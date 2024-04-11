@@ -1,8 +1,10 @@
+import enum
 import hashlib
 import uuid
 import time
 
 import requests
+import config
 
 
 class PikPak:
@@ -39,6 +41,38 @@ class PikPak:
     # 是否成功填写邀请码
     isInvise = False
 
+    inviseError = None
+
+    def __req_url(self, method, url,
+                  params=None,
+                  data=None,
+                  headers=None,
+                  cookies=None,
+                  files=None,
+                  auth=None,
+                  timeout=None,
+                  allow_redirects=True,
+                  proxies=None,
+                  hooks=None,
+                  stream=None,
+                  verify=None,
+                  cert=None,
+                  json=None, ):
+
+        for index in range(0, config.requests_retry):
+            try:
+                resp = requests.request(method=method, url=url, params=params, data=data, headers=headers,
+                                        cookies=cookies,
+                                        files=files, auth=auth, timeout=timeout or 3 * 60,
+                                        allow_redirects=allow_redirects,
+                                        proxies=proxies,
+                                        hooks=hooks, stream=stream, verify=verify, cert=cert, json=json)
+                return resp
+            except Exception as e:
+                print(f"__req_url error:{e}")
+
+        raise Exception(f"url:{url}\n请求失败")
+
     # 仿制captcha_sign
     def __get_sign(self, time_str):
         begin_str = self.client_id + f"{self.client_version}com.pikcloud.pikpak" + self.device_id + time_str
@@ -69,9 +103,9 @@ class PikPak:
                     hex_str = hashlib.md5((hex_str + optString2).encode()).hexdigest()
         return hex_str
 
-    def set_proxy(self, proxy):
-        if not proxy.startswith("http://"):
-            proxy = f"http://{proxy}"
+    def set_proxy(self, proxy_ip, type="http"):
+        # if not proxy.startswith("http://"):
+        proxy = f"{type}://{proxy_ip}"
         self.proxies = {
             "http": proxy,
             "https": proxy,
@@ -126,8 +160,7 @@ class PikPak:
 
             "Accept-Encoding": "deflate, gzip"
         }
-
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         print(f"__initCaptcha\n{res_json}")
         if res_json.get("url"):
@@ -171,7 +204,7 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             print(f"发送验证消息到邮箱 ERROR:\n{res_json}")
@@ -180,6 +213,9 @@ class PikPak:
                 self.captcha_action = "POST:/v1/auth/verification"
                 self.__initCaptcha()
                 self.__send_code()
+            else:
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
         else:
             self.verification_id = res_json.get("verification_id")
             print(f"发送验证消息到邮箱:\n{res_json}")
@@ -202,7 +238,7 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies, verify=False)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies, verify=False)
         res_json = response.json()
         if response.status_code == 200:
             self.verification_id = res_json.get("verification_token")
@@ -210,6 +246,8 @@ class PikPak:
             print(f"设置邮箱的验证码:\n{res_json}")
         else:
             print(f"设置邮箱的验证码 ERROR:\n{res_json}")
+            self.inviseError = res_json.get("error")
+            raise Exception(self.inviseError)
 
     def __signup(self):
         url = "https://user.mypikpak.com/v1/auth/signup"
@@ -231,7 +269,7 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             print(f"注册登陆失败:\n{res_json}")
@@ -243,6 +281,9 @@ class PikPak:
             elif res_json.get("error") == "already_exists":
                 print(f"用户存在\n{res_json}")
                 self.__login()
+            else:
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
         else:
             print(f"注册登陆成功:\n{res_json}")
             self.user_id = res_json.get("sub")
@@ -275,7 +316,7 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code == 200:
             print(f"登陆成功{res_json}")
@@ -286,6 +327,8 @@ class PikPak:
             #     self.__initCaptcha()
             #     self.login()
             print(f"登陆失败{res_json}")
+            self.inviseError = res_json.get("error")
+            raise Exception(self.inviseError)
 
     def __get_active_invite(self):
         url = f"https://api-drive.mypikpak.com/vip/v1/activity/invite"
@@ -329,7 +372,7 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -337,7 +380,10 @@ class PikPak:
                 self.captcha_token = ""
                 self.__initCaptcha()
                 self.__get_active_invite()
-            print(f"vip邀请信息返回 Error \n{res_json}")
+            else:
+                print(f"vip邀请信息返回 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"vip邀请信息返回:\n{res_json}")
 
@@ -368,18 +414,23 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/vip/v1/order/activation-code"
                 self.__initCaptcha()
                 self.__set_activation_code()
+            else:
+                self.inviseError = res_json.get("error")
             print(f"填写邀请结果返回 Error \n{res_json}")
             return
         error = res_json.get("error")
         if not error or error == "":
             self.isInvise = True
+        else:
+            self.inviseError = res_json.get("error")
+            raise Exception(self.inviseError)
         print(f"填写邀请结果返回:\n{res_json}")
 
     # 获取当前设备
@@ -417,14 +468,17 @@ class PikPak:
             "User-Agent": "okhttp/4.8.0",
         }
 
-        response = requests.request("GET", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("GET", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/access_controller/v1/area_accessible"
                 self.__initCaptcha()
                 self.__access_controller()
-            print(f"当前设备打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备打印消息\n{res_json}")
 
@@ -473,14 +527,17 @@ class PikPak:
             "user-agent": "okhttp/4.8.0",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/config/v1/globalConfig"
                 self.__initCaptcha()
                 self.__global_config()
-            print(f"当前设备global_config打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备global_config打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备global_config打印消息\n{res_json}")
 
@@ -517,14 +574,17 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/operating/v1/content"
                 self.__initCaptcha()
                 self.__operating()
-            print(f"当前设备operating打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备operating打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备operating打印消息\n{res_json}")
 
@@ -566,14 +626,17 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/config/v1/logReportSwitch"
                 self.__initCaptcha()
                 self.__logReportSwitch()
-            print(f"当前设备operating打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备operating打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备operating打印消息\n{res_json}")
 
@@ -614,14 +677,17 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/operating/v1/report"
                 self.__initCaptcha()
                 self.__operating_report()
-            print(f"当前设备__operating_report打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备__operating_report打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备__operating_report打印消息\n{res_json}")
 
@@ -666,14 +732,17 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/config/v1/urlsOnInstall"
                 self.__initCaptcha()
                 self.__operating_report()
-            print(f"当前设备__urlsOnInstall打印消息 Error \n{res_json}")
+            else:
+                print(f"当前设备__urlsOnInstall打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
             return
         print(f"当前设备__urlsOnInstall打印消息\n{res_json}")
 
