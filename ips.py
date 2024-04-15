@@ -11,6 +11,8 @@ import asyncio
 import requests
 import json
 
+from proxy_ip import kuaidaili
+
 # import urllib3
 # 
 # import certifi
@@ -172,7 +174,8 @@ def pingPikpak(proxy, ok_ips):
 
 
 def thread_get_all_ip():
-    ips = get_proxy_list()
+    # ips = get_proxy_list()
+    ips = kuaidaili.kuaidaili().get_proxy_list()
     # index_count = 10
     # ips = [ips[i:i + index_count] for i in range(0, len(ips), index_count)]
     ok_ips = []
@@ -187,7 +190,7 @@ def thread_get_all_ip():
         #     t.join()
     for th in ths:
         th.join()
-        
+
     print(ok_ips)
     return ok_ips
 

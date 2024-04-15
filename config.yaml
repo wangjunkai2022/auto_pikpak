@@ -1,6 +1,6 @@
 # 免费邮箱API
 mail:
-  api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
+  api: API
 
 # 请求
 requests:
@@ -20,3 +20,5 @@ invites:
     invite_number: 85147854
   - mail: vepahe1532@roborena.com
     invite_number: 74553676
+  - mail: hamidan206@otemdi.com
+    invite_number: 74925778

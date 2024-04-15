@@ -61,15 +61,17 @@ class PikPak:
 
         for index in range(0, config.requests_retry):
             try:
+                print(f"当前的代理是：{proxies}")
                 resp = requests.request(method=method, url=url, params=params, data=data, headers=headers,
                                         cookies=cookies,
                                         files=files, auth=auth, timeout=timeout or 3 * 60,
                                         allow_redirects=allow_redirects,
                                         proxies=proxies,
-                                        hooks=hooks, stream=stream, verify=verify, cert=cert, json=json)
+                                        hooks=hooks, stream=stream, verify=verify or False, cert=cert, json=json)
                 return resp
             except Exception as e:
                 print(f"__req_url error:{e}")
+            time.sleep(1 * 60)
 
         raise Exception(f"url:{url}\n请求失败")
 
@@ -131,7 +133,14 @@ class PikPak:
         if run and invite:
             self.run_req_2invite()
 
+    captcha_time = time.time()
+    captcha_sleep_min_time = 1 * 60
+
     def __initCaptcha(self):
+        captcha_time = time.time()
+        if captcha_time - self.captcha_time < self.captcha_sleep_min_time:
+            time.sleep(self.captcha_sleep_min_time)
+        self.captcha_time = time.time()
         url = "https://user.mypikpak.com/v1/shield/captcha/init"
         time_str = str(round(time.time() * 1000))
 
@@ -169,9 +178,13 @@ class PikPak:
             # print(f"输入的token\n{token}")
             self.captcha_token = self.captcha_token_callback(res_json.get("url"))
         else:
-            if res_json.get("error") == "captcha_invalid":
-                self.__initCaptcha()
-                return
+            error = res_json.get("error")
+            if error:
+                if error == "captcha_invalid":
+                    self.__initCaptcha()
+                    return
+                else:
+                    raise Exception(error)
             self.captcha_token = res_json.get("captcha_token")
 
     def __input_captcha_token(self, url):
