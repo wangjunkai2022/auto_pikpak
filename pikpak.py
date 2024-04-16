@@ -13,8 +13,8 @@ class PikPak:
     pd = ""
     client_id = "YNxT9w7GMdWvEOKa"
     client_id2 = "Y2nMmh6fgvmLA_wM"
-    device_id = str(uuid.uuid4()).replace("-", "")
-    device_id2 = str(uuid.uuid4()).replace("-", "")
+    device_id = None
+    device_id2 = None
     captcha_token = ""
     verification_id = ''
     mail_code = ""
@@ -126,6 +126,8 @@ class PikPak:
         self.captcha_token_callback = captcha_token_callback or self.__input_captcha_token
         self.mail_code_callback = main_callback or self.__input_mail_code
         self.isReqMail = isReqMail
+        self.device_id = str(uuid.uuid4()).replace("-", "")
+        self.device_id2 = str(uuid.uuid4()).replace("-", "")
         if proxy:
             self.set_proxy(proxy)
         if invite:

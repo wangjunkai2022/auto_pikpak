@@ -28,7 +28,7 @@ def start_share(invite):
     main_loop.run_until_complete(get_future)
     result = get_future.result()
     print(result)
-    return result.get("share_url")
+    return result.get("share_url", None)
 
 
 def saveUrlToPikpak(mail, url):
@@ -57,8 +57,9 @@ def runInvite(invite, ips):
         if pik_go.isInvise:
             print(f"{invite} 邀请注册成功")
             url = start_share(invite)
-            saveUrlToPikpak(_mail, url)
-            input_str = f"_mail:{_mail}\n"
+            if url:
+                saveUrlToPikpak(_mail, url)
+            input_str = f"_mail:{_mail} 填写邀请码的账号：{invite.get('mail')} \t proxy:{ip}{proxy_type}\n"
             temp_file = "pikpak_user.txt"
             with open(temp_file, 'a') as f:  # 设置文件对象
                 f.write(input_str)  # 将字符串写入文件中
@@ -76,10 +77,10 @@ def runInvite(invite, ips):
 
 
 if __name__ == "__main__":
-    # ips = thread_get_all_ip()
+    ips = thread_get_all_ip()
     for invite in invites:
-        # runInvite(invite, ips)
-        start_share(invite)
+        runInvite(invite, ips)
+        # start_share(invite)
     # ths = []
     # for invite in invites:
     #     th = threading.Thread(target=runInvite, args=(invite.get("invite_number"), ips))
