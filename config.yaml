@@ -9,7 +9,7 @@ requests:
   # 重试次数
   retry: 10
 
-invites:
+pikpak_user:
   - mail: wiwaret166@talmetry.com
     invite_number: 95370395
   - mail: lopipi9801@giratex.com
@@ -22,3 +22,6 @@ invites:
     invite_number: 74553676
   - mail: hamidan206@otemdi.com
     invite_number: 74925778
+    share:
+      - "upload"
+      - "动漫"
