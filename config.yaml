@@ -12,16 +12,33 @@ requests:
 pikpak_user:
   - mail: wiwaret166@talmetry.com
     invite_number: 95370395
+    share:
+      - "JAV_output_temp"
   - mail: lopipi9801@giratex.com
     invite_number: 39576161
+    share:
+      - "sehuatang_temp"
+      - "JAV_output"
   - mail: weyel44478@namewok.com
     invite_number: 92196679
+    share:
+      - "影视"
   - mail: himiren433@picvw.com
     invite_number: 85147854
+    share:
+      - "整理"
   - mail: vepahe1532@roborena.com
     invite_number: 74553676
+    share:
+      - "SukebeiEnyo合集一"
   - mail: hamidan206@otemdi.com
     invite_number: 74925778
     share:
       - "upload"
       - "动漫"
+      - "写真"
+      - "未整理"
+      - "欧美"
+      - "中国"
+      - "整理"
+      - "直播"
