@@ -9,11 +9,9 @@ import threading
 
 invites = config.pikpak_user
 
-def_dp = "098poi"
-
 
 def start_share(invite):
-    pikpak_api = PikPakApi(invite.get("mail"), def_dp)
+    pikpak_api = PikPakApi(invite.get("mail"), invite.get("pd"))
     # 创建一个事件循环thread_loop
     main_loop = asyncio.get_event_loop()
     get_future = asyncio.ensure_future(pikpak_api.login())
@@ -31,8 +29,8 @@ def start_share(invite):
     return result.get("share_url", None)
 
 
-def saveUrlToPikpak(mail, url):
-    pikpak_api = PikPakApi(mail, def_dp)
+def saveUrlToPikpak(mail, pd, url):
+    pikpak_api = PikPakApi(mail, pd)
     main_loop = asyncio.get_event_loop()
     get_future = asyncio.ensure_future(pikpak_api.login())
     main_loop.run_until_complete(get_future)
@@ -46,7 +44,7 @@ def saveUrlToPikpak(mail, url):
 def runInvite(invite, ips):
     try:
         _mail = create_one_mail()
-        pik_go = PikPak(_mail, def_dp,
+        pik_go = PikPak(_mail, invite.get("pd"),
                         captcha_token_callback=open_url2token,
                         main_callback=get_new_mail_code,
                         invite=str(invite.get("invite_number"))
@@ -58,7 +56,7 @@ def runInvite(invite, ips):
             print(f"{invite} 邀请注册成功")
             url = start_share(invite)
             if url:
-                saveUrlToPikpak(_mail, url)
+                saveUrlToPikpak(_mail, invite.get("pd"), url)
             input_str = f"_mail:{_mail} 填写邀请码的账号：{invite.get('mail')} \t proxy:{ip}{proxy_type}\n"
             temp_file = "pikpak_user.txt"
             with open(temp_file, 'a') as f:  # 设置文件对象
