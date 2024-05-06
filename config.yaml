@@ -10,27 +10,27 @@ requests:
   retry: 10
 
 pikpak_user:
- - mail: wiwaret166@talmetry.com
-   pd: 098poi
-   invite_number: 95370395
-   share:
-     - "JAV_output_temp"
- - mail: lopipi9801@giratex.com
-   pd: 098poi
-   invite_number: 39576161
-   share:
-     - "sehuatang_temp"
-     - "JAV_output"
- - mail: weyel44478@namewok.com
-   pd: 098poi
-   invite_number: 92196679
-   share:
-     - "影视"
- - mail: himiren433@picvw.com
-   pd: poi098
-   invite_number: 85147854
-   share:
-     - "整理"
+  - mail: wiwaret166@talmetry.com
+    pd: 098poi
+    invite_number: 95370395
+    share:
+      - "JAV_output_temp"
+  - mail: lopipi9801@giratex.com
+    pd: 098poi
+    invite_number: 39576161
+    share:
+      - "sehuatang_temp"
+      - "JAV_output"
+  - mail: weyel44478@namewok.com
+    pd: 098poi
+    invite_number: 92196679
+    share:
+      - "影视"
+  - mail: himiren433@picvw.com
+    pd: poi098
+    invite_number: 85147854
+    share:
+      - "整理"
   - mail: vepahe1532@roborena.com
     pd: 098poi
     invite_number: 74553676

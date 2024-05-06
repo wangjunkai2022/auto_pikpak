@@ -1,4 +1,5 @@
 import base64
+import random
 import re
 from selenium import webdriver
 import time
@@ -9,6 +10,8 @@ import threading
 import os
 
 import yolov8_test
+
+import pytweening
 
 train_path = "./dataTrain/train"
 oldAllImg = []
@@ -135,6 +138,10 @@ class Captcha_Chmod:
         print(f"运行后的获取到的 captcha_token:\n{self.captcha_token}")
         return self.captcha_token
 
+    def drag_and_drop(browser, offset):
+        pytweening.easeInOutElastic()
+        # ActionChains(browser).pause(0.5).release().perform()
+
     def __th_touch_slider__button(self):
         button = self.driver.find_element(by=By.ID, value="slider__button")
         actions = ActionChains(self.driver)
@@ -142,15 +149,18 @@ class Captcha_Chmod:
         distance = 0
         while True:
             try:
+                distance += random.randint(1, 4)
                 actions.move_by_offset(distance, 0).perform()
                 if self.saveImage():
-                    time.sleep(1)
+                    print(distance)
+                    time.sleep(random.random())
                     if yolov8_test.ai_test_byte(self.image) == "ok":
                         print("AI 判断通过")
                         actions.release().perform()
                         return
-                distance += 1
+                time.sleep(random.random())
             except:
+                print("报错：：：：")
                 ActionChains(self.driver).click_and_hold(
                     button).move_by_offset(0, 0).release().perform()
                 break
@@ -172,6 +182,14 @@ class Captcha_Chmod:
             return False
         newAllImg.append(self.image)
         return True
+
+
+def open_url2token(url):
+    captcha = Captcha_Chmod(url)
+    print(captcha.captcha_token)
+    if captcha.captcha_token:
+        SaveAllNewImg(captcha.image)
+    newAllImg.clear()
 
 
 if __name__ == "__main__":

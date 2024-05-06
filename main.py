@@ -1,5 +1,6 @@
 from pikpak import PikPak
-from chmod import open_url2token
+# from chmod import open_url2token
+from chmod_captcha import open_url2token
 from ips import thread_get_all_ip
 from mail import create_one_mail, get_new_mail_code
 import config
@@ -22,7 +23,8 @@ def start_share(invite):
         main_loop.run_until_complete(get_future)
         result = get_future.result()
         fils_id.append(result[-1].get("id"))
-    get_future = asyncio.ensure_future(pikpak_api.file_batch_share(fils_id, expiration_days=7))
+    get_future = asyncio.ensure_future(
+        pikpak_api.file_batch_share(fils_id, expiration_days=7))
     main_loop.run_until_complete(get_future)
     result = get_future.result()
     print(result)
@@ -84,6 +86,6 @@ if __name__ == "__main__":
     #     th = threading.Thread(target=runInvite, args=(invite.get("invite_number"), ips))
     #     th.start()
     #     ths.append(th)
-    # 
+    #
     # for th in ths:
     #     th.join()
