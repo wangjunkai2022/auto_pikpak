@@ -15,7 +15,7 @@ def byte_to_image(byte_data, image_path=None):
 
 
 def ai_test_byte(byte):
-    model = YOLO('./runs/classify/train4/weights/best.pt')
+    model = YOLO('./runs/classify/train/weights/best.pt')
     source = byte_to_image(byte)
     results = model(source)
     # mp.argmax(results[0].probs.data.tolist())
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # # Load a model
     # model = YOLO('yolov8n-cls.yaml')  # build a new model from YAML
     # load a pretrained model (recommended for training)
-    model = YOLO('./runs/classify/train4/weights/best.pt')
+    # model = YOLO('./runs/classify/train/weights/best.pt')
     # model = YOLO('yolov8n-cls.yaml').load('yolov8n-cls.pt')  # build from YAML and transfer weights
 
     # # Train the model

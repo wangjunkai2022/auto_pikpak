@@ -7,5 +7,5 @@ if __name__ == "__main__":
     # model = YOLO('yolov8n-cls.yaml').load('yolov8n-cls.pt')  # build from YAML and transfer weights
 
     # # Train the model
-    results = model.train(data='/Users/evan/codes/Other/auto_pikpak/dataTrain', imgsz=(600, 300))
+    results = model.train(data='./dataTrain', imgsz=(600, 300),resume="./runs/classify/train/weights/best.pt")
     # print(results)
