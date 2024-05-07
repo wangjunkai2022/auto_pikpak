@@ -43,6 +43,8 @@ class PikPak:
 
     inviseError = None
 
+    pass_code_token = None
+
     def __req_url(self, method, url,
                   params=None,
                   data=None,
@@ -77,7 +79,9 @@ class PikPak:
 
     # 仿制captcha_sign
     def __get_sign(self, time_str):
-        begin_str = self.client_id + f"{self.client_version}com.pikcloud.pikpak" + self.device_id + time_str
+        begin_str = self.client_id + \
+            f"{self.client_version}com.pikcloud.pikpak" + \
+            self.device_id + time_str
         salts = [
             {'alg': 'md5', 'salt': 'Nw9cvH5q2DqkDTJG73'},
             {'alg': 'md5', 'salt': 'o+N/zglOE4td/6kmjQldcaT'},
@@ -102,7 +106,8 @@ class PikPak:
                 optString2 = optJSONObject.get("salt", "")
                 if optString == "md5":
                     # 使用md5算法对字符串进行加密
-                    hex_str = hashlib.md5((hex_str + optString2).encode()).hexdigest()
+                    hex_str = hashlib.md5(
+                        (hex_str + optString2).encode()).hexdigest()
         return hex_str
 
     def set_proxy(self, proxy_ip, type="http"):
@@ -140,8 +145,8 @@ class PikPak:
 
     def __initCaptcha(self):
         captcha_time = time.time()
-        if captcha_time - self.captcha_time < self.captcha_sleep_min_time:
-            time.sleep(self.captcha_sleep_min_time)
+        # if captcha_time - self.captcha_time < self.captcha_sleep_min_time:
+        #     time.sleep(self.captcha_sleep_min_time)
         self.captcha_time = time.time()
         url = "https://user.mypikpak.com/v1/shield/captcha/init"
         time_str = str(round(time.time() * 1000))
@@ -171,14 +176,16 @@ class PikPak:
 
             "Accept-Encoding": "deflate, gzip"
         }
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         print(f"__initCaptcha\n{res_json}")
         if res_json.get("url"):
             # print("打开这个网址手动去执行验证 并获取的token复制到此\n")
             # token = input()
             # print(f"输入的token\n{token}")
-            self.captcha_token = self.captcha_token_callback(res_json.get("url"))
+            self.captcha_token = self.captcha_token_callback(
+                res_json.get("url"))
         else:
             error = res_json.get("error")
             if error:
@@ -219,7 +226,8 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             print(f"发送验证消息到邮箱 ERROR:\n{res_json}")
@@ -253,7 +261,8 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies, verify=False)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies, verify=False)
         res_json = response.json()
         if response.status_code == 200:
             self.verification_id = res_json.get("verification_token")
@@ -284,7 +293,8 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             print(f"注册登陆失败:\n{res_json}")
@@ -331,7 +341,8 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code == 200:
             print(f"登陆成功{res_json}")
@@ -387,7 +398,8 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -429,7 +441,8 @@ class PikPak:
             "Accept-Encoding": "deflate, gzip"
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -483,7 +496,8 @@ class PikPak:
             "User-Agent": "okhttp/4.8.0",
         }
 
-        response = self.__req_url("GET", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "GET", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -542,7 +556,8 @@ class PikPak:
             "user-agent": "okhttp/4.8.0",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -589,7 +604,8 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -641,7 +657,8 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -692,7 +709,8 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -747,7 +765,8 @@ class PikPak:
             "accept-encoding": "gzip",
         }
 
-        response = self.__req_url("POST", url, json=payload, headers=headers, proxies=self.proxies)
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
             if res_json.get("error") == "captcha_invalid":
@@ -806,11 +825,102 @@ class PikPak:
         time.sleep(1)
         self.__set_activation_code()
 
+    def __get_pikpak_share_passcode(self, share_id):
+        # share_url = "https://mypikpak.com/s/VNxHRUombIy7SWJs5Oyw-TDxo1"
+        url = f"https://api-drive.mypikpak.com/drive/v1/share?share_id={share_id}&pass_code=&page_token=&pass_code_token={self.pass_code_token or ''}&thumbnail_size=SIZE_LARGE&limit=100"
+        payload = {}
+        headers = {
+            "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
+            "content-type": "application/json",
+            "x-system-language": self.language,
+            "x-device-id": self.device_id,
+            "x-client-version-code": "10182",
+            "x-peer-id": self.device_id,
+            "x-alt-capability": "3",
+            "x-captcha-token": self.captcha_token,
+            "user-agent": self.__user_agent(),
+            "country": self.country,
+            "x-user-region": "2,3",
+            "product_flavor_name": "cha",
+            "accept-language": self.language,
+            "authorization": self.authorization,
+            "accept-encoding": "gzip",
+        }
+
+        response = self.__req_url(
+            "GET", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+        if response.status_code != 200:
+            if res_json.get("error") == "captcha_invalid":
+                self.captcha_action = f"GET:/vip/v1/vip/info"
+                self.__initCaptcha()
+                self.__get_pikpak_share_passcode(share_id)
+            else:
+                print(f"当前设备打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
+            return
+        print(f"当前设备打印消息\n{res_json}")
+        self.pass_code_token = res_json.get("pass_code_token")
+
+    def __save_pikpak_2_self(self, share_id):
+        # share_url = "https://mypikpak.com/s/VNxHRUombIy7SWJs5Oyw-TDxo1"
+        if not self.pass_code_token:
+            self.__get_pikpak_share_passcode(share_id)
+        url = "https://api-drive.mypikpak.com/drive/v1/share/restore"
+        payload = {
+            "folder_type": "",
+            "share_id": share_id,
+            "pass_code_token": self.pass_code_token,
+            "file_ids": [],
+            "ancestor_ids": [],
+            "params": {
+                "trace_file_ids": "*",
+            },
+        }
+        headers = {
+            "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
+            "content-type": "application/json",
+            "x-system-language": self.language,
+            "x-device-id": self.device_id,
+            "x-client-version-code": "10182",
+            "x-peer-id": self.device_id,
+            "x-alt-capability": "3",
+            "x-captcha-token": self.captcha_token,
+            "user-agent": self.__user_agent(),
+            "country": self.country,
+            "x-user-region": "2,3",
+            "product_flavor_name": "cha",
+            "accept-language": self.language,
+            "authorization": self.authorization,
+            "accept-encoding": "gzip",
+        }
+
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+        if response.status_code != 200:
+            if res_json.get("error") == "captcha_invalid":
+                self.captcha_action = f"GET:/drive/v1/files/{share_id}"
+                self.__initCaptcha()
+                self.__save_pikpak_2_self(share_id)
+            else:
+                print(f"当前设备__保存分享文件 打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
+            return
+        print(f"当前设备__保存分享文件 打印消息\n{res_json}")
+
+    def save_share(self, share_id):
+        self.__login()
+        self.__save_pikpak_2_self(share_id)
+
 
 if __name__ == "__main__":
-    email = "b1HUzLijXBtdvkwo@cevipsa.com"
+    email = "zlyezm5338@cevipsa.com"
     password = "098poi"
-    pikpak_ = PikPak(email, password)
+    pikpak_ = PikPak(email, password, run=False)
     # pikpak_.set_proxy("114.132.202.246:8080")
-    pikpak_.set_activation_code(98105081)
-    pikpak_.run_req_2invite()
+    # pikpak_.set_activation_code(98105081)
+    # pikpak_.run_req_2invite()
+    pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
