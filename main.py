@@ -1,6 +1,6 @@
 from pikpak import PikPak
-# from chmod import open_url2token
-from chmod_captcha import open_url2token
+from chmod import open_url2token
+# from chmod_captcha import open_url2token
 from ips import thread_get_all_ip
 from mail import create_one_mail, get_new_mail_code
 import config
@@ -28,19 +28,21 @@ def start_share(invite):
     main_loop.run_until_complete(get_future)
     result = get_future.result()
     print(result)
-    return result.get("share_url", None)
+    return result.get("share_id", None)
 
 
-def saveUrlToPikpak(mail, pd, url):
-    pikpak_api = PikPakApi(mail, pd)
-    main_loop = asyncio.get_event_loop()
-    get_future = asyncio.ensure_future(pikpak_api.login())
-    main_loop.run_until_complete(get_future)
+def saveUrlToPikpak(mail, pd, share_id):
+    # pikpak_api = PikPakApi(mail, pd)
+    # main_loop = asyncio.get_event_loop()
+    # get_future = asyncio.ensure_future(pikpak_api.login())
+    # main_loop.run_until_complete(get_future)
 
-    get_future = asyncio.ensure_future(pikpak_api.offline_download(url))
-    main_loop.run_until_complete(get_future)
-    result = get_future.result()
-    print(result)
+    # get_future = asyncio.ensure_future(pikpak_api.offline_download(url))
+    # main_loop.run_until_complete(get_future)
+    # result = get_future.result()
+    # print(result)
+    pikpak = PikPak(mail=mail, pd=pd, run=False)
+    pikpak.save_share(share_id)
 
 
 def runInvite(invite, ips):
@@ -56,9 +58,9 @@ def runInvite(invite, ips):
         pik_go.run_req_2invite()
         if pik_go.isInvise:
             print(f"{invite} 邀请注册成功")
-            url = start_share(invite)
-            if url:
-                saveUrlToPikpak(_mail, invite.get("pd"), url)
+            share_id = start_share(invite)
+            if share_id:
+                saveUrlToPikpak(_mail, invite.get("pd"), share_id)
             input_str = f"_mail:{_mail} 填写邀请码的账号：{invite.get('mail')} \t proxy:{ip}{proxy_type}\n"
             temp_file = "pikpak_user.txt"
             with open(temp_file, 'a') as f:  # 设置文件对象
@@ -78,6 +80,7 @@ def runInvite(invite, ips):
 
 if __name__ == "__main__":
     ips = thread_get_all_ip()
+    # ips = [['35.185.196.38:3128', 'http'], ['185.217.136.67:1337', 'http'], ['178.48.68.61:18080', 'http'], ['18.169.83.87:1080', 'http']]
     for invite in invites:
         runInvite(invite, ips)
         # start_share(invite)
