@@ -6,6 +6,9 @@ import time
 import requests
 import config
 
+from mail import create_one_mail, get_new_mail_code
+from chmod import open_url2token
+
 
 class PikPak:
     client_secret = "dbw2OtmVEeuUvIptb1Coyg"
@@ -112,6 +115,9 @@ class PikPak:
 
     def set_proxy(self, proxy_ip, type="http"):
         # if not proxy.startswith("http://"):
+        if not proxy_ip:
+            self.proxies = None
+            return
         proxy = f"{type}://{proxy_ip}"
         self.proxies = {
             "http": proxy,
@@ -142,11 +148,12 @@ class PikPak:
 
     captcha_time = time.time()
     captcha_sleep_min_time = 1 * 60
+    captcha_action_old = ""
 
     def __initCaptcha(self):
         captcha_time = time.time()
-        # if captcha_time - self.captcha_time < self.captcha_sleep_min_time:
-        #     time.sleep(self.captcha_sleep_min_time)
+        if captcha_time - self.captcha_time < self.captcha_sleep_min_time and self.captcha_action_old == self.captcha_action:
+            time.sleep(self.captcha_sleep_min_time)
         self.captcha_time = time.time()
         url = "https://user.mypikpak.com/v1/shield/captcha/init"
         time_str = str(round(time.time() * 1000))
@@ -190,11 +197,12 @@ class PikPak:
             error = res_json.get("error")
             if error:
                 if error == "captcha_invalid":
-                    self.__initCaptcha()
+                    # self.__initCaptcha()
                     return
                 else:
                     raise Exception(error)
             self.captcha_token = res_json.get("captcha_token")
+        self.captcha_action_old = self.captcha_action
 
     def __input_captcha_token(self, url):
         print("需要打开网页去验证 并输入返回的 captcha_token")
@@ -316,6 +324,9 @@ class PikPak:
             self.isReqMail = self.mail
 
     def __login(self):
+        if self.authorization:
+            print("已经登陆 不用在登陆了")
+            return
         url = "https://user.mypikpak.com/v1/auth/signin"
         payload = {
             "client_id": self.client_id,
@@ -350,8 +361,8 @@ class PikPak:
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
         else:
             # if res_json.get("error") == "captcha_invalid":
-            #     self.__initCaptcha()
-            #     self.login()
+            # self.__initCaptcha()
+            # self.__login()
             print(f"登陆失败{res_json}")
             self.inviseError = res_json.get("error")
             raise Exception(self.inviseError)
@@ -856,11 +867,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__get_pikpak_share_passcode(share_id)
             else:
-                print(f"当前设备打印消息 Error \n{res_json}")
+                print(f"当前 pikpak_share_passcode 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备打印消息\n{res_json}")
+        print(f"当前 pikpak_share_passcode 打印消息\n{res_json}")
         self.pass_code_token = res_json.get("pass_code_token")
 
     def __save_pikpak_2_self(self, share_id):
@@ -915,12 +926,143 @@ class PikPak:
         self.__login()
         self.__save_pikpak_2_self(share_id)
 
+    # 获取自己的邀请码
+    def __req_self_invite_code(self):
+        url = "https://api-drive.mypikpak.com/vip/v1/activity/inviteCode"
+        payload = {}
+        headers = {
+            "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
+            "content-type": "application/json",
+            "x-system-language": self.language,
+            "x-device-id": self.device_id,
+            "x-client-version-code": "10182",
+            "x-peer-id": self.device_id,
+            "x-alt-capability": "3",
+            "x-captcha-token": self.captcha_token,
+            "user-agent": self.__user_agent(),
+            "country": self.country,
+            "x-user-region": "2,3",
+            "product_flavor_name": "cha",
+            "accept-language": self.language,
+            "authorization": self.authorization,
+            "accept-encoding": "gzip",
+        }
+
+        response = self.__req_url(
+            "GET", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+        if response.status_code != 200:
+            if res_json.get("error") == "captcha_invalid":
+                self.captcha_action = f"GET:/vip/v1/vip/info"
+                self.__initCaptcha()
+                return self.__req_self_invite_code()
+            else:
+                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
+            return
+        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        return res_json.get("code")
+
+    def get_self_invite_code(self):
+        self.__login()
+        return self.__req_self_invite_code()
+
+    def __req_self_vip_info(self):
+        url = "https://api-drive.mypikpak.com/vip/v1/vip/info"
+        payload = {}
+        headers = {
+            "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
+            "content-type": "application/json",
+            "x-system-language": self.language,
+            "x-device-id": self.device_id,
+            "x-client-version-code": "10182",
+            "x-peer-id": self.device_id,
+            "x-alt-capability": "3",
+            "x-captcha-token": self.captcha_token,
+            "user-agent": self.__user_agent(),
+            "country": self.country,
+            "x-user-region": "2,3",
+            "product_flavor_name": "cha",
+            "accept-language": self.language,
+            "authorization": self.authorization,
+            "accept-encoding": "gzip",
+        }
+
+        response = self.__req_url(
+            "GET", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+        if response.status_code != 200:
+            if res_json.get("error") == "captcha_invalid":
+                self.captcha_action = f"GET:/vip/v1/vip/info"
+                self.__initCaptcha()
+                return self.__req_self_vip_info()
+            else:
+                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
+            return
+        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        return res_json
+
+    def get_self_vip_info(self):
+        self.__login()
+        vip_data = self.__req_self_vip_info()
+        return vip_data
+
+    def get_vip_day_time_left(self):
+        vip_data = self.get_self_vip_info()
+        try:
+            return vip_data.get('data').get("vipItem")[0].get("surplus_day")
+        except:
+            return 0
+
+# 创建一个新的账号并填写邀请码
+
+
+def crete_invite(invite, ips):
+    try:
+        _mail = create_one_mail()
+        pik_go = PikPak(_mail, config.def_password,
+                        captcha_token_callback=open_url2token,
+                        main_callback=get_new_mail_code,
+                        invite=str(invite)
+                        )
+        if len(ips) <= 0:
+            return None
+        ip, proxy_type = ips.pop(0)
+        pik_go.set_proxy(ip, proxy_type)
+        pik_go.run_req_2invite()
+        if pik_go.isInvise:
+            print(f"{_mail}:注册成功 并邀请{invite}VIP")
+            # share_id = start_share(invite)
+            # if share_id:
+            #     saveUrlToPikpak(_mail, invite.get("pd"), share_id)
+            # input_str = f"_mail:{_mail} 填写邀请码的账号：{invite.get('mail')} \t proxy:{ip}{proxy_type}\n"
+            # temp_file = "pikpak_user.txt"
+            # with open(temp_file, 'a') as f:  # 设置文件对象
+            #     f.write(input_str)  # 将字符串写入文件中
+            return pik_go
+        else:
+            print(f"{invite} 注册失败！重新注册")
+            return crete_invite(invite, ips)
+    except Exception as e:
+        print(f"{invite} 注册失败！ Error{e}")
+        # if "empty list" in e.__str__():
+        #     return None
+        # if not pik_go.inviseError:
+        print(f"开始重新注册")
+        return crete_invite(invite, ips)
+
 
 if __name__ == "__main__":
-    email = "zlyezm5338@cevipsa.com"
+    # email = "zlyezm5338@cevipsa.com"
+    email = "hamidan206@otemdi.com"
     password = "098poi"
     pikpak_ = PikPak(email, password, run=False)
     # pikpak_.set_proxy("114.132.202.246:8080")
     # pikpak_.set_activation_code(98105081)
     # pikpak_.run_req_2invite()
-    pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
+    # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
+    # pikpak_.get_self_invite_code()
+    pikpak_.get_self_vip_info()
