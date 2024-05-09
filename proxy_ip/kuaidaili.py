@@ -1,7 +1,7 @@
 import json
+import os
 import re
 import time
-
 import requests
 
 
@@ -25,10 +25,24 @@ class kuaidaili:
             cookies_dict[cookie.split('=')[0]] = cookie.split('=')[-1]
         return cookies_dict
 
+    cache_json_file = os.path.abspath(__file__)[:-2] + "json"
+
     def get_proxy_list(self):
+        try:
+            with open(self.cache_json_file, mode="r", encoding="utf-8") as file:
+                json_str = file.read()
+                json_data = json.loads(json_str)
+        except:
+            json_data = {}
+        _time = time.time() - json_data.get("time", 0)
+
         proxy_ips = []
         ips = []
-        for index in range(1, 20):
+
+        if _time < 60 * 60 * 2:
+            return json_data.get("ips", [])
+
+        for index in range(1, 100):
             url = f"https://{self.domain}/free/fps/{index}/"
             try:
                 response = requests.request("GET", url,
@@ -51,11 +65,17 @@ class kuaidaili:
 
             time.sleep(0.5)
             print(response.text)
+        json_data = {
+            "time": time.time(),
+            "ips": proxy_ips,
+        }
+        with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
+            file.write(json.dumps(json_data))
         return proxy_ips
 
 
 if __name__ == '__main__':
-    kuaidaili().get_proxy_list()
+    print(kuaidaili().get_proxy_list())
     # file = open("../test.txt", mode="r")
     # str_ = file.read()
     # file.close()
@@ -65,3 +85,4 @@ if __name__ == '__main__':
     #     str_ = re_search.group()[len("const fpsList = "):-1]
     #     data = json.loads(str_)
     #     print(str_)
+    # cache_name = os.path.abspath(__file__)[:-2]  # type: ignore
