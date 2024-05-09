@@ -1013,7 +1013,7 @@ class PikPak:
     def get_vip_day_time_left(self):
         vip_data = self.get_self_vip_info()
         try:
-            return vip_data.get('data').get("vipItem")[0].get("surplus_day")
+            return vip_data.get('data').get("vipItem")[0].get("surplus_day", 0)
         except:
             return 0
 
