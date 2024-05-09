@@ -28,7 +28,7 @@ class kuaidaili:
     def get_proxy_list(self):
         proxy_ips = []
         ips = []
-        for index in range(61, 100):
+        for index in range(1, 20):
             url = f"https://{self.domain}/free/fps/{index}/"
             try:
                 response = requests.request("GET", url,
@@ -37,18 +37,20 @@ class kuaidaili:
                                             )
             except:
                 continue
-            re_search = re.search(r"const fpsList = \[\{(.*)\}\];", response.text)
+            re_search = re.search(
+                r"const fpsList = \[\{(.*)\}\];", response.text)
             if re_search:
                 str_ = re_search.group()[len("const fpsList = "):-1]
                 data = json.loads(str_)
                 for _data in data:
                     ip = _data.get('ip')
-                    if ip in ips:
-                        continue
+                    # if ip in ips:
+                    #     continue
                     proxy_ips.append(f"{ip}:{_data.get('port')} http")
                     ips.append(ip)
 
             time.sleep(0.5)
+            print(response.text)
         return proxy_ips
 
 
