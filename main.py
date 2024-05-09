@@ -94,14 +94,14 @@ class AlistPikpak:
 
 
 if __name__ == "__main__":
-    # ips = thread_get_all_ip()
-    ips = []
+    ips = thread_get_all_ip()
     alistPikpak = AlistPikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
         pikpak_go_new = crete_invite(invite_code, ips)
         if not pikpak_go_new:
+            print("新建的号有误")
             break
         if pikpak_go.get_vip_day_time_left() > 0:
             pikpak_go = alistPikpak.pop_not_vip_pikpak()

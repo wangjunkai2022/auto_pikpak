@@ -39,7 +39,7 @@ class kuaidaili:
         proxy_ips = []
         ips = []
 
-        if _time < 60 * 60 * 2:
+        if _time < 60 * 60 * 6:
             return json_data.get("ips", [])
 
         for index in range(1, 100):
