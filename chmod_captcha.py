@@ -11,7 +11,8 @@ import os
 
 import yolov8_test
 
-import pytweening
+
+isDebug = False
 
 train_path = "./dataTrain/train"
 oldAllImg = []
@@ -62,7 +63,7 @@ def saveImg(img, isOk):
 class Captcha_Chmod:
     captured_url = ''
     driver = None
-    captcha_token = ''
+    captcha_token = None
     image = None
 
     def __init__(self, url=""):
@@ -80,13 +81,15 @@ class Captcha_Chmod:
         self.runingTh = threading.Thread(target=self.__th_get_captured_url)
         self.runingTh.start()
         # self.saveImage()
-        self.touchTh = threading.Thread(target=self.__th_touch_slider__button)
-        self.touchTh.start()
+        # self.touchTh = threading.Thread(target=self.__th_touch_slider__button)
+        # self.touchTh.start()
 
-        self.printTh = threading.Thread(target=self.__print_button_info)
-        self.printTh.start()
-
-        # self.runingTh.join()
+        if not isDebug:
+            self.runingTh.join()
+        if isDebug:
+            self.__print_button_info()
+            while True:
+                time.sleep(1)
 
     # 新线程获取验证
     def __th_get_captured_url(self):
@@ -103,8 +106,7 @@ class Captcha_Chmod:
         self.driver.execute_script(script)
 
         while True:
-            time.sleep(1)
-
+            time.sleep(0.1)
             try:
                 self.captured_url = self.driver.execute_script(
                     "return lastLog2;")
@@ -126,49 +128,84 @@ class Captcha_Chmod:
         search = re.search(f"{str_start}.*{str_end}", self.captured_url)
         self.captcha_token = search.group()[len(str_start):-len(str_end)]
         print(f"运行后的获取到的 captcha_token:\n{self.captcha_token}")
-        return self.captcha_token
+        # return self.captcha_token
 
-    def drag_and_drop(browser, offset):
-        pytweening.easeInOutElastic()
-        # ActionChains(browser).pause(0.5).release().perform()
+    def __get_track(self, distance):
+        """
+        计算滑块移动轨迹
+        :param distance: 滑块需要移动的距离
+        :return: 返回移动轨迹
+        """
+        track = []
+        current = 0
+        mid = distance * 3 / 4
+        t = 0.1
+        v = 0
+        while current < distance:
+            if current < mid:
+                a = 2
+            else:
+                a = -3
+            v0 = v
+            v = v0 + a * t
+            move = v0 * t + 1 / 2 * a * t * t
+            current += move
+            track.append(round(move))
+        return track
 
     def __th_touch_slider__button(self):
         button = self.driver.find_element(by=By.ID, value="slider__button")
         actions = ActionChains(self.driver)
         actions.click_and_hold(button).perform()
-        distance = button.location_once_scrolled_into_view
-        x, y = distance.get("x"), 0
-        print(x, y)
+
+        # distance = 200
+        # t = 0.2
+        # v = 0
+        # current = 0
+        x = 0
         while True:
             try:
-                x += random.randint(2, 6)
-                actions.move_by_offset(x, y).perform()
+                x += round(random.uniform(-1, 3))
+                actions.move_by_offset(x, 0).perform()
                 if self.saveImage():
-                    print("当前移动的X:", x)
+                    # print("当前移动的X:", distance)
                     if yolov8_test.ai_test_byte(self.image) == "ok":
                         print("AI 判断通过")
                         actions.release().perform()
                         return
                     # time.sleep(random.random())
-                    time.sleep(random.uniform(0, 0.2))
-                time.sleep(random.uniform(0, 0.5))
             except:
                 print("报错：：：：")
                 ActionChains(self.driver).click_and_hold(
-                    button).move_by_offset(distance.get("x"), y).release().perform()
+                    button).move_by_offset(0, 0).release().perform()
                 break
         print("循环结束应该已经到最后位置了")
         # actions.release().perform()
-        ActionChains(self.driver).pause(0.5).release().perform()
+        ActionChains(self.driver).pause(0.1).release().perform()
         # self.driver.quit()
 
     def __print_button_info(self):
         button = self.driver.find_element(by=By.ID, value="slider__button")
         oldPos = button.location_once_scrolled_into_view
-        while True:
-            if button.location_once_scrolled_into_view != oldPos:
-                oldPos = button.location_once_scrolled_into_view
-                print(button.location_once_scrolled_into_view, "::::", time.time())
+        x, _time = [], []
+        # x.append(oldPos.get("x"))
+        # _time.append(time.time())
+        while not self.captcha_token:
+            try:
+                if button.location_once_scrolled_into_view != oldPos:
+                    oldPos = button.location_once_scrolled_into_view
+                    print(button.location_once_scrolled_into_view,
+                          "::::", time.time())
+                    x.append(oldPos.get("x"))
+                    _time.append(time.time())
+            except:
+                break
+        import matplotlib.pyplot as plt
+        # 1.线图
+        # 调用plt。plot来画图,横轴纵轴两个参数即可
+        plt.plot(_time, x)
+        # python要用show展现出来图
+        plt.show()
 
     def saveImage(self):
         canvas = self.driver.find_element(by=By.ID, value="pzzl-canvas")
@@ -202,5 +239,12 @@ if __name__ == "__main__":
     # if captcha.captcha_token:
     #     SaveAllNewImg(captcha.image)
     # newAllImg.clear()
-    while True:
-        print(random.uniform(0, 0.3))
+
+    import pikpak
+    _mail = pikpak.create_one_mail()
+    pik_go = pikpak.PikPak(_mail, "098poi",
+                           captcha_token_callback=open_url2token,
+                           main_callback=pikpak.get_new_mail_code,
+                           invite=str(1234567)
+                           )
+    pik_go.run_req_2invite()
