@@ -39,15 +39,16 @@ def open_url2token(url=""):
     captured_url = driver.execute_script("return lastLog;")
     print("捕获的URL:", captured_url)
 
-    while range(0, 600):
-        time.sleep(1)
+    while True:
+        time.sleep(0.1)
         try:
             captured_url = driver.execute_script("return lastLog2;")
             if captured_url.startswith("xlaccsdk01"):
                 break
-        except:
-            # print("没有值")
-            pass
+        except Exception as e:
+            print("报错了", e)
+            driver.quit()
+            return open_url2token(url=url)
         # message = driver.get_log("performance")
         # print(message)
         # print(f"当前网页是：{driver.current_url}")
