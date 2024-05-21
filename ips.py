@@ -2,6 +2,7 @@
 import datetime
 import os
 import threading
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -14,7 +15,7 @@ import json
 from proxy_ip import kuaidaili
 
 # import urllib3
-# 
+#
 # import certifi
 # import cryptography
 # import pyOpenSSL
@@ -112,7 +113,7 @@ async def get_pikpak_proyxs():
         proxies.remove(None)
     print(proxies)
     # temp_file = "ip_isOk11.txt"
-    # 
+    #
     # # 获取当前时间
     # now_time = datetime.datetime.now()
     # # 格式化时间字符串
@@ -173,30 +174,69 @@ def pingPikpak(proxy, ok_ips):
     return False
 
 
-def thread_get_all_ip():
+def thread_get_all_ping_pikpak_proxy():
     # ips = get_proxy_list()
-    ips = kuaidaili.kuaidaili().get_proxy_list()
+    _ips = kuaidaili.kuaidaili().get_proxy_list()
     # index_count = 10
     # ips = [ips[i:i + index_count] for i in range(0, len(ips), index_count)]
-    ok_ips = []
-    ths = []
-    for _ips in ips:
+    _ok_ips = []
+    _ths = []
+    for _ip in _ips:
         # for __ips in _ips:
-        th = threading.Thread(target=pingPikpak, args=(_ips, ok_ips))
+        _th = threading.Thread(target=pingPikpak, args=(_ip, _ok_ips))
         # for t in ths:  # 循环启动10个线程
-        th.start()
-        ths.append(th)
+        _th.start()
+        _ths.append(_th)
         # for t in ths:  # 等待10个线程结束
         #     t.join()
-    for th in ths:
-        th.join()
+    for _th in _ths:
+        _th.join()
 
-    print(ok_ips)
-    return ok_ips
+    print(_ok_ips)
+    return _ok_ips
+
+
+cache_json_file = 'ips.json'
+# 获取一个可以代理pikpak的ip
+
+
+def pop_prxy_pikpak():
+    try:
+        with open(cache_json_file, mode="r", encoding="utf-8") as file:
+            json_str = file.read()
+            json_data = json.loads(json_str)
+    except:
+        json_data = {}
+    _time = time.time() - json_data.get("time", 0)
+    _used_ips = []
+    if _time < 60 * 60 * 12:
+        _used_ips = json_data.get("used_ips", [])
+    for _proxy in thread_get_all_ping_pikpak_proxy():
+        isAdd = False
+        for __proxy in _used_ips:
+            if _proxy == __proxy:
+                isAdd = True
+                break
+        if isAdd:
+            pass
+        else:
+            _used_ips.append(_proxy)
+            break
+    if isAdd:
+        print("没有新的 未使用的代理ip了")
+        return None
+    json_data = {
+        "time": time.time(),
+        "used_ips": _used_ips,
+    }
+    with open(cache_json_file, mode='w', encoding="utf-8") as file:
+        file.write(json.dumps(json_data))
+
+    return _used_ips[len(_used_ips)-1]
 
 
 if __name__ == '__main__':
-    thread_get_all_ip()
+    thread_get_all_ping_pikpak_proxy()
     # main()
     # asyncio.run(get_pikpak_proyxs())
     # ipTest()
@@ -208,7 +248,7 @@ if __name__ == '__main__':
     #                    , verify=False, stream=True)
     # path = "./test/test.mp4"
     # print(req)
-    # 
+    #
     # with open(path, "wb") as code:
     #     for chunk in req.iter_content(chunk_size=10240):
     #         code.write(chunk)

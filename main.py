@@ -1,6 +1,5 @@
 import json
 from pikpak import PikPak, crete_invite
-from ips import thread_get_all_ip
 import config
 import asyncio
 from pikpakapi import PikPakApi, PikpakException
@@ -66,19 +65,24 @@ class AlistPikpak:
         self.alist_go = alist.Alist(config.alist_user, config.alist_pd)
         self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
 
+    # 直接pop一个Alsit中的一个Vip的剩余天数小于0的pikpak登陆
     def pop_not_vip_pikpak(self) -> PikPak:
         if len(self.pikpak_user_list) <= 0:
             return None
+        pikpak_me_vip_time_left = self.pop_pikpak()
+        if pikpak_me_vip_time_left < 0:
+            return self.opation_pikpak_go
+        else:
+            return self.pop_not_vip_pikpak()
+
+    # 直接pop一个Alsit中的一个pikpak登陆
+    def pop_pikpak(self) -> PikPak:
         pikpak_data = self.pikpak_user_list.pop(0)
         self.opation_pikpak_go = PikPak(
             mail=pikpak_data.get("username"),
             pd=pikpak_data.get("password"),
             run=False)
-        pikpak_me_vip_time_left = self.opation_pikpak_go.get_vip_day_time_left()
-        if pikpak_me_vip_time_left < 0:
-            return self.opation_pikpak_go
-        else:
-            return self.pop_not_vip_pikpak()
+        return self.opation_pikpak_go
 
     def change_self_pikpak_2_alist(self, pikpak_go: PikPak):
         storage_list = self.alist_go.get_storage_list()
@@ -94,12 +98,11 @@ class AlistPikpak:
 
 
 if __name__ == "__main__":
-    ips = thread_get_all_ip()
     alistPikpak = AlistPikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
-        pikpak_go_new = crete_invite(invite_code, ips)
+        pikpak_go_new = crete_invite(invite_code)
         if not pikpak_go_new:
             print("新建的号有误")
             break
@@ -117,3 +120,8 @@ if __name__ == "__main__":
         alistPikpak.change_self_pikpak_2_alist(pikpak_go_new)
         # 新的获取新没有vip的pikpak
         pikpak_go = alistPikpak.pop_not_vip_pikpak()
+
+    # alistPikpak = AlistPikpak()
+    # pikpak_go = alistPikpak.pop_not_vip_pikpak()
+    # invite_code = pikpak_go.get_self_invite_code()
+    # pikpak_go_new = crete_invite(invite_code)

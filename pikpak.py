@@ -1,3 +1,4 @@
+from ips import pop_prxy_pikpak
 import enum
 import hashlib
 import uuid
@@ -1020,7 +1021,7 @@ class PikPak:
 # 创建一个新的账号并填写邀请码
 
 
-def crete_invite(invite, ips):
+def crete_invite(invite) -> PikPak:
     try:
         _mail = create_one_mail()
         pik_go = PikPak(_mail, config.def_password,
@@ -1028,9 +1029,8 @@ def crete_invite(invite, ips):
                         main_callback=get_new_mail_code,
                         invite=str(invite)
                         )
-        if len(ips) <= 0:
-            return None
-        ip, proxy_type = ips.pop(0)
+        ip, proxy_type = pop_prxy_pikpak()
+        # ip, proxy_type = __proxy
         pik_go.set_proxy(ip, proxy_type)
         pik_go.run_req_2invite()
         if pik_go.isInvise:
@@ -1045,24 +1045,26 @@ def crete_invite(invite, ips):
             return pik_go
         else:
             print(f"{invite} 注册失败！重新注册")
-            return crete_invite(invite, ips)
+            return crete_invite(invite)
     except Exception as e:
         print(f"{invite} 注册失败！ Error{e}")
         # if "empty list" in e.__str__():
         #     return None
         # if not pik_go.inviseError:
         print(f"开始重新注册")
-        return crete_invite(invite, ips)
+        return crete_invite(invite)
 
 
 if __name__ == "__main__":
-    # email = "zlyezm5338@cevipsa.com"
-    email = "hamidan206@otemdi.com"
-    password = "098poi"
-    pikpak_ = PikPak(email, password, run=False)
-    # pikpak_.set_proxy("114.132.202.246:8080")
-    # pikpak_.set_activation_code(98105081)
-    # pikpak_.run_req_2invite()
-    # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
-    # pikpak_.get_self_invite_code()
-    pikpak_.get_self_vip_info()
+    # # email = "zlyezm5338@cevipsa.com"
+    # email = "hamidan206@otemdi.com"
+    # password = "098poi"
+    # pikpak_ = PikPak(email, password, run=False)
+    # # pikpak_.set_proxy("114.132.202.246:8080")
+    # # pikpak_.set_activation_code(98105081)
+    # # pikpak_.run_req_2invite()
+    # # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
+    # # pikpak_.get_self_invite_code()
+    # pikpak_.get_self_vip_info()
+    
+    crete_invite(98105081)
