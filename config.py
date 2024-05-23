@@ -15,3 +15,15 @@ alist_pd = alist.get("password")
 def_password = get_config("def_password")
 
 telegram_api = get_config("telegram").get("api", "")
+
+
+__log = print
+
+
+def get_log():
+    return __log
+
+
+def set_log(callback=print):
+    global __log
+    __log = callback

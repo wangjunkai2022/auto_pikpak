@@ -3,42 +3,51 @@ import re
 import time
 from telebot import TeleBot
 from telebot.types import Message
-from config import telegram_api
+from config import telegram_api, set_log
 from main import main
 
 
 class TelegramBot(object):
-    # bot = TeleBot(telegram_api, num_threads=5)
-    # def __init__(self)
-
-    # @bot.message_handler(commands=['start'])
-    # def send_welcome(self, message):
-    #     self.bot.reply_to(message, "现在我们开始 当需要验证时会发送消息到你的TG")
-
-    # bot.infinity_polling()
     bot = None
-
     opation_id = None
-
     token_callback = None
-
     token = None
+    runing = False
 
     def _start_message(self, message: Message):
         # self.bot.reply_to(message, "你好！如果需要验证了我会这里发送消息到你的TG")
+        if self.runing:
+            self.bot.send_message(
+                self.opation_id, "你好！服务正在运行中。。。。。请等待结束在启动")
+            return
         self.opation_id = message.chat.id
         self.bot.send_message(
             self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息")
+        self.runing = True
         main(self.send_get_token)
+        self.runing = False
         # self.send_get_token("www.google.com")
 
     def send_print_to_tg(self, message_text):
+        """发送消息到TG
+
+        Args:
+            message_text (_type_): _description_
+        """
         self.bot.send_message(
             self.opation_id,
             message_text
         )
 
     def send_get_token(self, url: str):
+        """发送验证url消息到TG TG需要回复才继续运行
+
+        Args:
+            url (str): 需要验证的url
+
+        Returns:
+            _type_: _description_
+        """
         self.token = None
         self.bot.send_message(
             self.opation_id,
@@ -67,6 +76,7 @@ class TelegramBot(object):
         self.token = captcha_token
 
     def __init__(self) -> None:
+        set_log(self.send_print_to_tg)
         self.bot = TeleBot(telegram_api, num_threads=5)
         self.bot.register_message_handler(
             self._start_message, commands=['start'])

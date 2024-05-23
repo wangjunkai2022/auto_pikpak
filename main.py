@@ -101,20 +101,26 @@ class AlistPikpak:
 
 
 def main(captcha=None):
+    log = config.get_log()
+    log("开始执行Alist中的存储检测")
     alistPikpak = AlistPikpak(pikpak_captcha_callback=captcha)
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
+        log(f"注册新号填写邀请到:{pikpak_go.mail}\n邀请码:{invite_code}")
         pikpak_go_new = crete_invite(invite_code, open_url2token=captcha)
         if not pikpak_go_new:
             print("新建的号有误")
+            log(f"注册新号失败。。。。。。。。")
             break
         if pikpak_go.get_vip_day_time_left() > 0:
+            log(f"账号{pikpak_go.mail}现在已经是会员了")
             pikpak_go = alistPikpak.pop_not_vip_pikpak()
         if not pikpak_go:
             break
         if pikpak_go_new.get_vip_day_time_left() <= 0:
             continue
+        log(f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
         share_id = get_start_share_id(
             pikpak_go.mail, pikpak_go.pd
         )
@@ -123,6 +129,7 @@ def main(captcha=None):
         alistPikpak.change_self_pikpak_2_alist(pikpak_go_new)
         # 新的获取新没有vip的pikpak
         pikpak_go = alistPikpak.pop_not_vip_pikpak()
+    log("Over")
 
 
 if __name__ == "__main__":
