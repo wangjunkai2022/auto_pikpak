@@ -1,13 +1,9 @@
 #!/usr/bin/python3
 import datetime
-import os
 import threading
 import time
 
 import requests
-from bs4 import BeautifulSoup
-import re
-import httpx
 import asyncio
 import requests
 import json
