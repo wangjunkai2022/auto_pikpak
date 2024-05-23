@@ -3,7 +3,7 @@ import re
 import time
 from telebot import TeleBot
 from telebot.types import Message
-from config import telegram_api, set_log
+from config import telegram_api, set_log, set_captcha_callback
 from main import main
 
 
@@ -24,7 +24,8 @@ class TelegramBot(object):
         self.bot.send_message(
             self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息")
         self.runing = True
-        main(self.send_get_token)
+
+        main()
         self.runing = False
         # self.send_get_token("www.google.com")
 
@@ -77,6 +78,7 @@ class TelegramBot(object):
 
     def __init__(self) -> None:
         set_log(self.send_print_to_tg)
+        set_captcha_callback(self.send_get_token)
         self.bot = TeleBot(telegram_api, num_threads=5)
         self.bot.register_message_handler(
             self._start_message, commands=['start'])
