@@ -16,3 +16,6 @@ alist:
   domain: "http://localhost:5244"
   username: admin
   password: "''''"
+
+telegram:
+  api: API

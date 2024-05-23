@@ -13,3 +13,5 @@ alist_user = alist.get("username")
 alist_pd = alist.get("password")
 
 def_password = get_config("def_password")
+
+telegram_api = get_config("telegram").get("api", "")
