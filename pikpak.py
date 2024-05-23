@@ -324,6 +324,73 @@ class PikPak:
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
             self.isReqMail = self.mail
 
+    def __login2(self):
+        url = "https://user.mypikpak.com/v1/auth/token"
+        payload = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "password": self.pd,
+            "username": self.mail,
+            "grant_type": "password",
+        }
+        headers = {
+            "x-device-id": self.device_id,
+            "x-peer-id": self.device_id,
+            "x-captcha-token": self.captcha_token,
+            "x-client-version-code": "10181",
+            "x-alt-capability": "3",
+            "accept-language": self.language,
+            "country": self.country,
+            "x-user-region": "2",
+            "product_flavor_name": "cha",
+            "x-system-language": self.language,
+            "User-Agent": self.__user_agent(),
+            "content-type": "application/json; charset=utf-8",
+            "Authorization": self.authorization,
+            "Accept-Encoding": "deflate, gzip"
+        }
+
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+
+        self.authorization = "Bearer " + res_json["access_token"]
+        self.refresh_token = res_json["refresh_token"]
+        self.user_id = res_json.get("sub")
+        self.__refresh_access_token()
+
+    def __refresh_access_token(self):
+        url = "https://user.mypikpak.com/v1/auth/token"
+        payload = {
+            "client_id": self.client_id,
+            "refresh_token": self.refresh_token,
+            "grant_type": "refresh_token",
+        }
+        headers = {
+            "x-device-id": self.device_id,
+            "x-peer-id": self.device_id,
+            "x-captcha-token": self.captcha_token,
+            "x-client-version-code": "10181",
+            "x-alt-capability": "3",
+            "accept-language": self.language,
+            "country": self.country,
+            "x-user-region": "2",
+            "product_flavor_name": "cha",
+            "x-system-language": self.language,
+            "User-Agent": self.__user_agent(),
+            "content-type": "application/json; charset=utf-8",
+            "Authorization": self.authorization,
+            "Accept-Encoding": "deflate, gzip"
+        }
+
+        response = self.__req_url(
+            "POST", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+
+        self.authorization = "Bearer " + res_json["access_token"]
+        self.refresh_token = res_json["refresh_token"]
+        self.user_id = res_json.get("sub")
+
     def __login(self):
         if self.authorization:
             print("已经登陆 不用在登陆了")
@@ -361,9 +428,11 @@ class PikPak:
             self.user_id = res_json.get("sub")
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
         else:
-            # if res_json.get("error") == "captcha_invalid":
-            # self.__initCaptcha()
-            # self.__login()
+            if res_json.get("error") == "captcha_required":
+                self.captcha_action = "POST:/v1/auth/signin"
+                self.__initCaptcha()
+                self.__login()
+                return
             print(f"登陆失败{res_json}")
             self.inviseError = res_json.get("error")
             raise Exception(self.inviseError)
@@ -969,6 +1038,43 @@ class PikPak:
         self.__login()
         return self.__req_self_invite_code()
 
+    def __req_self_vip_info2(self):
+        url = "https://api-drive.mypikpak.com/drive/v1/privilege/vip"
+        payload = {}
+        headers = {
+            "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
+            "content-type": "application/json",
+            "x-system-language": self.language,
+            "x-device-id": self.device_id,
+            "x-client-version-code": "10182",
+            "x-peer-id": self.device_id,
+            "x-alt-capability": "3",
+            "x-captcha-token": self.captcha_token,
+            "user-agent": self.__user_agent(),
+            "country": self.country,
+            "x-user-region": "2,3",
+            "product_flavor_name": "cha",
+            "accept-language": self.language,
+            "authorization": self.authorization,
+            "accept-encoding": "gzip",
+        }
+
+        response = self.__req_url(
+            "GET", url, json=payload, headers=headers, proxies=self.proxies)
+        res_json = response.json()
+        if response.status_code != 200:
+            if res_json.get("error") == "captcha_invalid":
+                self.captcha_action = f"GET:/vip/v1/vip/info"
+                self.__initCaptcha()
+                return self.__req_self_vip_info2()
+            else:
+                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                self.inviseError = res_json.get("error")
+                raise Exception(self.inviseError)
+            return
+        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        return res_json
+
     def __req_self_vip_info(self):
         url = "https://api-drive.mypikpak.com/vip/v1/vip/info"
         payload = {}
@@ -1007,11 +1113,16 @@ class PikPak:
         return res_json
 
     def get_self_vip_info(self):
-        self.__login()
+        self.__login2()
         vip_data = self.__req_self_vip_info()
         return vip_data
 
-    def get_vip_day_time_left(self):
+    def get_vip_day_time_left(self) -> int:
+        """获取剩余的VIP时间
+
+        Returns:
+            int: 剩余天数
+        """
         vip_data = self.get_self_vip_info()
         try:
             return vip_data.get('data').get("vipItem")[0].get("surplus_day", 0)
@@ -1021,7 +1132,7 @@ class PikPak:
 # 创建一个新的账号并填写邀请码
 
 
-def crete_invite(invite) -> PikPak:
+def crete_invite(invite, open_url2token=open_url2token, get_new_mail_code=get_new_mail_code) -> PikPak:
     try:
         _mail = create_one_mail()
         pik_go = PikPak(_mail, config.def_password,
@@ -1066,5 +1177,5 @@ if __name__ == "__main__":
     # # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
     # # pikpak_.get_self_invite_code()
     # pikpak_.get_self_vip_info()
-    
+
     crete_invite(98105081)

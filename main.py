@@ -1,8 +1,9 @@
 import json
 from pikpak import PikPak, crete_invite
+from chmod import open_url2token
 import config
 import asyncio
-from pikpakapi import PikPakApi, PikpakException
+from PikPakAPI.pikpakapi import PikPakApi, PikpakException
 import alist
 
 
@@ -60,8 +61,10 @@ class AlistPikpak:
     pikpak_user_list = None
     alist_go = None
     opation_pikpak_go: PikPak = None
+    pikpak_captcha_callback = None
 
-    def __init__(self):
+    def __init__(self, pikpak_captcha_callback=open_url2token):
+        self.pikpak_captcha_callback = pikpak_captcha_callback
         self.alist_go = alist.Alist(config.alist_user, config.alist_pd)
         self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
 
@@ -69,8 +72,7 @@ class AlistPikpak:
     def pop_not_vip_pikpak(self) -> PikPak:
         if len(self.pikpak_user_list) <= 0:
             return None
-        pikpak_me_vip_time_left = self.pop_pikpak()
-        if pikpak_me_vip_time_left < 0:
+        if self.pop_pikpak().get_vip_day_time_left() < 0:
             return self.opation_pikpak_go
         else:
             return self.pop_not_vip_pikpak()
@@ -82,6 +84,7 @@ class AlistPikpak:
             mail=pikpak_data.get("username"),
             pd=pikpak_data.get("password"),
             run=False)
+        self.opation_pikpak_go.captcha_token_callback = self.pikpak_captcha_callback or self.opation_pikpak_go.captcha_token_callback
         return self.opation_pikpak_go
 
     def change_self_pikpak_2_alist(self, pikpak_go: PikPak):
@@ -97,12 +100,12 @@ class AlistPikpak:
             print(addition)
 
 
-if __name__ == "__main__":
-    alistPikpak = AlistPikpak()
+def main(captcha=None):
+    alistPikpak = AlistPikpak(pikpak_captcha_callback=captcha)
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
-        pikpak_go_new = crete_invite(invite_code)
+        pikpak_go_new = crete_invite(invite_code, open_url2token=captcha)
         if not pikpak_go_new:
             print("新建的号有误")
             break
@@ -121,6 +124,9 @@ if __name__ == "__main__":
         # 新的获取新没有vip的pikpak
         pikpak_go = alistPikpak.pop_not_vip_pikpak()
 
+
+if __name__ == "__main__":
+    main()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
