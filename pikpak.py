@@ -8,8 +8,6 @@ import requests
 import config
 
 from mail import create_one_mail, get_new_mail_code
-from chmod import open_url2token
-
 
 class PikPak:
     client_secret = "dbw2OtmVEeuUvIptb1Coyg"
@@ -30,9 +28,6 @@ class PikPak:
     country = "US"
     language = "zh-TW"
     captcha_action = "POST:/v1/auth/verification"
-
-    captcha_token_callback = None
-    mail_code_callback = None
 
     client_version = "1.42.8"
     # 手机型号
@@ -131,12 +126,10 @@ class PikPak:
         ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
         return ua
 
-    def __init__(self, mail, pd, captcha_token_callback=None, main_callback=None, proxy=None, invite=None, run=False,
+    def __init__(self, mail, pd, mail_callback=None, proxy=None, invite=None, run=False,
                  isReqMail=None):
         self.mail = mail
         self.pd = pd
-        self.captcha_token_callback = captcha_token_callback or self.__input_captcha_token
-        self.mail_code_callback = main_callback or self.__input_mail_code
         self.isReqMail = isReqMail
         self.device_id = str(uuid.uuid4()).replace("-", "")
         self.device_id2 = str(uuid.uuid4()).replace("-", "")
@@ -192,8 +185,7 @@ class PikPak:
             # print("打开这个网址手动去执行验证 并获取的token复制到此\n")
             # token = input()
             # print(f"输入的token\n{token}")
-            self.captcha_token = self.captcha_token_callback(
-                res_json.get("url"))
+            self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
         else:
             error = res_json.get("error")
             if error:
@@ -254,7 +246,7 @@ class PikPak:
 
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
-        code = self.mail_code_callback(self.mail)
+        code = config.get_email_verification_code_callback()(self.mail)
         url = "https://user.mypikpak.com/v1/auth/verification/verify"
         payload = {
             "client_id": self.client_id,
@@ -314,7 +306,7 @@ class PikPak:
                 self.__signup()
             elif res_json.get("error") == "already_exists":
                 print(f"用户存在\n{res_json}")
-                self.__login()
+                self.__login2()
             else:
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
@@ -357,7 +349,7 @@ class PikPak:
         self.authorization = "Bearer " + res_json["access_token"]
         self.refresh_token = res_json["refresh_token"]
         self.user_id = res_json.get("sub")
-        self.__refresh_access_token()
+        # self.__refresh_access_token()
 
     def __refresh_access_token(self):
         url = "https://user.mypikpak.com/v1/auth/token"
@@ -888,7 +880,7 @@ class PikPak:
 
     # 直接登陆增加邀请
     def run_login_2invite(self):
-        self.__login()
+        self.__login2()
         time.sleep(5)
         self.__get_active_invite()
         time.sleep(1)
@@ -993,7 +985,7 @@ class PikPak:
         print(f"当前设备__保存分享文件 打印消息\n{res_json}")
 
     def save_share(self, share_id):
-        self.__login()
+        self.__login2()
         self.__save_pikpak_2_self(share_id)
 
     # 获取自己的邀请码
@@ -1035,7 +1027,7 @@ class PikPak:
         return res_json.get("code")
 
     def get_self_invite_code(self):
-        self.__login()
+        self.__login2()
         return self.__req_self_invite_code()
 
     def __req_self_vip_info2(self):
@@ -1132,27 +1124,21 @@ class PikPak:
 # 创建一个新的账号并填写邀请码
 
 
-def crete_invite(invite, open_url2token=open_url2token, get_new_mail_code=get_new_mail_code) -> PikPak:
+def crete_invite(invite) -> PikPak:
+    print = config.get_log()
     try:
         _mail = create_one_mail()
         pik_go = PikPak(_mail, config.def_password,
-                        captcha_token_callback=open_url2token,
-                        main_callback=get_new_mail_code,
                         invite=str(invite)
                         )
+        print("获取代理地址中。。。。。")
         ip, proxy_type = pop_prxy_pikpak()
+        print(f"获取到的代理:{ip}")
         # ip, proxy_type = __proxy
         pik_go.set_proxy(ip, proxy_type)
         pik_go.run_req_2invite()
         if pik_go.isInvise:
             print(f"{_mail}:注册成功 并邀请{invite}VIP")
-            # share_id = start_share(invite)
-            # if share_id:
-            #     saveUrlToPikpak(_mail, invite.get("pd"), share_id)
-            # input_str = f"_mail:{_mail} 填写邀请码的账号：{invite.get('mail')} \t proxy:{ip}{proxy_type}\n"
-            # temp_file = "pikpak_user.txt"
-            # with open(temp_file, 'a') as f:  # 设置文件对象
-            #     f.write(input_str)  # 将字符串写入文件中
             return pik_go
         else:
             print(f"{invite} 注册失败！重新注册")

@@ -27,13 +27,19 @@ def _get_domains():
 
 
 def create_one_mail():
+    """创建一个邮箱
+
+    Returns:
+        _type_: _description_
+    """
     t = str(time.time())
     domains = _get_domains()
 
     while True:
         # 生成随机个字符
         random_chars_ = ''.join(random.choices(string.ascii_lowercase, k=6))
-        random_chars = random_chars_ + ''.join(random.choices('0123456789', k=4))
+        random_chars = random_chars_ + \
+            ''.join(random.choices('0123456789', k=4))
         temp_str = f"{random_chars}{domains[random.randint(0, len(domains) - 1)]}"
         # mails = get_mails(temp_str)
         # if mails.get("error"):
@@ -65,6 +71,14 @@ def get_mails(mail):
 
 
 def get_new_mail_code(mail):
+    """获取邮箱中最新的数字验证码
+
+    Args:
+        mail (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     time.sleep(2)
     mails = get_mails(mail)
     code = ""
@@ -96,6 +110,8 @@ def get_one_message(mail):
     print(response.json)
     return response.json()
 
+
+config.set_email_verification_code_callback(get_new_mail_code)
 
 if __name__ == "__main__":
     # mail = create_one_mail()

@@ -244,7 +244,7 @@ if __name__ == "__main__":
     _mail = pikpak.create_one_mail()
     pik_go = pikpak.PikPak(_mail, "098poi",
                            captcha_token_callback=open_url2token,
-                           main_callback=pikpak.get_new_mail_code,
+                           mail_callback=pikpak.get_new_mail_code,
                            invite=str(1234567)
                            )
     pik_go.run_req_2invite()

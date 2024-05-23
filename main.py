@@ -5,6 +5,7 @@ import config
 import asyncio
 from PikPakAPI.pikpakapi import PikPakApi, PikpakException
 import alist
+from mail import get_new_mail_code
 
 
 def get_start_share_id(mail, password):
@@ -61,10 +62,8 @@ class AlistPikpak:
     pikpak_user_list = None
     alist_go = None
     opation_pikpak_go: PikPak = None
-    pikpak_captcha_callback = None
 
-    def __init__(self, pikpak_captcha_callback=open_url2token):
-        self.pikpak_captcha_callback = pikpak_captcha_callback
+    def __init__(self):
         self.alist_go = alist.Alist(config.alist_user, config.alist_pd)
         self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
 
@@ -84,7 +83,6 @@ class AlistPikpak:
             mail=pikpak_data.get("username"),
             pd=pikpak_data.get("password"),
             run=False)
-        self.opation_pikpak_go.captcha_token_callback = self.pikpak_captcha_callback or self.opation_pikpak_go.captcha_token_callback
         return self.opation_pikpak_go
 
     def change_self_pikpak_2_alist(self, pikpak_go: PikPak):
@@ -100,15 +98,15 @@ class AlistPikpak:
             print(addition)
 
 
-def main(captcha=None):
+def main():
     log = config.get_log()
     log("开始执行Alist中的存储检测")
-    alistPikpak = AlistPikpak(pikpak_captcha_callback=captcha)
+    alistPikpak = AlistPikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
         log(f"注册新号填写邀请到:{pikpak_go.mail}\n邀请码:{invite_code}")
-        pikpak_go_new = crete_invite(invite_code, open_url2token=captcha)
+        pikpak_go_new = crete_invite(invite_code)
         if not pikpak_go_new:
             print("新建的号有误")
             log(f"注册新号失败。。。。。。。。")
@@ -133,6 +131,8 @@ def main(captcha=None):
 
 
 if __name__ == "__main__":
+    config.set_captcha_callback(open_url2token)
+    config.set_email_verification_code_callback(get_new_mail_code)
     main()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
