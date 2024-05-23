@@ -9,6 +9,16 @@ class Alist(object):
     user, pd = None, None
     _domain = None
 
+    def _get_header(self):
+        return {
+            "Authorization": self.token,
+        }
+
+    def __request(self, method, url, **kwargs,):
+        kwargs["verify"] = False
+        kwargs["headers"] = self._get_header()
+        return requests.request(method, url, **kwargs)
+
     def __init__(self, user=alist_user, pd=alist_pd, domain=alist_domain) -> None:
         self.user = user
         self.pd = pd
@@ -21,9 +31,7 @@ class Alist(object):
             "username": self.user,
             "password": self.pd,
         }
-        headers = {
-        }
-        response = requests.request("POST", url, json=payload, headers=headers)
+        response = self.__request("POST", url, json=payload)
         data_json = response.json()
         if response.status_code == 200:
             self.token = data_json["data"].get("token")
@@ -35,10 +43,7 @@ class Alist(object):
             "page": "1",
             "per_page": "50",
         }
-        headers = {
-            "Authorization": self.token,
-        }
-        response = requests.request("GET", url, json=payload, headers=headers)
+        response = self.__request("GET", url, json=payload)
         data_json = response.json()
         print(data_json)
         if response.status_code == 200:
@@ -55,10 +60,7 @@ class Alist(object):
         """
         url = f"{self._domain}/api/admin/storage/create"
         payload = data
-        headers = {
-            "Authorization": self.token,
-        }
-        response = requests.request("POST", url, json=payload, headers=headers)
+        response = self.__request("POST", url, json=payload)
         data_json = response.json()
         print(data_json)
         if response.status_code == 200:
@@ -78,7 +80,7 @@ class Alist(object):
         headers = {
             "Authorization": self.token,
         }
-        response = requests.request("POST", url, json=payload, headers=headers)
+        response = self.__request("POST", url, json=payload)
         data_json = response.json()
         print(data_json)
         if response.status_code == 200:
@@ -101,7 +103,7 @@ class Alist(object):
         headers = {
             "Authorization": self.token,
         }
-        response = requests.request("POST", url, params=payload, headers=headers)
+        response = self.__request("POST", url, params=payload)
         data_json = response.json()
         print(data_json)
         if response.status_code == 200:
