@@ -83,7 +83,7 @@ def set_email_verification_code_callback(callback):
     _email_verification_code_callback = callback
 
 
-def get_email_verification_code_callback(callback):
+def get_email_verification_code_callback():
     """获取邮箱验证码回调
 
     Args:
