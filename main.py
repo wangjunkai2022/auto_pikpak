@@ -11,6 +11,8 @@ from mail import get_new_mail_code
 def get_start_share_id(mail, password):
     pikpak_api = PikPakApi(mail, password)
     # 创建一个事件循环thread_loop
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
     main_loop = asyncio.get_event_loop()
     get_future = asyncio.ensure_future(pikpak_api.login())
     main_loop.run_until_complete(get_future)
@@ -64,7 +66,8 @@ class AlistPikpak:
     opation_pikpak_go: PikPak = None
 
     def __init__(self):
-        self.alist_go = alist.Alist(config.alist_user, config.alist_pd)
+        self.alist_go = alist.Alist()
+        self.alist_go.saveToNowConif()
         self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
 
     # 直接pop一个Alsit中的一个Vip的剩余天数小于0的pikpak登陆
@@ -105,7 +108,7 @@ def main():
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
-        log(f"注册新号填写邀请到:{pikpak_go.mail}\n邀请码:{invite_code}")
+        log(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
         pikpak_go_new = crete_invite(invite_code)
         if not pikpak_go_new:
             print("新建的号有误")
