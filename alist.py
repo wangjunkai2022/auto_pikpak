@@ -95,9 +95,6 @@ class Alist(object):
         """
         url = f"{self._domain}/api/admin/storage/update"
         payload = data
-        headers = {
-            "Authorization": self.token,
-        }
         response = self.__request("POST", url, json=payload)
         data_json = response.json()
         print(data_json)
@@ -117,9 +114,6 @@ class Alist(object):
         url = f"{self._domain}/api/admin/storage/delete"
         payload = {
             "id": id,
-        }
-        headers = {
-            "Authorization": self.token,
         }
         response = self.__request("POST", url, params=payload)
         data_json = response.json()
@@ -197,3 +191,6 @@ if __name__ == "__main__":
     alist.copy_storages_2_alist(
         Alist(domain="http://10.211.55.58:5244"), is_clean=True)
     # alist.saveToNowConif()
+
+    
+    # alist=Alist(domain="http://10.211.55.58:5244").copy_storages_2_alist(Alist())
