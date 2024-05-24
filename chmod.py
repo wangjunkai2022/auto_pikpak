@@ -3,7 +3,14 @@ from selenium import webdriver
 import time
 
 
-def open_url2token(url=""):
+def open_url2token(url: str = ""):
+    try:
+        return _open_url2token(url=url)
+    except:
+        return open_url2token(url=url)
+
+
+def _open_url2token(url=""):
     # 设置Chrome浏览器的驱动路径
     driver_path = "chromedriver"  # 请替换为实际的chromedriver路径
 

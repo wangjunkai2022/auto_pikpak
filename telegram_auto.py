@@ -24,8 +24,10 @@ class TelegramBot(object):
         self.bot.send_message(
             self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息")
         self.runing = True
-
-        main()
+        try:
+            main()
+        except Exception as e:
+            self.send_print_to_tg(e)
         self.runing = False
         # self.send_get_token("www.google.com")
 

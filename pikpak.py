@@ -186,6 +186,7 @@ class PikPak:
             # token = input()
             # print(f"输入的token\n{token}")
             self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
+            config.get_log()(f"获取的到Token是:{self.captcha_token}")
         else:
             error = res_json.get("error")
             if error:
@@ -349,7 +350,7 @@ class PikPak:
         self.authorization = "Bearer " + res_json["access_token"]
         self.refresh_token = res_json["refresh_token"]
         self.user_id = res_json.get("sub")
-        # self.__refresh_access_token()
+        self.__refresh_access_token()
 
     def __refresh_access_token(self):
         url = "https://user.mypikpak.com/v1/auth/token"

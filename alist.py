@@ -1,4 +1,6 @@
 import copy
+import datetime
+import os
 import requests
 from config import alist_domain, alist_pd, alist_user
 import json
@@ -8,6 +10,22 @@ class Alist(object):
     token = ""
     user, pd = None, None
     _domain = None
+    cache_json_file = os.path.abspath(__file__)[:-2] + "json"
+
+    def saveToNowConif(self):
+        """保存一下当前配置到本地路径
+        """
+        try:
+            with open(self.cache_json_file, mode='r') as file:
+                json_data = json.loads(file.read())
+        except:
+            json_data = []
+        data = {}
+        data["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data["content"] = self.get_storage_list()["content"]
+        json_data.append(data)
+        with open(self.cache_json_file, mode='w') as file:
+            file.write(json.dumps(json_data))
 
     def _get_header(self):
         return {
@@ -177,4 +195,5 @@ if __name__ == "__main__":
     # pikpaks = alist.get_storage_list()
     # print(pikpaks)
     alist.copy_storages_2_alist(
-        Alist(domain="http://10.211.55.48:5244"), is_clean=True)
+        Alist(domain="http://10.211.55.58:5244"), is_clean=True)
+    # alist.saveToNowConif()
