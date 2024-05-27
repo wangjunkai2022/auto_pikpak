@@ -3,7 +3,7 @@ import re
 import time
 from telebot import TeleBot
 from telebot.types import Message
-from config import telegram_api, set_log, set_captcha_callback
+from config.config import telegram_api, set_log, set_captcha_callback
 from main import main
 
 

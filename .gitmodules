@@ -1,3 +1,3 @@
-[submodule "PikPakAPI"]
-	path = PikPakAPI
+[submodule "pikpak/PikPakAPI"]
+	path = pikpak/PikPakAPI
 	url = https://github.com/wangjunkai2022/PikPakAPI.git

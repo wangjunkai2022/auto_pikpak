@@ -1,11 +1,11 @@
 import json
-from pikpak import PikPak, crete_invite
-from chmod import open_url2token
-import config
+from pikpak.pikpak import PikPak, crete_invite
+from captcha.chmod import open_url2token
+import config.config as config
 import asyncio
-from PikPakAPI.pikpakapi import PikPakApi, PikpakException
-import alist
-from mail import get_new_mail_code
+from pikpak.PikPakAPI.pikpakapi import PikPakApi, PikpakException
+import alist.alist as alist
+from mail.mail import get_new_mail_code
 
 
 def get_start_share_id(mail, password):
@@ -141,3 +141,4 @@ if __name__ == "__main__":
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
     # pikpak_go_new = crete_invite(invite_code)
+    # get_start_share_id("mwrtye3718@tenvil.com","098poi")

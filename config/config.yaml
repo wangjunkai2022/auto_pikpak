@@ -1,0 +1,21 @@
+# 免费邮箱API
+mail:
+  api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
+
+# 默认的密码
+def_password: 098poi
+
+# 请求
+requests:
+  # 超时设置
+  out_time: 120
+  # 重试次数
+  retry: 10
+
+alist:
+  domain: "http://localhost:5244"
+  username: admin
+  password: "''''"
+
+telegram:
+  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
