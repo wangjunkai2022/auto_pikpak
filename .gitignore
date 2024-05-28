@@ -1,3 +1,7 @@
 /.idea/
 /venv/
 /__pycache__/
+*.DS_Store
+*.pt
+*.cache
+*.cpython-38.pyc
