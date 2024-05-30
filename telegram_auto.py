@@ -68,14 +68,8 @@ class TelegramBot(object):
         return self.token
 
     def __reply_token(self, message: Message):
-        captured_url = message.text
-        str_start = "captcha_token="
-        str_end = "&expires_in"
-        search = re.search(f"{str_start}.*{str_end}", captured_url)
-        if search:
-            captcha_token = search.group()[len(str_start):-len(str_end)]
-        else:
-            captcha_token = captured_url
+        captcha_token = message.text
+        captcha_token = self.__find_str_token(captcha_token)
         self.token = captcha_token
 
     def __init__(self) -> None:
@@ -86,9 +80,22 @@ class TelegramBot(object):
             self._start_message, commands=['start'])
         self.bot.infinity_polling()
 
+    def __find_str_token(self, strs: str = ""):
+        str_start = "captcha_token="
+        str_end = "&expires_in"
+        if str_start in strs:
+            strs = strs[
+                strs.find(str_start)+len(str_start):
+            ]
+        if str_end in strs:
+            strs = strs[0:strs.find(str_end)]
+        return strs
+
 
 if __name__ == "__main__":
     tg = TelegramBot()
+    # str___ = "xlaccsdk01://xunlei.com/callback?state=dharbor&state=undefined&captcha_token=ck0.metBhXNbM5Rxfbx6aOMweTUXbVmc3YioMrhkR8gy7gGliqN-8KhWNWn95N6KNAhBkuThEZt_eJcEEgK8wC0klfT2TwyTCCYGGTQUsD_G5eoOoevuuBt6J-jXCL7P_284UKdyTOUSrEEOaiyC0f-5CbgudPBietbj2aKlTu_G_sUQo-pzeIRJw9mj-pgU9NpCfh82acUA7rkacTr3EYYZOjEINB7MiMYxGx2Rn1EKPBeHEKURQSI5UdMUk7rGGSm0xC_m7Yb1UV25kzagH1JaK6l2RnYUZZpwkNC1Xsc4xVHug5oeIZwoMiMdC_YgLPAojIC4yXKZ3F2a8uFKxxsO21BDdUGIDctBipNeK4pJMOAfSGv9dK1cBNWbEUPXNS2yRamiWU-8fv5xTlP99G-vLSjThRykWsY7-82c_pZk0lnnwh3ynVOYtULtaVhKRLsVN3oeTFZWzJcvsa1E43yXGIA8yVH6Ep_ugOrbDzAz0kMkB4E2RZvcy-OmFrjrbLG27T1ul9yToI7sEmyz0ErqEQ&expires_in=600"
+    # find_str_token(str___)
     # print()
     # while not tg.opation_id:
     #     time.sleep(0.2)
