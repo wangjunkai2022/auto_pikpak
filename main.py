@@ -1,15 +1,14 @@
 import json
-from pikpak.pikpak import PikPak, crete_invite
+from pikpak import PikPak, crete_invite
 from captcha.chmod import open_url2token
 import config.config as config
 import asyncio
-from pikpak.PikPakAPI.pikpakapi import PikPakApi, PikpakException
 import alist.alist as alist
 from mail.mail import get_new_mail_code
 
 
-def get_start_share_id(mail, password):
-    pikpak_api = PikPakApi(mail, password)
+def get_start_share_id(pikpak: PikPak = None):
+    pikpak_api = pikpak.pikpakapi
     # 创建一个事件循环thread_loop
     new_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(new_loop)
@@ -85,7 +84,7 @@ class AlistPikpak:
         self.opation_pikpak_go = PikPak(
             mail=pikpak_data.get("username"),
             pd=pikpak_data.get("password"),
-            run=False)
+        )
         return self.opation_pikpak_go
 
     def change_self_pikpak_2_alist(self, pikpak_go: PikPak):
@@ -122,9 +121,7 @@ def main():
         if pikpak_go_new.get_vip_day_time_left() <= 0:
             continue
         log(f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
-        share_id = get_start_share_id(
-            pikpak_go.mail, pikpak_go.pd
-        )
+        share_id = get_start_share_id(pikpak_go)
         pikpak_go_new.set_proxy(None)
         pikpak_go_new.save_share(share_id)
         alistPikpak.change_self_pikpak_2_alist(pikpak_go_new)

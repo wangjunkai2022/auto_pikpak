@@ -9,13 +9,7 @@ import asyncio
 import requests
 import json
 
-from proxy_ip import kuaidaili
-
-# import urllib3
-#
-# import certifi
-# import cryptography
-# import pyOpenSSL
+from .kuaidaili import kuaidaili
 
 from concurrent.futures import ProcessPoolExecutor
 
@@ -173,7 +167,7 @@ def pingPikpak(proxy, ok_ips):
 
 def thread_get_all_ping_pikpak_proxy():
     # ips = get_proxy_list()
-    _ips = kuaidaili.kuaidaili().get_proxy_list()
+    _ips = kuaidaili().get_proxy_list()
     # index_count = 10
     # ips = [ips[i:i + index_count] for i in range(0, len(ips), index_count)]
     _ok_ips = []
@@ -194,7 +188,7 @@ def thread_get_all_ping_pikpak_proxy():
 
 
 # cache_json_file = 'ips.json'
-cache_json_file = os.path.join(os.path.abspath(os.path.abspath(__file__)),"ips.json")
+cache_json_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ips.json")
 
 # 获取一个可以代理pikpak的ip
 

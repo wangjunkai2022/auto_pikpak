@@ -1,4 +1,4 @@
-from proxy_ip.ips import pop_prxy_pikpak
+from proxy_ip import pop_prxy_pikpak
 import enum
 import hashlib
 import uuid
@@ -8,8 +8,12 @@ import requests
 import config.config as config
 
 from mail.mail import create_one_mail
+from .PikPakAPI.pikpakapi import PikPakApi
+from typing import Any, Dict, List, Optional
+
 
 class PikPak:
+    pikpakapi: PikPakApi = None
     client_secret = "dbw2OtmVEeuUvIptb1Coyg"
     mail = ""
     pd = ""
@@ -44,21 +48,25 @@ class PikPak:
 
     pass_code_token = None
 
-    def __req_url(self, method, url,
-                  params=None,
-                  data=None,
-                  headers=None,
-                  cookies=None,
-                  files=None,
-                  auth=None,
-                  timeout=None,
-                  allow_redirects=True,
-                  proxies=None,
-                  hooks=None,
-                  stream=None,
-                  verify=None,
-                  cert=None,
-                  json=None, ):
+    def __req_url(
+            self,
+            method,
+            url,
+            params=None,
+            data=None,
+            headers=None,
+            cookies=None,
+            files=None,
+            auth=None,
+            timeout=None,
+            allow_redirects=True,
+            proxies=None,
+            hooks=None,
+            stream=None,
+            verify=None,
+            cert=None,
+            json=None,
+    ):
 
         for index in range(0, config.requests_retry):
             try:
@@ -126,19 +134,12 @@ class PikPak:
         ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
         return ua
 
-    def __init__(self, mail, pd, mail_callback=None, proxy=None, invite=None, run=False,
-                 isReqMail=None):
+    def __init__(self, mail: str = None, pd: str = None,):
         self.mail = mail
         self.pd = pd
-        self.isReqMail = isReqMail
         self.device_id = str(uuid.uuid4()).replace("-", "")
         self.device_id2 = str(uuid.uuid4()).replace("-", "")
-        if proxy:
-            self.set_proxy(proxy)
-        if invite:
-            self.set_activation_code(invite)
-        if run and invite:
-            self.run_req_2invite()
+        self.pikpakapi = PikPakApi(username=self.mail, password=self.pd)
 
     captcha_time = time.time()
     captcha_sleep_min_time = 1 * 60
@@ -489,6 +490,10 @@ class PikPak:
         print(f"vip邀请信息返回:\n{res_json}")
 
     def set_activation_code(self, code):
+        """设置需要填写的邀请码
+        Args:
+            code (_type_): _description_
+        """
         self.__activation_code = code
 
     # 设置邀请
@@ -1129,9 +1134,11 @@ def crete_invite(invite) -> PikPak:
     print = config.get_log()
     try:
         _mail = create_one_mail()
-        pik_go = PikPak(_mail, config.def_password,
-                        invite=str(invite)
-                        )
+        pik_go = PikPak(
+            mail=_mail,
+            pd=config.def_password,
+        )
+        pik_go.set_activation_code(invite)
         print("获取代理地址中。。。。。")
         ip, proxy_type = pop_prxy_pikpak()
         print(f"获取到的代理:{ip}")
