@@ -139,3 +139,4 @@ if __name__ == "__main__":
     # invite_code = pikpak_go.get_self_invite_code()
     # pikpak_go_new = crete_invite(invite_code)
     # get_start_share_id("mwrtye3718@tenvil.com","098poi")
+    # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
