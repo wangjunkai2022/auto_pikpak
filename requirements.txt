@@ -2,3 +2,4 @@ PyYAML
 selenium
 pyTelegramBotAPI
 pyrclone
+httpx
