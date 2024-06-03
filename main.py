@@ -5,58 +5,63 @@ import config.config as config
 import asyncio
 import alist.alist as alist
 from mail.mail import get_new_mail_code
-
+import time
 
 def get_start_share_id(pikpak: PikPak = None):
-    pikpak_api = pikpak.pikpakapi
-    # 创建一个事件循环thread_loop
-    new_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(new_loop)
-    main_loop = asyncio.get_event_loop()
-    get_future = asyncio.ensure_future(pikpak_api.login())
-    main_loop.run_until_complete(get_future)
-    # 获取Pack From Shared的id
-    get_future = asyncio.ensure_future(
-        pikpak_api.path_to_id("Pack From Shared"))
-    main_loop.run_until_complete(get_future)
-    result = get_future.result()
-    if len(result) == 1:
-        id_Pack_From_Shared = result[-1].get("id")
+    try:
+        pikpak_api = pikpak.pikpakapi
+        # 创建一个事件循环thread_loop
+        new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(new_loop)
+        main_loop = asyncio.get_event_loop()
+        get_future = asyncio.ensure_future(pikpak_api.login())
+        main_loop.run_until_complete(get_future)
+        # 获取Pack From Shared的id
+        get_future = asyncio.ensure_future(
+            pikpak_api.path_to_id("Pack From Shared"))
+        main_loop.run_until_complete(get_future)
+        result = get_future.result()
+        if len(result) == 1:
+            id_Pack_From_Shared = result[-1].get("id")
+            # 获取Pack From Shared文件夹下的所有文件夹
+            get_future = asyncio.ensure_future(
+                pikpak_api.file_list(parent_id=id_Pack_From_Shared))
+            main_loop.run_until_complete(get_future)
+            result = get_future.result()
+            if len(result.get("files")) <= 0:
+                id_Pack_From_Shared = None
+        else:
+            id_Pack_From_Shared = None
+
         # 获取Pack From Shared文件夹下的所有文件夹
         get_future = asyncio.ensure_future(
             pikpak_api.file_list(parent_id=id_Pack_From_Shared))
         main_loop.run_until_complete(get_future)
         result = get_future.result()
-        if len(result.get("files")) <= 0:
-            id_Pack_From_Shared = None
-    else:
-        id_Pack_From_Shared = None
 
-    # 获取Pack From Shared文件夹下的所有文件夹
-    get_future = asyncio.ensure_future(
-        pikpak_api.file_list(parent_id=id_Pack_From_Shared))
-    main_loop.run_until_complete(get_future)
-    result = get_future.result()
-
-    # 需要分享的文件夹id
-    fils_id = []
-    for file in result.get("files"):
-        if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
-            pass
-        else:
-            fils_id.append(file.get("id"))
-    # for file in invite.get("share", []):
-    #     get_future = asyncio.ensure_future(pikpak_api.path_to_id(file))
-    #     main_loop.run_until_complete(get_future)
-    #     result = get_future.result()
-    #     fils_id.append(result[-1].get("id"))
-    get_future = asyncio.ensure_future(
-        pikpak_api.file_batch_share(fils_id, expiration_days=7)
-    )
-    main_loop.run_until_complete(get_future)
-    result = get_future.result()
-    print(result)
-    return result.get("share_id", None)
+        # 需要分享的文件夹id
+        fils_id = []
+        for file in result.get("files"):
+            if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
+                pass
+            else:
+                fils_id.append(file.get("id"))
+        # for file in invite.get("share", []):
+        #     get_future = asyncio.ensure_future(pikpak_api.path_to_id(file))
+        #     main_loop.run_until_complete(get_future)
+        #     result = get_future.result()
+        #     fils_id.append(result[-1].get("id"))
+        get_future = asyncio.ensure_future(
+            pikpak_api.file_batch_share(fils_id, expiration_days=7)
+        )
+        main_loop.run_until_complete(get_future)
+        result = get_future.result()
+        print(result)
+        return result.get("share_id", None)
+    except:
+        config.get_log()("分享失败 重新分享")
+        time.sleep(30)
+        return get_start_share_id(pikpak)
 
 
 class AlistPikpak:

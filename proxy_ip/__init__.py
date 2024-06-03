@@ -11,10 +11,6 @@ import json
 
 from .kuaidaili import kuaidaili
 
-from concurrent.futures import ProcessPoolExecutor
-
-from httpx_socks import AsyncProxyTransport
-
 pattern = r"\?page=[a-z0-9]+"
 
 
