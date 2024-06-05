@@ -78,7 +78,7 @@ class AlistPikpak:
     def pop_not_vip_pikpak(self) -> PikPak:
         if len(self.pikpak_user_list) <= 0:
             return None
-        if self.pop_pikpak().get_vip_day_time_left() < 0:
+        if self.pop_pikpak().get_vip_day_time_left() <= 0:
             return self.opation_pikpak_go
         else:
             return self.pop_not_vip_pikpak()

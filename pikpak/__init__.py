@@ -73,14 +73,14 @@ class PikPak:
                 print(f"当前的代理是：{proxies}")
                 resp = requests.request(method=method, url=url, params=params, data=data, headers=headers,
                                         cookies=cookies,
-                                        files=files, auth=auth, timeout=timeout or 3 * 60,
+                                        files=files, auth=auth, timeout=config.requests_timeout,
                                         allow_redirects=allow_redirects,
                                         proxies=proxies,
                                         hooks=hooks, stream=stream, verify=verify or False, cert=cert, json=json)
                 return resp
             except Exception as e:
                 print(f"__req_url error:{e}")
-            time.sleep(1 * 60)
+            time.sleep(1)
 
         raise Exception(f"url:{url}\n请求失败")
 
@@ -1121,8 +1121,8 @@ class PikPak:
         Returns:
             int: 剩余天数
         """
-        vip_data = self.get_self_vip_info()
         try:
+            vip_data = self.get_self_vip_info()
             return vip_data.get('data').get("vipItem")[0].get("surplus_day", 0)
         except:
             return 0
