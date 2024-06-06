@@ -18,11 +18,11 @@ class TelegramBot(object):
         # self.bot.reply_to(message, "你好！如果需要验证了我会这里发送消息到你的TG")
         if self.runing:
             self.bot.send_message(
-                self.opation_id, "你好！服务正在运行中。。。。。请等待结束在启动")
+                self.opation_id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
             return
         self.opation_id = message.chat.id
         self.bot.send_message(
-            self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息")
+            self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息", disable_notification=True)
         self.runing = True
         try:
             main()
@@ -37,10 +37,8 @@ class TelegramBot(object):
         Args:
             message_text (_type_): _description_
         """
-        self.bot.send_message(
-            self.opation_id,
-            message_text
-        )
+        self.bot.send_message(self.opation_id,
+                              message_text, disable_notification=True)
 
     def send_get_token(self, url: str):
         """发送验证url消息到TG TG需要回复才继续运行
@@ -54,7 +52,7 @@ class TelegramBot(object):
         self.token = None
         self.bot.send_message(
             self.opation_id,
-            "请获取一下url的验证 并回复token到下一条消息"
+            "请获取一下url的验证 并回复token到下一条消息", disable_notification=True
         )
         __token_message = self.bot.send_message(
             self.opation_id,
