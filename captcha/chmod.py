@@ -1,6 +1,9 @@
+import logging
 import re
 from selenium import webdriver
 import time
+
+logger = logging.getLogger("captcha_chmod")
 
 
 def open_url2token(url: str = ""):
@@ -44,7 +47,7 @@ def _open_url2token(url=""):
     driver.execute_script(script)
     # 获取捕获的URL值
     captured_url = driver.execute_script("return lastLog;")
-    print("捕获的URL:", captured_url)
+    logger.debug("捕获的URL:", captured_url)
 
     while True:
         time.sleep(0.1)
@@ -53,19 +56,19 @@ def _open_url2token(url=""):
             if captured_url.startswith("xlaccsdk01"):
                 break
         except Exception as e:
-            print("报错了", e)
+            logger.debug("报错了", e)
             driver.quit()
             return open_url2token(url=url)
         # message = driver.get_log("performance")
-        # print(message)
-        # print(f"当前网页是：{driver.current_url}")
+        # logger.debug(message)
+        # logger.debug(f"当前网页是：{driver.current_url}")
     # 关闭浏览器
     driver.quit()
     str_start = "captcha_token="
     str_end = "&expires_in"
     search = re.search(f"{str_start}.*{str_end}", captured_url)
     captcha_token = search.group()[len(str_start):-len(str_end)]
-    print(f"运行后的获取到的 captcha_token:\n{captcha_token}")
+    logger.debug(f"运行后的获取到的 captcha_token:\n{captcha_token}")
     return captcha_token
 
 

@@ -1,10 +1,14 @@
 # telebot
+import logging
 import re
 import time
 from telebot import TeleBot
 from telebot.types import Message
 from config.config import telegram_api, set_log, set_captcha_callback
 from main import main
+loging_names = [
+    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone"
+]
 
 
 class TelegramBot(object):
@@ -71,7 +75,15 @@ class TelegramBot(object):
         self.token = captcha_token
 
     def __init__(self) -> None:
-        set_log(self.send_print_to_tg)
+        # set_log(self.send_print_to_tg)
+        handler = logging.StreamHandler(self.send_print_to_tg)
+        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().addHandler(handler)
+        for logger in loging_names:
+            logger = logging.getLogger(logger)
+            # logger.setLevel()
+            logger.addHandler(handler)
+
         set_captcha_callback(self.send_get_token)
         self.bot = TeleBot(telegram_api, num_threads=5)
         self.bot.register_message_handler(

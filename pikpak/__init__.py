@@ -1,3 +1,5 @@
+import logging
+import os
 from proxy_ip import pop_prxy_pikpak
 import enum
 import hashlib
@@ -10,6 +12,10 @@ import config.config as config
 from mail.mail import create_one_mail
 from .PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
+
+# logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
+
+logger = logging.getLogger("pikpak")
 
 
 class PikPak:
@@ -70,7 +76,7 @@ class PikPak:
 
         for index in range(0, config.requests_retry):
             try:
-                print(f"当前的代理是：{proxies}")
+                logger.debug(f"当前的代理是：{proxies}")
                 resp = requests.request(method=method, url=url, params=params, data=data, headers=headers,
                                         cookies=cookies,
                                         files=files, auth=auth, timeout=config.requests_timeout,
@@ -79,7 +85,7 @@ class PikPak:
                                         hooks=hooks, stream=stream, verify=verify or False, cert=cert, json=json)
                 return resp
             except Exception as e:
-                print(f"__req_url error:{e}")
+                logger.debug(f"__req_url error:{e}")
             time.sleep(1)
 
         raise Exception(f"url:{url}\n请求失败")
@@ -181,13 +187,13 @@ class PikPak:
         response = self.__req_url(
             "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
-        print(f"__initCaptcha\n{res_json}")
+        logger.debug(f"__initCaptcha\n{res_json}")
         if res_json.get("url"):
-            # print("打开这个网址手动去执行验证 并获取的token复制到此\n")
+            # logger.debug("打开这个网址手动去执行验证 并获取的token复制到此\n")
             # token = input()
-            # print(f"输入的token\n{token}")
+            # logger.debug(f"输入的token\n{token}")
             self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
-            config.get_log()(f"获取的到Token是:{self.captcha_token}")
+            logger.info(f"获取的到Token是:{self.captcha_token}")
         else:
             error = res_json.get("error")
             if error:
@@ -200,15 +206,15 @@ class PikPak:
         self.captcha_action_old = self.captcha_action
 
     def __input_captcha_token(self, url):
-        print("需要打开网页去验证 并输入返回的 captcha_token")
-        print(url)
+        logger.debug("需要打开网页去验证 并输入返回的 captcha_token")
+        logger.debug(url)
         captcha_token = input("请输入captcha_token:\n")
-        print(f"您输入的 captcha_token 是:\n{captcha_token}")
+        logger.debug(f"您输入的 captcha_token 是:\n{captcha_token}")
         return captcha_token
 
     def __input_mail_code(self, mail):
         code = str(input(f"请输入邮箱{mail}中收到的验证码:\n"))
-        print(f"您输入的验证码是:\n{code}")
+        logger.debug(f"您输入的验证码是:\n{code}")
         return code
 
     def __send_code(self):
@@ -233,7 +239,7 @@ class PikPak:
             "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
-            print(f"发送验证消息到邮箱 ERROR:\n{res_json}")
+            logger.debug(f"发送验证消息到邮箱 ERROR:\n{res_json}")
             if res_json.get("error") == "captcha_required":
                 self.captcha_token = ''
                 self.captcha_action = "POST:/v1/auth/verification"
@@ -244,7 +250,7 @@ class PikPak:
                 raise Exception(self.inviseError)
         else:
             self.verification_id = res_json.get("verification_id")
-            print(f"发送验证消息到邮箱:\n{res_json}")
+            logger.debug(f"发送验证消息到邮箱:\n{res_json}")
 
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
@@ -270,9 +276,9 @@ class PikPak:
         if response.status_code == 200:
             self.verification_id = res_json.get("verification_token")
             self.mail_code = code
-            print(f"设置邮箱的验证码:\n{res_json}")
+            logger.debug(f"设置邮箱的验证码:\n{res_json}")
         else:
-            print(f"设置邮箱的验证码 ERROR:\n{res_json}")
+            logger.debug(f"设置邮箱的验证码 ERROR:\n{res_json}")
             self.inviseError = res_json.get("error")
             raise Exception(self.inviseError)
 
@@ -300,20 +306,20 @@ class PikPak:
             "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code != 200:
-            print(f"注册登陆失败:\n{res_json}")
+            logger.debug(f"注册登陆失败:\n{res_json}")
             if res_json.get("error") == "captcha_invalid":
                 self.captcha_action = "POST:/v1/auth/signup"
                 self.__initCaptcha()
                 # self.set_mail_2_code(self.mail_code)
                 self.__signup()
             elif res_json.get("error") == "already_exists":
-                print(f"用户存在\n{res_json}")
+                logger.debug(f"用户存在\n{res_json}")
                 self.__login2()
             else:
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
         else:
-            print(f"注册登陆成功:\n{res_json}")
+            logger.debug(f"注册登陆成功:\n{res_json}")
             self.user_id = res_json.get("sub")
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
             self.isReqMail = self.mail
@@ -387,7 +393,7 @@ class PikPak:
 
     def __login(self):
         if self.authorization:
-            print("已经登陆 不用在登陆了")
+            logger.debug("已经登陆 不用在登陆了")
             return
         url = "https://user.mypikpak.com/v1/auth/signin"
         payload = {
@@ -418,7 +424,7 @@ class PikPak:
             "POST", url, json=payload, headers=headers, proxies=self.proxies)
         res_json = response.json()
         if response.status_code == 200:
-            print(f"登陆成功{res_json}")
+            logger.debug(f"登陆成功{res_json}")
             self.user_id = res_json.get("sub")
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
         else:
@@ -427,7 +433,7 @@ class PikPak:
                 self.__initCaptcha()
                 self.__login()
                 return
-            print(f"登陆失败{res_json}")
+            logger.debug(f"登陆失败{res_json}")
             self.inviseError = res_json.get("error")
             raise Exception(self.inviseError)
 
@@ -483,11 +489,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__get_active_invite()
             else:
-                print(f"vip邀请信息返回 Error \n{res_json}")
+                logger.debug(f"vip邀请信息返回 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"vip邀请信息返回:\n{res_json}")
+        logger.debug(f"vip邀请信息返回:\n{res_json}")
 
     def set_activation_code(self, code):
         """设置需要填写的邀请码
@@ -530,7 +536,7 @@ class PikPak:
                 self.__set_activation_code()
             else:
                 self.inviseError = res_json.get("error")
-            print(f"填写邀请结果返回 Error \n{res_json}")
+            logger.debug(f"填写邀请结果返回 Error \n{res_json}")
             return
         error = res_json.get("error")
         if not error or error == "":
@@ -538,7 +544,7 @@ class PikPak:
         else:
             self.inviseError = res_json.get("error")
             raise Exception(self.inviseError)
-        print(f"填写邀请结果返回:\n{res_json}")
+        logger.debug(f"填写邀请结果返回:\n{res_json}")
 
     # 获取当前设备
     def __access_controller(self):
@@ -584,11 +590,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__access_controller()
             else:
-                print(f"当前设备打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备打印消息\n{res_json}")
+        logger.debug(f"当前设备打印消息\n{res_json}")
 
     # global_config
     def __global_config(self):
@@ -644,11 +650,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__global_config()
             else:
-                print(f"当前设备global_config打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备global_config打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备global_config打印消息\n{res_json}")
+        logger.debug(f"当前设备global_config打印消息\n{res_json}")
 
     def __operating(self):
         url = "https://api-drive.mypikpak.com/operating/v1/content"
@@ -692,11 +698,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__operating()
             else:
-                print(f"当前设备operating打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备operating打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备operating打印消息\n{res_json}")
+        logger.debug(f"当前设备operating打印消息\n{res_json}")
 
     def __logReportSwitch(self):
         url = "https://config.mypikpak.com/config/v1/logReportSwitch"
@@ -745,11 +751,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__logReportSwitch()
             else:
-                print(f"当前设备operating打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备operating打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备operating打印消息\n{res_json}")
+        logger.debug(f"当前设备operating打印消息\n{res_json}")
 
     def __operating_report(self):
         url = "https://api-drive.mypikpak.com/operating/v1/report"
@@ -797,11 +803,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__operating_report()
             else:
-                print(f"当前设备__operating_report打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备__operating_report打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备__operating_report打印消息\n{res_json}")
+        logger.debug(f"当前设备__operating_report打印消息\n{res_json}")
 
     def __urlsOnInstall(self):
         url = "https://config.mypikpak.com/config/v1/urlsOnInstall"
@@ -853,11 +859,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__operating_report()
             else:
-                print(f"当前设备__urlsOnInstall打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备__urlsOnInstall打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备__urlsOnInstall打印消息\n{res_json}")
+        logger.debug(f"当前设备__urlsOnInstall打印消息\n{res_json}")
 
     # 注册并登陆增加邀请
     def run_req_2invite(self):
@@ -935,11 +941,12 @@ class PikPak:
                 self.__initCaptcha()
                 self.__get_pikpak_share_passcode(share_id)
             else:
-                print(f"当前 pikpak_share_passcode 打印消息 Error \n{res_json}")
+                logger.debug(
+                    f"当前 pikpak_share_passcode 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前 pikpak_share_passcode 打印消息\n{res_json}")
+        logger.debug(f"当前 pikpak_share_passcode 打印消息\n{res_json}")
         self.pass_code_token = res_json.get("pass_code_token")
 
     def __save_pikpak_2_self(self, share_id):
@@ -984,11 +991,11 @@ class PikPak:
                 self.__initCaptcha()
                 self.__save_pikpak_2_self(share_id)
             else:
-                print(f"当前设备__保存分享文件 打印消息 Error \n{res_json}")
+                logger.debug(f"当前设备__保存分享文件 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前设备__保存分享文件 打印消息\n{res_json}")
+        logger.debug(f"当前设备__保存分享文件 打印消息\n{res_json}")
 
     def save_share(self, share_id):
         self.__login2()
@@ -1025,11 +1032,11 @@ class PikPak:
                 self.__initCaptcha()
                 return self.__req_self_invite_code()
             else:
-                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                logger.debug(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        logger.debug(f"当前 获取自己的邀请码 打印消息\n{res_json}")
         return res_json.get("code")
 
     def get_self_invite_code(self):
@@ -1066,11 +1073,11 @@ class PikPak:
                 self.__initCaptcha()
                 return self.__req_self_vip_info2()
             else:
-                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                logger.debug(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        logger.debug(f"当前 获取自己的邀请码 打印消息\n{res_json}")
         return res_json
 
     def __req_self_vip_info(self):
@@ -1103,11 +1110,11 @@ class PikPak:
                 self.__initCaptcha()
                 return self.__req_self_vip_info()
             else:
-                print(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
+                logger.debug(f"当前 获取自己的邀请码 打印消息 Error \n{res_json}")
                 self.inviseError = res_json.get("error")
                 raise Exception(self.inviseError)
             return
-        print(f"当前 获取自己的邀请码 打印消息\n{res_json}")
+        logger.debug(f"当前 获取自己的邀请码 打印消息\n{res_json}")
         return res_json
 
     def get_self_vip_info(self):
@@ -1131,7 +1138,6 @@ class PikPak:
 
 
 def crete_invite(invite) -> PikPak:
-    print = config.get_log()
     try:
         _mail = create_one_mail()
         pik_go = PikPak(
@@ -1139,24 +1145,24 @@ def crete_invite(invite) -> PikPak:
             pd=config.def_password,
         )
         pik_go.set_activation_code(invite)
-        print("获取代理地址中。。。。。")
+        logger.info("获取代理地址中。。。。。")
         ip, proxy_type = pop_prxy_pikpak()
-        print(f"获取到的代理:{ip}")
+        logger.info(f"获取到的代理:{ip}")
         # ip, proxy_type = __proxy
         pik_go.set_proxy(ip, proxy_type)
         pik_go.run_req_2invite()
         if pik_go.isInvise:
-            print(f"{_mail}:注册成功 并邀请{invite}VIP")
+            logger.info(f"{_mail}:注册成功 并邀请{invite}VIP")
             return pik_go
         else:
-            print(f"{invite} 注册失败！重新注册")
+            logger.info(f"{invite} 注册失败！重新注册")
             return crete_invite(invite)
     except Exception as e:
-        print(f"{invite} 注册失败！ Error{e}")
+        logger.info(f"{invite} 注册失败！ Error{e}")
         # if "empty list" in e.__str__():
         #     return None
         # if not pik_go.inviseError:
-        print(f"开始重新注册")
+        logger.info(f"开始重新注册")
         return crete_invite(invite)
 
 

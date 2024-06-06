@@ -13,6 +13,7 @@ requests:
   retry: 10
 
 alist:
+  enable: 0
   domain: "http://localhost:5244"
   username: admin
   password: "''''"

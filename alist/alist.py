@@ -1,9 +1,11 @@
 import copy
 import datetime
+import logging
 import os
 import requests
 from config.config import alist_domain, alist_pd, alist_user
 import json
+logger = logging.getLogger("alist")
 
 
 class Alist(object):
@@ -53,7 +55,7 @@ class Alist(object):
         data_json = response.json()
         if response.status_code == 200:
             self.token = data_json["data"].get("token")
-        print(data_json)
+        logger.debug(data_json)
 
     def get_storage_list(self):
         url = f"{self._domain}/api/admin/storage/list"
@@ -63,7 +65,7 @@ class Alist(object):
         }
         response = self.__request("GET", url, json=payload)
         data_json = response.json()
-        print(data_json)
+        logger.debug(data_json)
         if response.status_code == 200:
             return data_json.get("data")
 
@@ -80,7 +82,7 @@ class Alist(object):
         payload = data
         response = self.__request("POST", url, json=payload)
         data_json = response.json()
-        print(data_json)
+        logger.debug(data_json)
         if response.status_code == 200:
             return data_json.get("data")
 
@@ -97,7 +99,7 @@ class Alist(object):
         payload = data
         response = self.__request("POST", url, json=payload)
         data_json = response.json()
-        print(data_json)
+        logger.debug(data_json)
         if response.status_code == 200:
             return data_json.get("data")
 
@@ -117,7 +119,7 @@ class Alist(object):
         }
         response = self.__request("POST", url, params=payload)
         data_json = response.json()
-        print(data_json)
+        logger.debug(data_json)
         if response.status_code == 200:
             return data_json.get("data")
 
@@ -182,12 +184,12 @@ if __name__ == "__main__":
     #     if addition.get("username") == invites[0].get("mail"):
     #         # addition["username"] = "test@test.com"
     #         data["addition"] = json.dumps(addition)
-    #         print(data)
+    #         logger.debug(data)
     #         alist.update_storage(data)
-    #     print(addition)
+    #     logger.debug(addition)
 
     # pikpaks = alist.get_storage_list()
-    # print(pikpaks)
+    # logger.debug(pikpaks)
     alist.copy_storages_2_alist(
         Alist(domain="http://10.211.55.58:5244"), is_clean=True)
     # alist.saveToNowConif()

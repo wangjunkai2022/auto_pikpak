@@ -1,3 +1,4 @@
+import logging
 import time
 import requests
 import hashlib
@@ -5,6 +6,7 @@ import random
 import string
 import re
 import config.config as config
+logger = logging.getLogger("mail")
 
 
 def _get_domains():
@@ -16,10 +18,10 @@ def _get_domains():
 
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        print(f"_get_domains 失败")
+        logger.debug(f"_get_domains 失败")
         time.sleep(2)
         return _get_domains()
-    print(response.json())
+    logger.debug(response.json())
     return response.json()
 
 
@@ -66,7 +68,7 @@ def get_mails(mail):
 
     response = requests.get(url, headers=headers)
 
-    print(response.json())
+    logger.debug(response.json())
     return response.json()
 
 
@@ -83,7 +85,7 @@ def get_new_mail_code(mail):
     mails = get_mails(mail)
     code = ""
     if not isinstance(mails, list) and mails.get("error"):
-        print(f"获取邮箱信息错误{mails.get('error')}")
+        logger.debug(f"获取邮箱信息错误{mails.get('error')}")
         time.sleep(2)
         return get_new_mail_code(mail)
     if mails and len(mails) > 0:
@@ -107,7 +109,7 @@ def get_one_message(mail):
     }
 
     response = requests.get(url, headers=headers)
-    print(response.json)
+    logger.debug(response.json)
     return response.json()
 
 
@@ -117,5 +119,5 @@ if __name__ == "__main__":
     # mail = create_one_mail()
     mail = "ScSDK18K@cevipsa.com"
     # mail = "qekbpt9109@amozix.com"
-    print(f"{mail}")
+    logger.debug(f"{mail}")
     code = get_new_mail_code(mail)

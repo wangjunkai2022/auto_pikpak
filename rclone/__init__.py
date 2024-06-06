@@ -89,7 +89,7 @@ class Rclone(PyRclone):
         self.remote = remote
         self.mount_path = mount_path
 
-    def get_info(self) -> dir:
+    def get_info(self) -> dict:
         """获取指定远程明的信息
 
         Returns:
@@ -97,12 +97,15 @@ class Rclone(PyRclone):
         """
         if not self.remote:
             self.logger.debug("没有指定 remote")
-            return {}
+            return None
         result = self.command(command="config", arguments=[
             "userinfo", f"{self.remote}:", "--json"])
+        self.logger.debug(result)
         out_str = ""
         for __str in result.output:
             out_str += __str
+        if out_str == "":
+            return None
         json_data = json.loads(out_str)
         self.logger.debug(json_data)
         return json_data
@@ -282,9 +285,9 @@ class PikPakRclone(Rclone):
         self.logger.debug(result)
 
 
-def conifg_2_pikpak_rclone(conifg: dir) -> PikPakRclone:
+def conifg_2_pikpak_rclone(conifg: dict) -> PikPakRclone:
     return PikPakRclone(remote=conifg.get(
-        "remote"), mount_path=conifg.get("mout_path"), user=conifg.get("user"), password=conifg.get("password"))
+        "remote"), mount_path=conifg.get("mout_path"), user=conifg.get("pikpak_user"), password=conifg.get("pikpak_password"))
 
 
 def get_save_json_config() -> List[dict]:

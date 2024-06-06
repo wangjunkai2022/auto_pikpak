@@ -1,4 +1,6 @@
 import json
+import os
+from typing import List
 from pikpak import PikPak, crete_invite
 from captcha.chmod import open_url2token
 import config.config as config
@@ -6,6 +8,12 @@ import asyncio
 import alist.alist as alist
 from mail.mail import get_new_mail_code
 import time
+import logging
+from rclone import conifg_2_pikpak_rclone, get_save_json_config, save_config
+
+# logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
+logger = logging.getLogger("main")
+
 
 def get_start_share_id(pikpak: PikPak = None):
     try:
@@ -56,18 +64,27 @@ def get_start_share_id(pikpak: PikPak = None):
         )
         main_loop.run_until_complete(get_future)
         result = get_future.result()
-        print(result)
+        logger.debug(result)
         return result.get("share_id", None)
     except:
-        config.get_log()("分享失败 重新分享")
+        logger.error("分享失败 重新分享")
         time.sleep(30)
         return get_start_share_id(pikpak)
 
 
-class AlistPikpak:
+class BasePikpak:
+    opation_pikpak_go: PikPak = None
+
+    def pop_not_vip_pikpak(self):
+        pass
+
+    def save_pikpak_2(self, pikpak_go: PikPak):
+        pass
+
+
+class AlistPikpak(BasePikpak):
     pikpak_user_list = None
     alist_go = None
-    opation_pikpak_go: PikPak = None
 
     def __init__(self):
         self.alist_go = alist.Alist()
@@ -92,7 +109,7 @@ class AlistPikpak:
         )
         return self.opation_pikpak_go
 
-    def change_self_pikpak_2_alist(self, pikpak_go: PikPak):
+    def save_pikpak_2(self, pikpak_go: PikPak):
         storage_list = self.alist_go.get_storage_list()
         for data in storage_list.get("content"):
             addition = json.loads(data.get("addition"))
@@ -100,39 +117,83 @@ class AlistPikpak:
                 addition["username"] = pikpak_go.mail
                 addition["password"] = pikpak_go.pd
                 data["addition"] = json.dumps(addition)
-                print(data)
+                logger.debug(data)
                 self.alist_go.update_storage(data)
-            print(addition)
+            logger.debug(addition)
+
+
+class RclonePikpak(BasePikpak):
+    rclone_conifgs: List[dict] = []
+    rclone = None
+    config_index = 0
+
+    def __init__(self) -> None:
+        self.rclone_conifgs = get_save_json_config()
+
+    def pop_not_vip_pikpak(self) -> PikPak:
+        try:
+            self.rclone = conifg_2_pikpak_rclone(
+                self.rclone_conifgs[self.config_index])
+            self.config_index += 1
+        except:
+            self.rclone = None
+            return None
+        rclone_info = self.rclone.get_info()
+        if rclone_info:
+            if rclone_info.get("VIPType") == "novip":
+                self.opation_pikpak_go = PikPak(
+                    self.rclone.user, self.rclone.password)
+                return self.opation_pikpak_go
+            else:
+                return self.pop_not_vip_pikpak()
+        else:
+            self.opation_pikpak_go = PikPak(
+                mail=self.rclone.user, pd=self.rclone.password)
+            if self.opation_pikpak_go.get_vip_day_time_left() <= 0:
+                return self.opation_pikpak_go
+            else:
+                return self.pop_not_vip_pikpak()
+
+    def save_pikpak_2(self, pikpak_go: PikPak):
+        self.rclone.user = pikpak_go.mail
+        self.rclone.password = pikpak_go.pd
+        self.rclone.save_self_2_config()
+        self.rclone_conifgs[self.config_index -
+                            1].update("pikpak_user", pikpak_go.mail)
+        self.rclone_conifgs[self.config_index -
+                            1].update("pikpak_password", pikpak_go.pd)
+        logger.debug(self.rclone_conifgs)
+        save_config(self.rclone_conifgs)
 
 
 def main():
-    log = config.get_log()
-    log("开始执行Alist中的存储检测")
-    alistPikpak = AlistPikpak()
+    logger.info("开始执行Alist中的存储检测")
+    alistPikpak: BasePikpak = config.alist_enable and AlistPikpak() or RclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
-        log(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
+        logger.info(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
         pikpak_go_new = crete_invite(invite_code)
         if not pikpak_go_new:
-            print("新建的号有误")
-            log(f"注册新号失败。。。。。。。。")
+            logger.debug("新建的号有误")
+            logger.info(f"注册新号失败。。。。。。。。")
             break
         if pikpak_go.get_vip_day_time_left() > 0:
-            log(f"账号{pikpak_go.mail}现在已经是会员了")
+            logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
             pikpak_go = alistPikpak.pop_not_vip_pikpak()
         if not pikpak_go:
             break
         if pikpak_go_new.get_vip_day_time_left() <= 0:
             continue
-        log(f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
+        logger.info(
+            f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
         share_id = get_start_share_id(pikpak_go)
         pikpak_go_new.set_proxy(None)
         pikpak_go_new.save_share(share_id)
-        alistPikpak.change_self_pikpak_2_alist(pikpak_go_new)
+        alistPikpak.save_pikpak_2(pikpak_go_new)
         # 新的获取新没有vip的pikpak
         pikpak_go = alistPikpak.pop_not_vip_pikpak()
-    log("Over")
+    logger.info("Over")
 
 
 if __name__ == "__main__":
@@ -145,3 +206,5 @@ if __name__ == "__main__":
     # pikpak_go_new = crete_invite(invite_code)
     # get_start_share_id("mwrtye3718@tenvil.com","098poi")
     # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
+    # pikpak = crete_invite(78269860)
+    # logger.debug(pikpak)

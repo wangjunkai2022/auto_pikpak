@@ -11,6 +11,7 @@ alist = get_config("alist")
 alist_domain = alist.get("domain")
 alist_user = alist.get("username")
 alist_pd = alist.get("password")
+alist_enable = alist.get("enable", 0) == 1
 
 def_password = get_config("def_password")
 
