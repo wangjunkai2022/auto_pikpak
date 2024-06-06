@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import os
 from pyrclone import Rclone, RcloneError, RcloneOutput
@@ -7,6 +8,8 @@ from typing import Iterable, List, Optional, Tuple
 
 cache_json_file = os.path.join(os.path.abspath(
     os.path.dirname(__file__)), "rclone.json")
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class MeRclone(object):
@@ -21,7 +24,6 @@ class MeRclone(object):
         except:
             self.mount_config = []
             pass
-
         # result = self.rclone.command(command="config", arguments=[
         #     "userinfo", "pikpak:", "--json"])
         # json.loads(result.output)
@@ -100,6 +102,7 @@ class MeRclone(object):
                    "list-unit-files", "|", "grep", "emby"]
         result = self._execute(command)
         print(result)
+
     def _execute(self, command_to_run: List[str]) -> RcloneOutput:
         """_execute
 
