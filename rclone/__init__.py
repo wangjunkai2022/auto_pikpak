@@ -128,11 +128,6 @@ class Rclone(PyRclone):
     @abstractmethod
     def _update_conf_self(self):
         """更新配置对应的用户名和密码
-
-        Args:
-            remote_name (str): 需要修改的库对应的名
-            user (str): 用户名
-            password (str): 密码
         """
         # result = self.rclone.command(command="config", arguments=[
         #     "update", self.remote])
@@ -142,7 +137,7 @@ class Rclone(PyRclone):
     def save_self_2_config(self):
         """把自己保存到rclone的配置中 如果不存在则创建存在则更新
         """
-        self.logger.debug("这里保存自己的内容到rclone配置中")
+        self.logger.info(f"这里保存自己的内容到rclone配置中")
         if self._is_save_2_config():
             self._update_conf_self()
         else:
@@ -153,12 +148,6 @@ class Rclone(PyRclone):
         """创建 conifg 需要在子类中重写
         """
         self.logger.debug("创建config配置 。。需要在子类中重写")
-
-    @abstractmethod
-    def _update_conf_self(self):
-        """更新配置 需要在子类重写
-        """
-        self.logger.debug("刷新config中的配置 。。需要在子类中重写")
 
     def get_systcemctl_all(self) -> List[Service]:
         """获取系统中的rclone服务
@@ -271,7 +260,8 @@ class PikPakRclone(Rclone):
         self.remote_type = "pikpak"
 
     def _create_conf_self(self):
-        self.logger.debug("创建 pikpak rclone config配置")
+        self.logger.debug(
+            f"创建Rclone配置 Pikpak \nremote:{self.remote}\nuser:{self.user}\npassword:这里不显示密码")
         result = self.rclone.command(command="config", arguments=[
             "create", self.remote, self.remote_type, f"user={self.user}", f"pass={self.password}"])
         self.logger.debug(result)
@@ -279,7 +269,8 @@ class PikPakRclone(Rclone):
     def _update_conf_self(self):
         """更新配置对应的用户名和密码
         """
-        self.logger.debug("更新配置对应的用户名和密码")
+        self.logger.info(
+            f"更新Rclone配置 Pikpak \nremote:{self.remote}\nuser:{self.user}\npassword:这里不显示密码")
         result = self.rclone.command(command="config", arguments=[
             "update", self.remote, f"user={self.user}", f"pass={self.password}"])
         self.logger.debug(result)

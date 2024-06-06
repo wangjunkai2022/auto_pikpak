@@ -125,16 +125,16 @@ class AlistPikpak(BasePikpak):
 class RclonePikpak(BasePikpak):
     rclone_conifgs: List[dict] = []
     rclone = None
-    config_index = 0
+    config_index = -1
 
     def __init__(self) -> None:
         self.rclone_conifgs = get_save_json_config()
 
     def pop_not_vip_pikpak(self) -> PikPak:
         try:
+            self.config_index += 1
             self.rclone = conifg_2_pikpak_rclone(
                 self.rclone_conifgs[self.config_index])
-            self.config_index += 1
         except:
             self.rclone = None
             return None
@@ -155,13 +155,16 @@ class RclonePikpak(BasePikpak):
                 return self.pop_not_vip_pikpak()
 
     def save_pikpak_2(self, pikpak_go: PikPak):
+        if self.rclone.user == pikpak_go.mail:
+            logger.info(f"保存pikpak rclone中的账号和现在的账号时同一个这里不做修改")
+            return
+
         self.rclone.user = pikpak_go.mail
         self.rclone.password = pikpak_go.pd
         self.rclone.save_self_2_config()
-        self.rclone_conifgs[self.config_index -
-                            1].update("pikpak_user", pikpak_go.mail)
-        self.rclone_conifgs[self.config_index -
-                            1].update("pikpak_password", pikpak_go.pd)
+        data = self.rclone_conifgs[self.config_index]
+        data["pikpak_user"] = pikpak_go.mail
+        data["pikpak_password"] = pikpak_go.pd
         logger.debug(self.rclone_conifgs)
         save_config(self.rclone_conifgs)
 
@@ -208,3 +211,12 @@ if __name__ == "__main__":
     # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
     # pikpak = crete_invite(78269860)
     # logger.debug(pikpak)
+
+    # rclone_conifgs = get_save_json_config()
+    # print(rclone_conifgs)
+    # index = 1
+    # rclone = rclone_conifgs[index]
+    # data = rclone_conifgs[index]
+    # data["pikpak_user"] = data["pikpak_user"]+"0909090"
+    # # rclone.update(data)
+    # print(rclone_conifgs)
