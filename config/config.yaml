@@ -1,6 +1,6 @@
 # 免费邮箱API
 mail:
-  api: API
+  api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
 
 # 默认的密码
 def_password: 098poi
@@ -13,8 +13,9 @@ requests:
   retry: 10
 
 alist:
-  enable: 0
-  domain: "http://localhost:5244"
+  enable: 1
+  # domain: "http://localhost:5244"
+  domain: "http:// 10.211.55.2:5244"
   username: admin
   password: "''''"
 
@@ -22,4 +23,4 @@ rclone:
   mount_root: /mnt/pikpak
 
 telegram:
-  api: API
+  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk

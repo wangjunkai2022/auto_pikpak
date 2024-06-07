@@ -154,6 +154,7 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
 
     def __init__(self) -> None:
         ManagerPikPak.__init__(self)
+        RCloneManager.__init__(self)
         pass
 
     def pop_not_vip_pikpak(self) -> BasePikpakData:

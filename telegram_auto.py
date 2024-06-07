@@ -1,4 +1,6 @@
 # telebot
+# from enum import StrEnum
+from enum import Enum
 import pickle
 import logging
 import re
@@ -6,10 +8,16 @@ import time
 from telebot import TeleBot
 from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config.config import telegram_api, set_log, set_captcha_callback
-from main import BasePikpakData, run_all, 注册新号激活, 所有的没有vip的PikPak
+from main import BasePikpakData, ManagerRclonePikpak, run_all, 注册新号激活, 所有的没有vip的PikPak
+
 loging_names = [
     "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone"
 ]
+
+
+class OpationEnum(Enum):
+    挂载Rclone = "选择需要挂载的Rclone远程",
+    激活PikPak = "选择需要注册激活的PikPak",
 
 
 class TelegramBot(object):
@@ -27,6 +35,7 @@ class TelegramBot(object):
         markup = ReplyKeyboardMarkup()
         markup.add(KeyboardButton("/扫描所有"))
         markup.add(KeyboardButton("/交互模式"))
+        markup.add(KeyboardButton("/挂载Rclone"))
 
         self.bot.send_message(chat_id=message.chat.id,
                               text="选择运行方式:", reply_markup=markup)
@@ -95,6 +104,19 @@ class TelegramBot(object):
         except Exception as e:
             self.send_print_to_tg(e)
         self.runing = False
+    mount_rclone = []
+
+    def _挂载Rclone(self, message: Message):
+        rclone_manager = ManagerRclonePikpak()
+        index = 0
+        markup = InlineKeyboardMarkup(row_width=2)
+        for rclone_conifg in rclone_manager.json_config:
+            btn = InlineKeyboardButton(
+                rclone_conifg.remote, callback_data=str(index),)
+            markup.add(btn)
+            index += 1
+        self.__reply_message = self.bot.send_message(message.chat.id, OpationEnum.挂载Rclone.value,
+                                                     reply_markup=markup)
 
     def _交互模式(self, message: Message):
         # markup = InlineKeyboardMarkup(row_width=2)
@@ -111,21 +133,23 @@ class TelegramBot(object):
                 pikpak.name, callback_data=str(index),)
             markup.add(btn)
             index += 1
-        self.__reply_message = self.bot.send_message(message.chat.id, "选择需要注册激活的PikPak:",
+        self.__reply_message = self.bot.send_message(message.chat.id, OpationEnum.激活PikPak.value,
                                                      reply_markup=markup)
 
     def __call_back(self, call: CallbackQuery):
-
-        if call.data:
-            index = int(call.data)
-            pikpak = self.temp_pikpaks[index]
-            self.bot.send_message(call.message.chat.id,
-                                  f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
-            new_pikpak = 注册新号激活(pikpak)
-            self.bot.send_message(call.message.chat.id,
-                                  f"注册新号成功\n{new_pikpak.mail}")
-        self.__reply_message = None
-        self.temp_pikpaks = []
+        if call.message.text == OpationEnum.激活PikPak.value:
+            if call.data:
+                index = int(call.data)
+                pikpak = self.temp_pikpaks[index]
+                self.bot.send_message(call.message.chat.id,
+                                      f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
+                new_pikpak = 注册新号激活(pikpak)
+                self.bot.send_message(call.message.chat.id,
+                                      f"注册新号成功\n{new_pikpak.mail}")
+            self.__reply_message = None
+            self.temp_pikpaks = []
+        elif call.message.text == OpationEnum.挂载Rclone.value:
+            pass
 
     def __reply_button(self, call: CallbackQuery):
         # self.bot.send_message(call.message.chat.id, f"注册新号成功\n{call.data}")
@@ -134,7 +158,10 @@ class TelegramBot(object):
         #     self.bot.send_message(f"注册新号成功\n{new_pikpak.mail}")
         # self.bot.clear_reply_handlers(self.__reply_message)
         # self.__reply_message = None
-        return call.message.message_id == self.__reply_message.message_id
+        if call.message.text == OpationEnum.激活PikPak.value:
+            return call.message.message_id == self.__reply_message.message_id
+        elif call.message.text == OpationEnum.挂载Rclone.value:
+            return True
 
     def __init__(self) -> None:
         # set_log(self.send_print_to_tg)
@@ -154,6 +181,8 @@ class TelegramBot(object):
             self._交互模式, commands=['交互模式'])
         self.bot.register_message_handler(
             self._交互模式, commands=['扫描所有'])
+        self.bot.register_message_handler(
+            self._挂载Rclone, commands=['挂载Rclone'])
         # 交互模式 点击按钮回调
         self.bot.register_callback_query_handler(
             self.__call_back, self.__reply_button)
