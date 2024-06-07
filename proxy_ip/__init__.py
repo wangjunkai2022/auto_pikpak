@@ -184,7 +184,8 @@ def thread_get_all_ping_pikpak_proxy():
 
 
 # cache_json_file = 'ips.json'
-cache_json_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),"ips.json")
+cache_json_file = os.path.join(os.path.abspath(
+    os.path.dirname(__file__)), "ips.json")
 
 # 获取一个可以代理pikpak的ip
 
@@ -219,7 +220,7 @@ def pop_prxy_pikpak():
         "used_ips": _used_ips,
     }
     with open(cache_json_file, mode='w', encoding="utf-8") as file:
-        file.write(json.dumps(json_data))
+        file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
     return _used_ips[len(_used_ips)-1]
 

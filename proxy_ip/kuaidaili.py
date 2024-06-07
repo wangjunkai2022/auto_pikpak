@@ -70,7 +70,7 @@ class kuaidaili:
             "ips": proxy_ips,
         }
         with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
-            file.write(json.dumps(json_data))
+            file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
         return proxy_ips
 
 

@@ -2,10 +2,36 @@ import copy
 import datetime
 import logging
 import os
+from typing import List
 import requests
 from config.config import alist_domain, alist_pd, alist_user
 import json
 logger = logging.getLogger("alist")
+
+
+class JsonDataStorage():
+    id = None
+    mount_path = None
+    order = None
+    driver = None
+    cache_expiration = None
+    status = None
+    addition = None
+    remark = None
+    modified = None
+    disabled = None
+    enable_sign = None
+    order_by = None
+    order_direction = None
+    extract_folder = None
+    web_proxy = None
+    webdav_policy = None
+    proxy_range = None
+    down_proxy_url = None
+
+    def __init__(self, json_data: dict = None) -> None:
+        if json_data:
+            self.__dict__ = json_data
 
 
 class Alist(object):
@@ -27,7 +53,7 @@ class Alist(object):
         data["content"] = self.get_storage_list()["content"]
         json_data.append(data)
         with open(self.cache_json_file, mode='w') as file:
-            json.dump(json_data, file, ensure_ascii=False)
+            json.dump(json_data, file, ensure_ascii=False, indent=4)
 
     def _get_header(self):
         return {
@@ -125,14 +151,14 @@ class Alist(object):
 
     # 获取所有的pikpak的账户和密码
 
-    def get_all_pikpak_storage(self):
+    def get_all_pikpak_storage(self) -> List[dict]:
         """获取所有的pikpak的账户和密码
 
         Returns:
             _type_: _description_
         """
         storage_list_data = self.get_storage_list()
-        pikpaks = []
+        pikpaks: List[dict] = []
         for data in storage_list_data.get("content"):
             addition = json.loads(data.get("addition"))
             username = addition.get("username")

@@ -17,6 +17,8 @@ def_password = get_config("def_password")
 
 telegram_api = get_config("telegram").get("api", "")
 
+rclone = get_config("rclone")
+rclone_mount = rclone.get("mount_root")
 
 __log = print
 

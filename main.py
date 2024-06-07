@@ -9,7 +9,7 @@ import alist.alist as alist
 from mail.mail import get_new_mail_code
 import time
 import logging
-from rclone import conifg_2_pikpak_rclone, get_save_json_config, save_config
+from rclone import conifg_2_pikpak_rclone, get_save_json_config, save_config, PikPakJsonData
 
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 logger = logging.getLogger("main")
@@ -83,8 +83,8 @@ class BasePikpak:
 
 
 class AlistPikpak(BasePikpak):
-    pikpak_user_list = None
-    alist_go = None
+    pikpak_user_list: List[dict] = None
+    alist_go: alist.Alist = None
 
     def __init__(self):
         self.alist_go = alist.Alist()
@@ -199,6 +199,27 @@ def main():
     logger.info("Over")
 
 
+def copye_list_2_rclone_config():
+    """复制alist的配置到rclone的配置json配置中
+    """
+    alist_server = alist.Alist()
+    # alist_server.saveToNowConif()
+    rclone_configs: List[PikPakJsonData] = []
+    for _alist in alist_server.get_storage_list()["content"]:
+        if _alist.get("driver") == "PikPak":
+            alist_mount_path = _alist.get("mount_path")[1:]
+            addition = json.loads(_alist.get("addition"))
+            rclone_json_data = PikPakJsonData({
+                "remote": "pikpak_" + alist_mount_path,
+                "pikpak_user": addition.get("username"),
+                "pikpak_password": addition.get("password"),
+                "mout_path": os.path.join(config.rclone_mount, alist_mount_path)
+            })
+            rclone_configs.append(rclone_json_data)
+    logger.debug(rclone_configs)
+    save_config(rclone_configs)
+
+
 if __name__ == "__main__":
     config.set_captcha_callback(open_url2token)
     config.set_email_verification_code_callback(get_new_mail_code)
@@ -220,3 +241,4 @@ if __name__ == "__main__":
     # data["pikpak_user"] = data["pikpak_user"]+"0909090"
     # # rclone.update(data)
     # print(rclone_conifgs)
+    copye_list_2_rclone_config()

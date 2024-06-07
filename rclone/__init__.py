@@ -249,6 +249,24 @@ class Rclone(PyRclone):
                     f"{self.remote}的服务当前状态{service.state.name} 不需要关闭")
 
 
+class BaseJsonData():
+    remote = None
+    mout_path = None
+
+    def __init__(self, json_data: None) -> None:
+        if json_data:
+            self.__dict__ = json_data
+
+
+class PikPakJsonData(BaseJsonData):
+    pikpak_user = None
+    pikpak_password = None
+
+    def __init__(self, json_data: None) -> None:
+        if json_data:
+            self.__dict__ = json_data
+
+
 class PikPakRclone(Rclone):
     user: str
     password: str
@@ -276,36 +294,40 @@ class PikPakRclone(Rclone):
         self.logger.debug(result)
 
 
-def conifg_2_pikpak_rclone(conifg: dict) -> PikPakRclone:
+def conifg_2_pikpak_rclone(conifg: PikPakJsonData) -> PikPakRclone:
     return PikPakRclone(remote=conifg.get(
         "remote"), mount_path=conifg.get("mout_path"), user=conifg.get("pikpak_user"), password=conifg.get("pikpak_password"))
 
 
-def get_save_json_config() -> List[dict]:
+def get_save_json_config() -> List[PikPakJsonData]:
     """获取本地保存的 rclone json配置表"""
+    mount_config: List[PikPakJsonData] = []
     try:
         with open(cache_json_file, mode="r", encoding="utf-8") as file:
-            mount_config = json.load(file)
+            mount_config = json.load(file, object_hook=PikPakJsonData)
     except:
-        mount_config = []
+        pass
     return mount_config
 
 
-def save_config(mount_config):
+def save_config(mount_config: List[PikPakJsonData]):
     """保存 rclone json配置表"""
     with open(cache_json_file, mode='w', encoding="utf-8") as file:
-        file.write(json.dumps(mount_config))
+        file.write(json.dumps(
+            mount_config, default=lambda o: o.__dict__, ensure_ascii=False, indent=4))
 
 
 def main():
     rclone_config = get_save_json_config()
-    try:
-        pikpak_rclone = conifg_2_pikpak_rclone(rclone_config.pop())
-    except:
-        pikpak_rclone = None
-    with pikpak_rclone:
-        if pikpak_rclone.get_info().get("VIPType") == "novip":
-            pass
+    # try:
+    #     pikpak_rclone = conifg_2_pikpak_rclone(rclone_config.pop())
+    # except:
+    #     pikpak_rclone = None
+    # with pikpak_rclone:
+    #     if pikpak_rclone.get_info().get("VIPType") == "novip":
+    #         pass
+    # rclone_config[0].pikpak_user = rclone_config[0].pikpak_user + "090909090"
+    # save_config(rclone_config)
 
 
 if __name__ == "__main__":
