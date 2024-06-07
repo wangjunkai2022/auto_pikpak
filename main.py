@@ -9,7 +9,7 @@ import alist.alist as alist
 from mail.mail import get_new_mail_code
 import time
 import logging
-from rclone import conifg_2_pikpak_rclone, get_save_json_config, save_config, PikPakJsonData
+from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 logger = logging.getLogger("main")
@@ -82,9 +82,13 @@ class BasePikpakData(PikPak):
 
 class ManagerPikPak:
     opation_pikpak_go: BasePikpakData = None
+    opation_index: int = -1
+
+    def __init__(self) -> None:
+        self.opation_index = -1
 
     def pop_not_vip_pikpak(self) -> BasePikpakData:
-        pass
+        self.opation_index += 1
 
     def save_pikpak_2(self, pikpak_go: BasePikpakData):
         pass
@@ -146,51 +150,45 @@ class ManagerAlistPikpak(ManagerPikPak):
             logger.debug(addition)
 
 
-class ManagerRclonePikpak(ManagerPikPak):
-    rclone_conifgs: List[dict] = []
-    rclone = None
-    config_index = -1
+class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
 
     def __init__(self) -> None:
-        self.rclone_conifgs = get_save_json_config()
+        ManagerPikPak.__init__(self)
+        pass
 
     def pop_not_vip_pikpak(self) -> BasePikpakData:
-        try:
-            self.config_index += 1
-            self.rclone = conifg_2_pikpak_rclone(
-                self.rclone_conifgs[self.config_index])
-        except:
-            self.rclone = None
-            return None
-        rclone_info = self.rclone.get_info()
-        if rclone_info:
-            if rclone_info.get("VIPType") == "novip":
+        ManagerPikPak.pop_not_vip_pikpak(self)
+        pikpak_rclone: PikPakRclone = self.conifg_2_pikpak_rclone(
+            self.json_config[self.opation_index])
+        # 尝试直接重rclone获取pikpak的vip状态
+
+        if pikpak_rclone:
+            if pikpak_rclone.get_info().get("VIPType") == "novip":
                 self.opation_pikpak_go = BasePikpakData(
-                    self.rclone.user, self.rclone.password, name=self.rclone.remote)
-                return self.opation_pikpak_go
+                    pikpak_rclone.user, pikpak_rclone.password, name=pikpak_rclone.remote)
+                # return self.opation_pikpak_go
             else:
                 return self.pop_not_vip_pikpak()
         else:
-            self.opation_pikpak_go = BasePikpakData(
-                mail=self.rclone.user, pd=self.rclone.password, name=self.rclone.remote)
-            if self.opation_pikpak_go.get_vip_day_time_left() <= 0:
-                return self.opation_pikpak_go
-            else:
-                return self.pop_not_vip_pikpak()
+            # self.opation_pikpak_go = BasePikpakData(
+            #     mail=self.rclone.user, pd=self.rclone.password, name=self.rclone.remote)
+            # if self.opation_pikpak_go.get_vip_day_time_left() <= 0:
+            #     return self.opation_pikpak_go
+            # else:
+            #     return self.pop_not_vip_pikpak()
+            self.opation_pikpak_go = None
+        return self.opation_pikpak_go
 
     def save_pikpak_2(self, pikpak_go: BasePikpakData):
-        if self.rclone.user == pikpak_go.mail:
+        if self.opation_pikpak_go.mail == pikpak_go.mail:
             logger.info(f"保存pikpak rclone中的账号和现在的账号时同一个这里不做修改")
             return
 
-        self.rclone.user = pikpak_go.mail
-        self.rclone.password = pikpak_go.pd
-        self.rclone.save_self_2_config()
-        data = self.rclone_conifgs[self.config_index]
+        data = self.conifg_2_pikpak_rclone[self.opation_index]
         data["pikpak_user"] = pikpak_go.mail
         data["pikpak_password"] = pikpak_go.pd
-        logger.debug(self.rclone_conifgs)
-        save_config(self.rclone_conifgs)
+        logger.debug(self.conifg_2_pikpak_rclone)
+        self.save_config()
 
 
 def run_all():
@@ -240,6 +238,7 @@ def copye_list_2_rclone_config():
     """复制alist的配置到rclone的配置json配置中
     """
     alist_server = alist.Alist()
+    rclone_manager = ManagerRclonePikpak()
     # alist_server.saveToNowConif()
     rclone_configs: List[PikPakJsonData] = []
     for _alist in alist_server.get_storage_list()["content"]:
@@ -254,7 +253,8 @@ def copye_list_2_rclone_config():
             })
             rclone_configs.append(rclone_json_data)
     logger.debug(rclone_configs)
-    save_config(rclone_configs)
+    rclone_manager.json_config = rclone_configs
+    rclone_manager.save_config()
 
 
 if __name__ == "__main__":

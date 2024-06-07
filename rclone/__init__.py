@@ -278,7 +278,7 @@ class PikPakRclone(Rclone):
         self.remote_type = "pikpak"
 
     def _create_conf_self(self):
-        self.logger.debug(
+        self.logger.info(
             f"创建Rclone配置 Pikpak \nremote:{self.remote}\nuser:{self.user}\npassword:这里不显示密码")
         result = self.rclone.command(command="config", arguments=[
             "create", self.remote, self.remote_type, f"user={self.user}", f"pass={self.password}"])
@@ -294,31 +294,34 @@ class PikPakRclone(Rclone):
         self.logger.debug(result)
 
 
-def conifg_2_pikpak_rclone(conifg: PikPakJsonData) -> PikPakRclone:
-    return PikPakRclone(remote=conifg.get(
-        "remote"), mount_path=conifg.get("mout_path"), user=conifg.get("pikpak_user"), password=conifg.get("pikpak_password"))
+class RCloneManager:
+    json_config: List[PikPakJsonData] = []
 
+    def __init__(self) -> None:
+        self._get_save_json_config()
 
-def get_save_json_config() -> List[PikPakJsonData]:
-    """获取本地保存的 rclone json配置表"""
-    mount_config: List[PikPakJsonData] = []
-    try:
-        with open(cache_json_file, mode="r", encoding="utf-8") as file:
-            mount_config = json.load(file, object_hook=PikPakJsonData)
-    except:
-        pass
-    return mount_config
+    def conifg_2_pikpak_rclone(self, conifg: PikPakJsonData) -> PikPakRclone:
+        return PikPakRclone(remote=conifg.get(
+            "remote"), mount_path=conifg.get("mout_path"), user=conifg.get("pikpak_user"), password=conifg.get("pikpak_password"))
 
+    def _get_save_json_config(self):
+        """获取本地保存的 rclone json配置表"""
+        try:
+            with open(cache_json_file, mode="r", encoding="utf-8") as file:
+                self.json_config = json.load(file, object_hook=PikPakJsonData)
+        except:
+            pass
 
-def save_config(mount_config: List[PikPakJsonData]):
-    """保存 rclone json配置表"""
-    with open(cache_json_file, mode='w', encoding="utf-8") as file:
-        file.write(json.dumps(
-            mount_config, default=lambda o: o.__dict__, ensure_ascii=False, indent=4))
+    def save_config(self):
+        """保存 rclone json配置表"""
+        with open(cache_json_file, mode='w', encoding="utf-8") as file:
+            file.write(json.dumps(
+                self.json_config, default=lambda o: o.__dict__, ensure_ascii=False, indent=4))
 
 
 def main():
-    rclone_config = get_save_json_config()
+    pass
+    # rclone_config = get_save_json_config()
     # try:
     #     pikpak_rclone = conifg_2_pikpak_rclone(rclone_config.pop())
     # except:
