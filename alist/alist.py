@@ -167,6 +167,7 @@ class Alist(object):
                 {
                     "username": username,
                     "password": password,
+                    "name": data.get("mount_path")[1:]
                 }
             )
         return pikpaks

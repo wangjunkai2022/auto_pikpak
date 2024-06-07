@@ -54,6 +54,8 @@ class PikPak:
 
     pass_code_token = None
 
+    vip_day_num = None
+
     def __req_url(
             self,
             method,
@@ -1122,17 +1124,22 @@ class PikPak:
         vip_data = self.__req_self_vip_info()
         return vip_data
 
-    def get_vip_day_time_left(self) -> int:
+    def get_vip_day_time_left(self, is_update: bool = False) -> int:
         """获取剩余的VIP时间
 
         Returns:
             int: 剩余天数
         """
+        if self.vip_day_num and not is_update:
+            return self.vip_day_num
         try:
             vip_data = self.get_self_vip_info()
-            return vip_data.get('data').get("vipItem")[0].get("surplus_day", 0)
+            self.vip_day_num = vip_data.get('data').get("vipItem")[
+                0].get("surplus_day", 0)
         except:
-            return 0
+            self.vip_day_num = 0
+        return self.vip_day_num
+
 
 # 创建一个新的账号并填写邀请码
 

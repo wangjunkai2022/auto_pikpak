@@ -1,11 +1,12 @@
 # telebot
+import pickle
 import logging
 import re
 import time
 from telebot import TeleBot
-from telebot.types import Message
+from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config.config import telegram_api, set_log, set_captcha_callback
-from main import main
+from main import BasePikpakData, run_all, 注册新号激活, 所有的没有vip的PikPak
 loging_names = [
     "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone"
 ]
@@ -17,23 +18,18 @@ class TelegramBot(object):
     token_callback = None
     token = None
     runing = False
+    __reply_message = None
+
+    temp_pikpaks = []
 
     def _start_message(self, message: Message):
         # self.bot.reply_to(message, "你好！如果需要验证了我会这里发送消息到你的TG")
-        if self.runing:
-            self.bot.send_message(
-                self.opation_id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
-            return
-        self.opation_id = message.chat.id
-        self.bot.send_message(
-            self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息", disable_notification=True)
-        self.runing = True
-        try:
-            main()
-        except Exception as e:
-            self.send_print_to_tg(e)
-        self.runing = False
-        # self.send_get_token("www.google.com")
+        markup = ReplyKeyboardMarkup()
+        markup.add(KeyboardButton("/扫描所有"))
+        markup.add(KeyboardButton("/交互模式"))
+
+        self.bot.send_message(chat_id=message.chat.id,
+                              text="选择运行方式:", reply_markup=markup)
 
     def send_print_to_tg(self, message_text):
         """发送消息到TG
@@ -60,7 +56,7 @@ class TelegramBot(object):
         )
         __token_message = self.bot.send_message(
             self.opation_id,
-            url
+            url, reply_markup=ForceReply
         )
         self.bot.register_for_reply(
             __token_message, self.__reply_token)
@@ -74,22 +70,6 @@ class TelegramBot(object):
         captcha_token = self.__find_str_token(captcha_token)
         self.token = captcha_token
 
-    def __init__(self) -> None:
-        # set_log(self.send_print_to_tg)
-        handler = logging.StreamHandler(self.send_print_to_tg)
-        logging.getLogger().setLevel(logging.INFO)
-        logging.getLogger().addHandler(handler)
-        for logger in loging_names:
-            logger = logging.getLogger(logger)
-            # logger.setLevel()
-            logger.addHandler(handler)
-
-        set_captcha_callback(self.send_get_token)
-        self.bot = TeleBot(telegram_api, num_threads=5)
-        self.bot.register_message_handler(
-            self._start_message, commands=['start'])
-        self.bot.infinity_polling()
-
     def __find_str_token(self, strs: str = ""):
         str_start = "captcha_token="
         str_end = "&expires_in"
@@ -100,6 +80,84 @@ class TelegramBot(object):
         if str_end in strs:
             strs = strs[0:strs.find(str_end)]
         return strs
+
+    def _全部扫描模式(self, message: Message):
+        if self.runing:
+            self.bot.send_message(
+                self.opation_id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.opation_id = message.chat.id
+        self.bot.send_message(
+            self.opation_id, "你好！现在服务器开启了自动注册模式稍后会发送验证消息到你的tg请获取到token后回复验证消息", disable_notification=True)
+        self.runing = True
+        try:
+            run_all()
+        except Exception as e:
+            self.send_print_to_tg(e)
+        self.runing = False
+
+    def _交互模式(self, message: Message):
+        # markup = InlineKeyboardMarkup(row_width=2)
+        # markup.add(InlineKeyboardButton("test", callback_data='pikpak',))
+        if self.__reply_message:
+            self.bot.send_message(
+                message.chat.id, "交互模式上一个还没处理完 请等待完成", disable_notification=True)
+            return
+        self.temp_pikpaks = 所有的没有vip的PikPak()
+        markup = InlineKeyboardMarkup(row_width=2)
+        index = 0
+        for pikpak in self.temp_pikpaks:
+            btn = InlineKeyboardButton(
+                pikpak.name, callback_data=str(index),)
+            markup.add(btn)
+            index += 1
+        self.__reply_message = self.bot.send_message(message.chat.id, "选择需要注册激活的PikPak:",
+                                                     reply_markup=markup)
+
+    def __call_back(self, call: CallbackQuery):
+
+        if call.data:
+            index = int(call.data)
+            pikpak = self.temp_pikpaks[index]
+            self.bot.send_message(call.message.chat.id,
+                                  f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
+            new_pikpak = 注册新号激活(pikpak)
+            self.bot.send_message(call.message.chat.id,
+                                  f"注册新号成功\n{new_pikpak.mail}")
+        self.__reply_message = None
+        self.temp_pikpaks = []
+
+    def __reply_button(self, call: CallbackQuery):
+        # self.bot.send_message(call.message.chat.id, f"注册新号成功\n{call.data}")
+        # if message.date and isinstance(message.date, BasePikpakData):
+        #     new_pikpak = 注册新号激活(message.date)
+        #     self.bot.send_message(f"注册新号成功\n{new_pikpak.mail}")
+        # self.bot.clear_reply_handlers(self.__reply_message)
+        # self.__reply_message = None
+        return call.message.message_id == self.__reply_message.message_id
+
+    def __init__(self) -> None:
+        # set_log(self.send_print_to_tg)
+        handler = logging.StreamHandler(self.send_print_to_tg)
+        # logging.getLogger().setLevel(logging.DEBUG)
+        logging.getLogger().addHandler(handler)
+        for logger in loging_names:
+            logger = logging.getLogger(logger)
+            # logger.setLevel(logging.DEBUG)
+            logger.addHandler(handler)
+
+        set_captcha_callback(self.send_get_token)
+        self.bot = TeleBot(telegram_api, num_threads=5)
+        self.bot.register_message_handler(
+            self._start_message, commands=['start'])
+        self.bot.register_message_handler(
+            self._交互模式, commands=['交互模式'])
+        self.bot.register_message_handler(
+            self._交互模式, commands=['扫描所有'])
+        # 交互模式 点击按钮回调
+        self.bot.register_callback_query_handler(
+            self.__call_back, self.__reply_button)
+        self.bot.infinity_polling()
 
 
 if __name__ == "__main__":

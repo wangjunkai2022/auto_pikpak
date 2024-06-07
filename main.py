@@ -72,17 +72,40 @@ def get_start_share_id(pikpak: PikPak = None):
         return get_start_share_id(pikpak)
 
 
-class BasePikpak:
-    opation_pikpak_go: PikPak = None
+class BasePikpakData(PikPak):
+    name = None
 
-    def pop_not_vip_pikpak(self):
+    def __init__(self, mail: str = None, pd: str = None, name=None):
+        super().__init__(mail, pd)
+        self.name = name
+
+
+class ManagerPikPak:
+    opation_pikpak_go: BasePikpakData = None
+
+    def pop_not_vip_pikpak(self) -> BasePikpakData:
         pass
 
-    def save_pikpak_2(self, pikpak_go: PikPak):
+    def save_pikpak_2(self, pikpak_go: BasePikpakData):
         pass
 
+    def get_all_not_vip(self) -> List[BasePikpakData]:
+        """获取所有不是会员的Pikpak
 
-class AlistPikpak(BasePikpak):
+        Returns:
+            List[PikPak]: _description_
+        """
+        not_vip_list: List[BasePikpakData] = []
+        while True:
+            not_vip = self.pop_not_vip_pikpak()
+            if not_vip:
+                not_vip_list.append(not_vip)
+            else:
+                break
+        return not_vip_list
+
+
+class ManagerAlistPikpak(ManagerPikPak):
     pikpak_user_list: List[dict] = None
     alist_go: alist.Alist = None
 
@@ -92,7 +115,7 @@ class AlistPikpak(BasePikpak):
         self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
 
     # 直接pop一个Alsit中的一个Vip的剩余天数小于0的pikpak登陆
-    def pop_not_vip_pikpak(self) -> PikPak:
+    def pop_not_vip_pikpak(self) -> BasePikpakData:
         if len(self.pikpak_user_list) <= 0:
             return None
         if self.pop_pikpak().get_vip_day_time_left() <= 0:
@@ -101,15 +124,16 @@ class AlistPikpak(BasePikpak):
             return self.pop_not_vip_pikpak()
 
     # 直接pop一个Alsit中的一个pikpak登陆
-    def pop_pikpak(self) -> PikPak:
+    def pop_pikpak(self) -> BasePikpakData:
         pikpak_data = self.pikpak_user_list.pop(0)
-        self.opation_pikpak_go = PikPak(
+        self.opation_pikpak_go = BasePikpakData(
             mail=pikpak_data.get("username"),
             pd=pikpak_data.get("password"),
+            name=pikpak_data.get("name")
         )
         return self.opation_pikpak_go
 
-    def save_pikpak_2(self, pikpak_go: PikPak):
+    def save_pikpak_2(self, pikpak_go: BasePikpakData):
         storage_list = self.alist_go.get_storage_list()
         for data in storage_list.get("content"):
             addition = json.loads(data.get("addition"))
@@ -122,7 +146,7 @@ class AlistPikpak(BasePikpak):
             logger.debug(addition)
 
 
-class RclonePikpak(BasePikpak):
+class ManagerRclonePikpak(ManagerPikPak):
     rclone_conifgs: List[dict] = []
     rclone = None
     config_index = -1
@@ -130,7 +154,7 @@ class RclonePikpak(BasePikpak):
     def __init__(self) -> None:
         self.rclone_conifgs = get_save_json_config()
 
-    def pop_not_vip_pikpak(self) -> PikPak:
+    def pop_not_vip_pikpak(self) -> BasePikpakData:
         try:
             self.config_index += 1
             self.rclone = conifg_2_pikpak_rclone(
@@ -141,20 +165,20 @@ class RclonePikpak(BasePikpak):
         rclone_info = self.rclone.get_info()
         if rclone_info:
             if rclone_info.get("VIPType") == "novip":
-                self.opation_pikpak_go = PikPak(
-                    self.rclone.user, self.rclone.password)
+                self.opation_pikpak_go = BasePikpakData(
+                    self.rclone.user, self.rclone.password, name=self.rclone.remote)
                 return self.opation_pikpak_go
             else:
                 return self.pop_not_vip_pikpak()
         else:
-            self.opation_pikpak_go = PikPak(
-                mail=self.rclone.user, pd=self.rclone.password)
+            self.opation_pikpak_go = BasePikpakData(
+                mail=self.rclone.user, pd=self.rclone.password, name=self.rclone.remote)
             if self.opation_pikpak_go.get_vip_day_time_left() <= 0:
                 return self.opation_pikpak_go
             else:
                 return self.pop_not_vip_pikpak()
 
-    def save_pikpak_2(self, pikpak_go: PikPak):
+    def save_pikpak_2(self, pikpak_go: BasePikpakData):
         if self.rclone.user == pikpak_go.mail:
             logger.info(f"保存pikpak rclone中的账号和现在的账号时同一个这里不做修改")
             return
@@ -169,9 +193,12 @@ class RclonePikpak(BasePikpak):
         save_config(self.rclone_conifgs)
 
 
-def main():
+def run_all():
+    """运行所有的pikpak账号检测
+    """
     logger.info("开始执行Alist中的存储检测")
-    alistPikpak: BasePikpak = config.alist_enable and AlistPikpak() or RclonePikpak()
+    alistPikpak: ManagerPikPak = config.alist_enable and ManagerAlistPikpak(
+    ) or ManagerRclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
         invite_code = pikpak_go.get_self_invite_code()
@@ -181,7 +208,7 @@ def main():
             logger.debug("新建的号有误")
             logger.info(f"注册新号失败。。。。。。。。")
             break
-        if pikpak_go.get_vip_day_time_left() > 0:
+        if pikpak_go.get_vip_day_time_left(is_update=True) > 0:
             logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
             pikpak_go = alistPikpak.pop_not_vip_pikpak()
         if not pikpak_go:
@@ -197,6 +224,16 @@ def main():
         # 新的获取新没有vip的pikpak
         pikpak_go = alistPikpak.pop_not_vip_pikpak()
     logger.info("Over")
+
+
+def 所有的没有vip的PikPak():
+    base_pikpak: ManagerPikPak = config.alist_enable and ManagerAlistPikpak(
+    ) or ManagerRclonePikpak()
+    return base_pikpak.get_all_not_vip()
+
+
+def 注册新号激活(pikpak: PikPak = None):
+    return crete_invite(pikpak.get_self_invite_code())
 
 
 def copye_list_2_rclone_config():
@@ -223,7 +260,7 @@ def copye_list_2_rclone_config():
 if __name__ == "__main__":
     config.set_captcha_callback(open_url2token)
     config.set_email_verification_code_callback(get_new_mail_code)
-    main()
+    run_all()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
