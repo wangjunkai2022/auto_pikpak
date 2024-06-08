@@ -10,12 +10,12 @@ requests:
   # 超时设置
   out_time: 120
   # 重试次数
-  retry: 10
+  retry: 3
 
 alist:
-  enable: 1
-  # domain: "http://localhost:5244"
-  domain: "http:// 10.211.55.2:5244"
+  enable: 0
+  domain: "http://localhost:5244"
+  # domain: "http:// 10.211.55.2:5244"
   username: admin
   password: "''''"
 
@@ -23,4 +23,4 @@ rclone:
   mount_root: /mnt/pikpak
 
 telegram:
-  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
+  api: 6645819400:AAH8U0kfXB71s1lgg8ICq3Pft4xkNbWJmCM

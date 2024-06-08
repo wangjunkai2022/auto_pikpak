@@ -31,6 +31,8 @@ class TelegramBot(object):
     temp_pikpaks = []
 
     def _start_message(self, message: Message):
+        if not self.opation_id:
+            self.opation_id = message.chat.id
         # self.bot.reply_to(message, "你好！如果需要验证了我会这里发送消息到你的TG")
         markup = ReplyKeyboardMarkup()
         markup.add(KeyboardButton("/扫描所有"))
@@ -65,7 +67,7 @@ class TelegramBot(object):
         )
         __token_message = self.bot.send_message(
             self.opation_id,
-            url, reply_markup=ForceReply
+            url
         )
         self.bot.register_for_reply(
             __token_message, self.__reply_token)
@@ -107,6 +109,7 @@ class TelegramBot(object):
     mount_rclone = []
 
     def _挂载Rclone(self, message: Message):
+        self.opation_id = message.chat.id
         rclone_manager = ManagerRclonePikpak()
         index = 0
         markup = InlineKeyboardMarkup(row_width=2)
@@ -119,6 +122,7 @@ class TelegramBot(object):
                                                      reply_markup=markup)
 
     def _交互模式(self, message: Message):
+        self.opation_id = message.chat.id
         # markup = InlineKeyboardMarkup(row_width=2)
         # markup.add(InlineKeyboardButton("test", callback_data='pikpak',))
         if self.__reply_message:
@@ -137,7 +141,7 @@ class TelegramBot(object):
                                                      reply_markup=markup)
 
     def __call_back(self, call: CallbackQuery):
-        if call.message.text == OpationEnum.激活PikPak.value:
+        if call.message.text == OpationEnum.激活PikPak.value[0]:
             if call.data:
                 index = int(call.data)
                 pikpak = self.temp_pikpaks[index]
@@ -158,19 +162,33 @@ class TelegramBot(object):
         #     self.bot.send_message(f"注册新号成功\n{new_pikpak.mail}")
         # self.bot.clear_reply_handlers(self.__reply_message)
         # self.__reply_message = None
-        if call.message.text == OpationEnum.激活PikPak.value:
+        if call.message.text == OpationEnum.激活PikPak.value[0]:
             return call.message.message_id == self.__reply_message.message_id
-        elif call.message.text == OpationEnum.挂载Rclone.value:
+        elif call.message.text == OpationEnum.挂载Rclone.value[0]:
             return True
+        
+    class CustomHandler(logging.Handler):
+        def __init__(self, callback):
+            super().__init__()
+            self.callback = callback
+
+        def emit(self, record):
+            try:
+                msg = self.format(record)
+                self.callback(msg)
+            except Exception:
+                self.handleError(record)
 
     def __init__(self) -> None:
         # set_log(self.send_print_to_tg)
-        handler = logging.StreamHandler(self.send_print_to_tg)
+        handler = self.CustomHandler(self.send_print_to_tg)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
         # logging.getLogger().setLevel(logging.DEBUG)
-        logging.getLogger().addHandler(handler)
+        # logging.getLogger().addHandler(handler)
         for logger in loging_names:
             logger = logging.getLogger(logger)
-            # logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.INFO)
             logger.addHandler(handler)
 
         set_captcha_callback(self.send_get_token)
