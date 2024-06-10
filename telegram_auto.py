@@ -8,7 +8,7 @@ import time
 from telebot import TeleBot
 from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, ForceReply, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from config.config import telegram_api, set_log, set_captcha_callback
-from main import BasePikpakData, ManagerRclonePikpak, run_all, 注册新号激活, 所有的没有vip的PikPak
+from main import BasePikpakData, ManagerRclonePikpak, run_all, 注册新号激活, 所有的没有vip的PikPak, ManagerAlistPikpak
 
 loging_names = [
     "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone", "telegram",
@@ -154,9 +154,13 @@ class TelegramBot(object):
                                       f"注册新号成功\n{new_pikpak.mail}")
                 self.__reply_message = None
                 self.temp_pikpaks = []
-            elif call.message.text == OpationEnum.挂载Rclone.value:
+            elif call.message.text == OpationEnum.挂载Rclone.value[0]:
                 pikpak = self.rclone_manager.conifg_2_pikpak_rclone(
                     self.rclone_manager.json_config[index])
+                alist_manager = ManagerAlistPikpak()
+                for alist in alist_manager.get_storage_list().get("content"):
+                    if alist.get("mount_path") in pikpak.mount_path:
+                        alist_manager.disable_storage(alist.get("id"))
                 pikpak.run_mount()
 
     def __reply_button(self, call: CallbackQuery):

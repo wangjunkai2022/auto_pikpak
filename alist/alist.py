@@ -129,7 +129,47 @@ class Alist(object):
         if response.status_code == 200:
             return data_json.get("data")
 
+    # 关闭
+    def disable_storage(self, id: str) -> None:
+        """关闭指定存储库
+
+        Args:
+            id (str): 需要关闭的id
+
+        Returns:
+            _type_: _description_
+        """
+        url = f"{self._domain}/api/admin/storage/disable"
+        payload = {
+            "id": id,
+        }
+        response = self.__request("POST", url, params=payload)
+        data_json = response.json()
+        logger.debug(data_json)
+        if response.status_code == 200:
+            return data_json.get("data")
+
+    def enable_storage(self, id: str) -> None:
+        """开启指定存储库
+
+        Args:
+            id (str): 需要开启的id
+
+        Returns:
+            _type_: _description_
+        """
+        url = f"{self._domain}/api/admin/storage/enable"
+        payload = {
+            "id": id,
+        }
+        response = self.__request("POST", url, params=payload)
+        data_json = response.json()
+        logger.debug(data_json)
+        if response.status_code == 200:
+            return data_json.get("data")
+
     # 删除库
+
     def delete_storage(self, id: str) -> None:
         """删除指定存储库
 

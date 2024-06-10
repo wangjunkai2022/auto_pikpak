@@ -109,14 +109,13 @@ class ManagerPikPak:
         return not_vip_list
 
 
-class ManagerAlistPikpak(ManagerPikPak):
+class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
     pikpak_user_list: List[dict] = None
-    alist_go: alist.Alist = None
 
     def __init__(self):
-        self.alist_go = alist.Alist()
-        self.alist_go.saveToNowConif()
-        self.pikpak_user_list = self.alist_go.get_all_pikpak_storage()
+        alist.Alist.__init__(self)
+        self.saveToNowConif()
+        self.pikpak_user_list = self.get_all_pikpak_storage()
 
     # 直接pop一个Alsit中的一个Vip的剩余天数小于0的pikpak登陆
     def pop_not_vip_pikpak(self) -> BasePikpakData:
@@ -138,7 +137,7 @@ class ManagerAlistPikpak(ManagerPikPak):
         return self.opation_pikpak_go
 
     def save_pikpak_2(self, pikpak_go: BasePikpakData):
-        storage_list = self.alist_go.get_storage_list()
+        storage_list = self.get_storage_list()
         for data in storage_list.get("content"):
             addition = json.loads(data.get("addition"))
             if addition.get("username") == self.opation_pikpak_go.mail:
@@ -146,7 +145,7 @@ class ManagerAlistPikpak(ManagerPikPak):
                 addition["password"] = pikpak_go.pd
                 data["addition"] = json.dumps(addition)
                 logger.debug(data)
-                self.alist_go.update_storage(data)
+                self.update_storage(data)
             logger.debug(addition)
 
 
@@ -271,8 +270,8 @@ if __name__ == "__main__":
     # pikpak_go_new = crete_invite(invite_code)
     # get_start_share_id("mwrtye3718@tenvil.com","098poi")
     # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
-    pikpak = crete_invite(78269860)
-    logger.debug(pikpak)
+    # pikpak = crete_invite(78269860)
+    # logger.debug(pikpak)
 
     # rclone_conifgs = get_save_json_config()
     # print(rclone_conifgs)
@@ -282,4 +281,4 @@ if __name__ == "__main__":
     # data["pikpak_user"] = data["pikpak_user"]+"0909090"
     # # rclone.update(data)
     # print(rclone_conifgs)
-    # copye_list_2_rclone_config()
+    copye_list_2_rclone_config()
