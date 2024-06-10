@@ -25,6 +25,7 @@ class Telegram():
     bot: TeleBot = TeleBot(config.config.telegram_api)
     runing_chat: Chat = None
     run_temp_datas = None
+    start_chat = None
 
     class CustomHandler(logging.Handler):
         def __init__(self, callback):
@@ -72,6 +73,7 @@ class Telegram():
             func(message)
 
     def _start(self, message: Message):
+        self.start_chat = message.chat
         logger.debug(message)
         self.bot.send_message(chat_id=message.chat.id,
                               text="初始化 设置token的解析方式在tg这里", disable_notification=True)
@@ -105,8 +107,8 @@ class Telegram():
         Args:
             message_text (_type_): _description_
         """
-        if self.runing_chat:
-            self.bot.send_message(self.runing_chat.id,
+        if self.runing_chat or self.start_chat:
+            self.bot.send_message(self.runing_chat.id or self.start_chat.id,
                                   message_text, disable_notification=True)
 
     def send_get_token(self, url: str):
@@ -118,28 +120,49 @@ class Telegram():
         Returns:
             _type_: _description_
         """
+        if not self.runing_chat and not self.start_chat:
+            set_def_callback()
+            config.config.get_captcha_callback()(url)
+            # raise Exception("TG这里没有监听过 已经设置为默认的了")
+            logger.error("TG这里没有监听过 已经设置为默认的了 并且回调过去了")
+            return
         self.token = None
         self.bot.send_message(
-            self.runing_chat.id,
+            self.runing_chat.id or self.start_chat.id,
             "请获取一下url的验证 并回复token到下一条消息", disable_notification=True
         )
         __token_message = self.bot.send_message(
-            self.runing_chat.id,
+            self.runing_chat.id or self.start_chat.id,
             url
         )
         self.bot.register_for_reply(
             __token_message, self.__reply_token)
+
+        # 卡线程等用户处理结果并回复token
         while not self.token:
             time.sleep(0.1)
         self.bot.clear_reply_handlers(__token_message)
         return self.token
 
     def __reply_token(self, message: Message):
+        """用户回复token的监听
+
+        Args:
+            message (Message): 用户回复消息
+        """
         captcha_token = message.text
         captcha_token = self.__find_str_token(captcha_token)
         self.token = captcha_token
 
-    def __find_str_token(self, strs: str = ""):
+    def __find_str_token(self, strs: str = "") -> str:
+        """解析用户发过来的Token
+
+        Args:
+            strs (str, optional): 需要解析的字符串. Defaults to "".
+
+        Returns:
+            _type_: 解析后的字符串
+        """
         str_start = "captcha_token="
         str_end = "&expires_in"
         if str_start in strs:
