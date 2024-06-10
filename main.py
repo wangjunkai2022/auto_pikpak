@@ -159,6 +159,8 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
 
     def pop_not_vip_pikpak(self) -> BasePikpakData:
         ManagerPikPak.pop_not_vip_pikpak(self)
+        if self.opation_index >= len(self.json_config):
+            return None
         pikpak_rclone: PikPakRclone = self.conifg_2_pikpak_rclone(
             self.json_config[self.opation_index])
         # 尝试直接重rclone获取pikpak的vip状态
@@ -226,6 +228,7 @@ def run_all():
 
 
 def 所有的没有vip的PikPak():
+    logger.info("开始获取本地所有不是会员的配置")
     base_pikpak: ManagerPikPak = config.alist_enable and ManagerAlistPikpak(
     ) or ManagerRclonePikpak()
     return base_pikpak.get_all_not_vip()
@@ -261,15 +264,15 @@ def copye_list_2_rclone_config():
 if __name__ == "__main__":
     config.set_captcha_callback(open_url2token)
     config.set_email_verification_code_callback(get_new_mail_code)
-    run_all()
+    # run_all()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
     # pikpak_go_new = crete_invite(invite_code)
     # get_start_share_id("mwrtye3718@tenvil.com","098poi")
     # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
-    # pikpak = crete_invite(78269860)
-    # logger.debug(pikpak)
+    pikpak = crete_invite(78269860)
+    logger.debug(pikpak)
 
     # rclone_conifgs = get_save_json_config()
     # print(rclone_conifgs)
@@ -279,4 +282,4 @@ if __name__ == "__main__":
     # data["pikpak_user"] = data["pikpak_user"]+"0909090"
     # # rclone.update(data)
     # print(rclone_conifgs)
-    copye_list_2_rclone_config()
+    # copye_list_2_rclone_config()

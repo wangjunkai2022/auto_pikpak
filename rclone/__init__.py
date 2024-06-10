@@ -14,7 +14,7 @@ logger: logging.Logger = logging.getLogger("Rclone")
 cache_json_file = os.path.join(os.path.abspath(
     os.path.dirname(__file__)), "rclone.json")
 
-logger.setLevel(level=logging.DEBUG)
+# logger.setLevel(level=logging.DEBUG)
 service_file_path_root = "/etc/systemd/system/ubuntu.target.wants"
 rclone_service_content_str = """
 [Unit]
@@ -102,6 +102,9 @@ class Rclone(PyRclone):
         if not self.remote:
             logger.debug("没有指定 remote")
             return None
+        if not self._is_save_2_config():
+            self._create_conf_self()
+            time.sleep(60)
         result = self.command(command="config", arguments=[
             "userinfo", f"{self.remote}:", "--json"])
         logger.debug(result)
