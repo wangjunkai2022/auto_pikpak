@@ -10,7 +10,7 @@ from mail.mail import get_new_mail_code
 import time
 import logging
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
-
+import telegram
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 logger = logging.getLogger("main")
 
@@ -194,7 +194,7 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
 def run_all():
     """运行所有的pikpak账号检测
     """
-    logger.info("开始执行Alist中的存储检测")
+    logger.info("开始执行系统中的会员状态检测")
     alistPikpak: ManagerPikPak = config.alist_enable and ManagerAlistPikpak(
     ) or ManagerRclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
@@ -258,9 +258,15 @@ def copye_list_2_rclone_config():
     rclone_manager.save_config()
 
 
-if __name__ == "__main__":
+def set_def_callback():
     config.set_captcha_callback(open_url2token)
     config.set_email_verification_code_callback(get_new_mail_code)
+
+
+if __name__ == "__main__":
+    set_def_callback()
+    if config.telegram_api and len(config.telegram_api) > 1:
+        telegram.Telegram()
     # run_all()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
@@ -279,4 +285,4 @@ if __name__ == "__main__":
     # data["pikpak_user"] = data["pikpak_user"]+"0909090"
     # # rclone.update(data)
     # print(rclone_conifgs)
-    copye_list_2_rclone_config()
+    # copye_list_2_rclone_config()

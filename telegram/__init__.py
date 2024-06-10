@@ -5,7 +5,7 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
-from main import ManagerAlistPikpak, run_all as mian_run_all, 所有的没有vip的PikPak, 注册新号激活
+from main import ManagerAlistPikpak, run_all as mian_run_all, set_def_callback, 所有的没有vip的PikPak, 注册新号激活
 
 logger = logging.getLogger("telegram")
 loging_names = [
@@ -18,6 +18,7 @@ class 模式选项(enum.Enum):
     扫描所有 = "激活所有"
     选择激活 = "选择激活"
     挂载Rclone到系统 = "挂载Rclone"
+    结束 = "stop"
 
 
 class Telegram():
@@ -38,6 +39,7 @@ class Telegram():
                 self.handleError(record)
 
     def __init__(self) -> None:
+        config.config.set_captcha_callback(self.send_get_token)
         handler = self.CustomHandler(self.send_print_to_tg)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -49,13 +51,18 @@ class Telegram():
             logger.setLevel(logging.INFO)
             logger.addHandler(handler)
 
-        config.config.set_captcha_callback(self.send_get_token)
         self.bot.register_callback_query_handler(
             self.__call_back, self.__reply_button)
         self.bot.register_message_handler(self._command_handler, commands=[
                                           value.value for value in 模式选项])
         self.bot.infinity_polling()
         pass
+
+    def _stop(self, message: Message):
+        set_def_callback()
+        self.send_print_to_tg("")
+        self.bot.send_message(chat_id=message.chat.id,
+                              text="取消初始化 设置token的解析方式在本地默认\n如需再次Tg解析运行start即可", disable_notification=True)
 
     def _command_handler(self, message: Message):
         logger.debug(message)
@@ -66,13 +73,17 @@ class Telegram():
 
     def _start(self, message: Message):
         logger.debug(message)
+        self.bot.send_message(chat_id=message.chat.id,
+                              text="初始化 设置token的解析方式在tg这里", disable_notification=True)
+
+        config.config.set_captcha_callback(self.send_get_token)
         markup = ReplyKeyboardMarkup()
         for value in 模式选项:
             value = "/"+value.value
             markup.add(KeyboardButton(value))
 
         self.bot.send_message(chat_id=message.chat.id,
-                              text="选择运行方式:", reply_markup=markup)
+                              text="选择运行方式:", reply_markup=markup, disable_notification=True)
 
     def _激活所有(self, message: Message):
         if self.runing_chat:
