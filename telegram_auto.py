@@ -11,8 +11,10 @@ from config.config import telegram_api, set_log, set_captcha_callback
 from main import BasePikpakData, ManagerRclonePikpak, run_all, 注册新号激活, 所有的没有vip的PikPak
 
 loging_names = [
-    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone"
+    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone", "telegram",
 ]
+
+logger = logging.getLogger("telegram")
 
 
 class OpationEnum(Enum):
@@ -110,10 +112,10 @@ class TelegramBot(object):
 
     def _挂载Rclone(self, message: Message):
         self.opation_id = message.chat.id
-        rclone_manager = ManagerRclonePikpak()
+        self.rclone_manager = ManagerRclonePikpak()
         index = 0
         markup = InlineKeyboardMarkup(row_width=2)
-        for rclone_conifg in rclone_manager.json_config:
+        for rclone_conifg in self.rclone_manager.json_config:
             btn = InlineKeyboardButton(
                 rclone_conifg.remote, callback_data=str(index),)
             markup.add(btn)
@@ -125,10 +127,10 @@ class TelegramBot(object):
         self.opation_id = message.chat.id
         # markup = InlineKeyboardMarkup(row_width=2)
         # markup.add(InlineKeyboardButton("test", callback_data='pikpak',))
-        if self.__reply_message:
-            self.bot.send_message(
-                message.chat.id, "交互模式上一个还没处理完 请等待完成", disable_notification=True)
-            return
+        # if self.__reply_message:
+        #     self.bot.send_message(
+        #         message.chat.id, "交互模式上一个还没处理完 请等待完成", disable_notification=True)
+        #     return
         self.temp_pikpaks = 所有的没有vip的PikPak()
         markup = InlineKeyboardMarkup(row_width=2)
         index = 0
@@ -141,19 +143,21 @@ class TelegramBot(object):
                                                      reply_markup=markup)
 
     def __call_back(self, call: CallbackQuery):
-        if call.message.text == OpationEnum.激活PikPak.value[0]:
-            if call.data:
-                index = int(call.data)
+        if call.data:
+            index = int(call.data)
+            if call.message.text == OpationEnum.激活PikPak.value[0]:
                 pikpak = self.temp_pikpaks[index]
                 self.bot.send_message(call.message.chat.id,
                                       f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
                 new_pikpak = 注册新号激活(pikpak)
                 self.bot.send_message(call.message.chat.id,
                                       f"注册新号成功\n{new_pikpak.mail}")
-            self.__reply_message = None
-            self.temp_pikpaks = []
-        elif call.message.text == OpationEnum.挂载Rclone.value:
-            pass
+                self.__reply_message = None
+                self.temp_pikpaks = []
+            elif call.message.text == OpationEnum.挂载Rclone.value:
+                pikpak = self.rclone_manager.conifg_2_pikpak_rclone(
+                    self.rclone_manager.json_config[index])
+                pikpak.run_mount()
 
     def __reply_button(self, call: CallbackQuery):
         # self.bot.send_message(call.message.chat.id, f"注册新号成功\n{call.data}")
@@ -163,10 +167,14 @@ class TelegramBot(object):
         # self.bot.clear_reply_handlers(self.__reply_message)
         # self.__reply_message = None
         if call.message.text == OpationEnum.激活PikPak.value[0]:
-            return call.message.message_id == self.__reply_message.message_id
+            if call.message.message_id == self.__reply_message.message_id:
+                return True
+            else:
+                logger.info("同一时间只能处理一个回复哦")
+                return False
         elif call.message.text == OpationEnum.挂载Rclone.value[0]:
             return True
-        
+
     class CustomHandler(logging.Handler):
         def __init__(self, callback):
             super().__init__()
@@ -182,7 +190,8 @@ class TelegramBot(object):
     def __init__(self) -> None:
         # set_log(self.send_print_to_tg)
         handler = self.CustomHandler(self.send_print_to_tg)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         # logging.getLogger().setLevel(logging.DEBUG)
         # logging.getLogger().addHandler(handler)

@@ -78,6 +78,16 @@ class Rclone(PyRclone):
 
     remote_type: str
 
+    def is_mount(self) -> bool:
+        """判断系统中是否挂载了自己
+        Returns:
+            bool: 存在是True 不存在是False
+        """
+        if os.path.exists(self.mount_path):
+            return len(os.listdir(self.mount_path)) > 0
+        else:
+            return False
+
     def __init__(self, remote: str = None, mount_path: str = None) -> None:
         """_summary_
 
@@ -268,7 +278,7 @@ class Rclone(PyRclone):
             "--vfs-cache-max-size=10G",
             "--daemon",
         ])
-        # logger.debug(result)
+        logger.debug(result)
 
     mount_th: threading.Thread = None
 
@@ -280,15 +290,25 @@ class Rclone(PyRclone):
         #     return
         # self.mount_th = threading.Thread(target=self.__th_mount)
         # self.mount_th.start()
+        logger.debug(f"挂载{self.remote} 到{self.mount_path}")
+        if self.is_mount:
+            self.stop_mount()
+        if not os.path.exists(self.mount_path):
+            os.makedirs(self.mount_path)
         self.__th_mount()
         # while True:
         #     time.sleep(1)
         #     print("循环主线程")
-        
 
     def stop_mount(self):
-        if self.mount_th and not self.mount_th.isDaemon():
-            logger.info(f"关闭挂载进程")
+        # if self.mount_th and not self.mount_th.isDaemon():
+        #     logger.info(f"关闭挂载进程")
+        logger.info("尝试卸载已经挂载")
+        result = self._execute(["fusermount", "-uz", self.mount_path])
+        if result.return_code == 0:
+            logger.info("卸载成功")
+        else:
+            logger.info(result)
 
 
 class BaseJsonData():
