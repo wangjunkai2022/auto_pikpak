@@ -157,29 +157,27 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
         pass
 
     def pop_not_vip_pikpak(self) -> BasePikpakData:
+        self.opation_pikpak_go = None
         ManagerPikPak.pop_not_vip_pikpak(self)
         if self.opation_index >= len(self.json_config):
             return None
         pikpak_rclone: PikPakRclone = self.conifg_2_pikpak_rclone(
             self.json_config[self.opation_index])
         # 尝试直接重rclone获取pikpak的vip状态
-
-        if pikpak_rclone:
-            if pikpak_rclone.get_info().get("VIPType") == "novip":
+        rclone_service_info = pikpak_rclone.get_info()
+        if rclone_service_info:
+            if rclone_service_info.get("VIPType") == "novip":
                 self.opation_pikpak_go = BasePikpakData(
                     pikpak_rclone.user, pikpak_rclone.password, name=pikpak_rclone.remote)
-                # return self.opation_pikpak_go
-            else:
-                return self.pop_not_vip_pikpak()
         else:
-            # self.opation_pikpak_go = BasePikpakData(
-            #     mail=self.rclone.user, pd=self.rclone.password, name=self.rclone.remote)
-            # if self.opation_pikpak_go.get_vip_day_time_left() <= 0:
-            #     return self.opation_pikpak_go
-            # else:
-            #     return self.pop_not_vip_pikpak()
-            self.opation_pikpak_go = None
-        return self.opation_pikpak_go
+            opation_pikpak_go = BasePikpakData(
+                mail=pikpak_rclone.user, pd=pikpak_rclone.password, name=pikpak_rclone.remote)
+            if opation_pikpak_go.get_vip_day_time_left() <= 0:
+                self.opation_pikpak_go = opation_pikpak_go
+        if self.opation_pikpak_go:
+            return self.opation_pikpak_go
+        else:
+            return self.pop_not_vip_pikpak()
 
     def save_pikpak_2(self, pikpak_go: BasePikpakData):
         if self.opation_pikpak_go.mail == pikpak_go.mail:
