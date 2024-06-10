@@ -113,8 +113,9 @@ class Rclone(PyRclone):
             logger.debug("没有指定 remote")
             return None
         if not self._is_save_2_config():
-            self._create_conf_self()
-            time.sleep(60)
+            return None
+            # self._create_conf_self()
+            # time.sleep(60)
         result = self.command(command="config", arguments=[
             "userinfo", f"{self.remote}:", "--json"])
         logger.debug(result)
