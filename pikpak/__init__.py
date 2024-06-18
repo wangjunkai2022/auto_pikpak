@@ -170,14 +170,14 @@ class PikPak:
             "meta": {
                 "timestamp": time_str,
                 "email": self.mail,
-                "user_id": self.user_id,
+                "user_id": self.user_id or "",
                 "client_version": self.client_version,
                 "package_name": "com.pikcloud.pikpak",
-                # "captcha_sign": "1." + self.get_sign(),
+                "captcha_sign": "1." + self.__get_sign(time_str),
             }
         }
-        if self.captcha_action != "POST:/v1/auth/verification":
-            payload["meta"]["captcha_sign"] = "1." + self.__get_sign(time_str)
+        # if self.captcha_action != "POST:/v1/auth/verification":
+        #     payload["meta"]["captcha_sign"] = "1." + self.__get_sign(time_str)
         headers = {
             "x-device-id": self.device_id,
             "accept-language": self.language,
@@ -1165,11 +1165,11 @@ def crete_invite(invite) -> PikPak:
             logger.info(f"{invite} 注册失败！重新注册")
             return crete_invite(invite)
     except Exception as e:
-        logger.info(f"{invite} 注册失败！ Error{e}")
+        logger.error(f"{invite} 注册失败！ Error{e}")
         # if "empty list" in e.__str__():
         #     return None
         # if not pik_go.inviseError:
-        logger.info(f"开始重新注册")
+        logger.error(f"开始重新注册")
         return crete_invite(invite)
 
 
