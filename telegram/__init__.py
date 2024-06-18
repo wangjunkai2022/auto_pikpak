@@ -17,8 +17,9 @@ class 模式选项(enum.Enum):
     开始 = "start"
     扫描所有 = "激活所有"
     选择激活 = "选择激活"
-    挂载Rclone到系统 = "挂载Rclone"
+    设置打印等级 = "设置打印等级"
     结束 = "stop"
+    挂载Rclone到系统 = "挂载Rclone"
 
 
 class Telegram():
@@ -26,6 +27,7 @@ class Telegram():
     runing_chat: Chat = None
     run_temp_datas = None
     start_chat = None
+    logLevel = logging.INFO
 
     class CustomHandler(logging.Handler):
         def __init__(self, callback):
@@ -38,6 +40,11 @@ class Telegram():
                 self.callback(msg)
             except Exception:
                 self.handleError(record)
+
+    def __setLoggerLevel(self, level):
+        for logger in loging_names:
+            logger = logging.getLogger(logger)
+            logger.setLevel(level)
 
     def __init__(self) -> None:
         config.config.set_captcha_callback(self.send_get_token)
@@ -86,6 +93,19 @@ class Telegram():
 
         self.bot.send_message(chat_id=message.chat.id,
                               text="选择运行方式:", reply_markup=markup, disable_notification=True)
+
+    def _设置打印等级(self, message: Message):
+        self.bot.send_message(chat_id=message.chat.id,
+                              text="选择打印等级", disable_notification=True)
+        levels = [logging.INFO, logging.DEBUG,
+                  logging.WARN, logging.ERROR, logging.WARNING]
+        markup = InlineKeyboardMarkup(row_width=2)
+        for level in levels:
+            btn = InlineKeyboardButton(
+                logging.getLevelName(level), callback_data=level,)
+            markup.add(btn)
+        self.bot.send_message(message.chat.id, 模式选项.设置打印等级.name,
+                              reply_markup=markup)
 
     def _激活所有(self, message: Message):
         if self.runing_chat:
@@ -215,7 +235,7 @@ class Telegram():
                 new_pikpak = 注册新号激活(pikpak)
                 self.bot.send_message(call.message.chat.id,
                                       f"注册新号成功\n{new_pikpak.mail}")
-
+                self._task_over()
             elif call.message.text == 模式选项.挂载Rclone到系统.name:
                 # pikpak = self.rclone_manager.conifg_2_pikpak_rclone(
                 #     self.rclone_manager.json_config[index])
@@ -225,10 +245,16 @@ class Telegram():
                 #         alist_manager.disable_storage(alist.get("id"))
                 # pikpak.run_mount()
                 self.send_print_to_tg("还在开发中。。。。。")
-
-        self._task_over()
+            elif call.message.text == 模式选项.设置打印等级.name:
+                level = int(call.data)
+                self.__setLoggerLevel(level)
+                self.bot.send_message(chat_id=call.message.chat.id,
+                                      text=f"设置打印模式{logging.getLevelName(level)}完毕", disable_notification=True)
 
     def __reply_button(self, call: CallbackQuery):
+        if call.message.text == 模式选项.设置打印等级.name:
+            return True
+
         if self.runing_chat and self.runing_chat.id == call.message.chat.id:
             return True
         elif self.runing_chat:
