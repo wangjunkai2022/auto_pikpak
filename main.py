@@ -1,7 +1,7 @@
 import json
 import os
 from typing import List
-from pikpak import PikPak, crete_invite
+from pikpak import PikPak, crete_invite, run_new_test
 from captcha.chmod import open_url2token
 import config.config as config
 import asyncio
@@ -11,6 +11,7 @@ import time
 import logging
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 import telegram
+from tools import set_def_callback
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 logger = logging.getLogger("main")
 
@@ -257,17 +258,15 @@ def copye_list_2_rclone_config():
     rclone_manager.json_config = rclone_configs
     rclone_manager.save_config()
 
-
-def set_def_callback():
-    config.set_captcha_callback(open_url2token)
-    config.set_email_verification_code_callback(get_new_mail_code)
-
-
 if __name__ == "__main__":
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
     set_def_callback()
-    if config.telegram_api and len(config.telegram_api) > 1:
-        telegram.Telegram()
-    # run_all()
+    # if config.telegram_api and len(config.telegram_api) > 1:
+    #     telegram.Telegram()
+    run_all()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
@@ -275,7 +274,7 @@ if __name__ == "__main__":
     # get_start_share_id("mwrtye3718@tenvil.com","098poi")
     # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
     # pikpak = crete_invite(78269860)
-    # logger.debug(pikpak)
+    # print(pikpak.mail)
 
     # rclone_conifgs = get_save_json_config()
     # print(rclone_conifgs)
@@ -286,3 +285,15 @@ if __name__ == "__main__":
     # # rclone.update(data)
     # print(rclone_conifgs)
     # copye_list_2_rclone_config()
+
+    # logger.setLevel(logging.DEBUG)
+    # handler = logging.StreamHandler()
+    # handler.setLevel(logging.DEBUG)
+    # logger.addHandler(handler)
+    # email = "bpzaof1188@nuclene.com"
+    # password = "098poi"
+    # pikpak_ = PikPak(email, password)
+    # from proxy_ip import pingPikpak
+    # # pingPikpak("43.134.68.153:3128 http", [])
+    # # pikpak_.set_proxy("43.134.68.153:3128")
+    # run_new_test(pikpak_)

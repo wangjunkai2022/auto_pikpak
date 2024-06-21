@@ -1,5 +1,10 @@
+import asyncio
+import json
 import logging
 import os
+import random
+import string
+from pikpak.PikPakAPI.pikpakapi.enums import DownloadStatus
 from proxy_ip import pop_prxy_pikpak
 import enum
 import hashlib
@@ -10,12 +15,16 @@ import requests
 import config.config as config
 
 from mail.mail import create_one_mail
-from .PikPakAPI.pikpakapi import PikPakApi
+from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
+
+from tools import set_def_callback
 
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 
 logger = logging.getLogger("pikpak")
+
+download_test = "magnet:?xt=urn:btih:C875E08EAC834DD82D34D2C385BBAB598415C98A"
 
 
 class PikPak:
@@ -56,6 +65,8 @@ class PikPak:
 
     vip_day_num = None
 
+    PIKPAK_API_HOST = "api-drive.mypikpak.com"
+    
     def __req_url(
             self,
             method,
@@ -158,7 +169,7 @@ class PikPak:
         if captcha_time - self.captcha_time < self.captcha_sleep_min_time and self.captcha_action_old == self.captcha_action:
             time.sleep(self.captcha_sleep_min_time)
         self.captcha_time = time.time()
-        url = "https://user.mypikpak.com/v1/shield/captcha/init"
+        url = f"https://user.mypikpak.com/v1/shield/captcha/init"
         time_str = str(round(time.time() * 1000))
 
         payload = {
@@ -257,7 +268,7 @@ class PikPak:
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
         code = config.get_email_verification_code_callback()(self.mail)
-        url = "https://user.mypikpak.com/v1/auth/verification/verify"
+        url = f"https://user.mypikpak.com/v1/auth/verification/verify"
         payload = {
             "client_id": self.client_id,
             "verification_id": self.verification_id,
@@ -285,7 +296,7 @@ class PikPak:
             raise Exception(self.inviseError)
 
     def __signup(self):
-        url = "https://user.mypikpak.com/v1/auth/signup"
+        url = f"https://user.mypikpak.com/v1/auth/signup"
         payload = {
             "client_id": self.client_id,
             "captcha_token": self.captcha_token,
@@ -326,8 +337,11 @@ class PikPak:
             self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
             self.isReqMail = self.mail
 
-    def __login2(self):
-        url = "https://user.mypikpak.com/v1/auth/token"
+    def __login2(self, refresh=False):
+        if not refresh and self.authorization:
+            logger.info(f"已经登陆了 现在不需要登陆")
+            return
+        url = f"https://user.mypikpak.com/v1/auth/token"
         payload = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
@@ -348,7 +362,7 @@ class PikPak:
             "x-system-language": self.language,
             "User-Agent": self.__user_agent(),
             "content-type": "application/json; charset=utf-8",
-            "Authorization": self.authorization,
+            "Authorization": self.authorization or "",
             "Accept-Encoding": "deflate, gzip"
         }
 
@@ -362,7 +376,7 @@ class PikPak:
         self.__refresh_access_token()
 
     def __refresh_access_token(self):
-        url = "https://user.mypikpak.com/v1/auth/token"
+        url = f"https://user.mypikpak.com/v1/auth/token"
         payload = {
             "client_id": self.client_id,
             "refresh_token": self.refresh_token,
@@ -397,7 +411,7 @@ class PikPak:
         if self.authorization:
             logger.debug("已经登陆 不用在登陆了")
             return
-        url = "https://user.mypikpak.com/v1/auth/signin"
+        url = f"https://user.mypikpak.com/v1/auth/signin"
         payload = {
             "client_id": self.client_id,
             "captcha_token": self.captcha_token,
@@ -506,7 +520,7 @@ class PikPak:
 
     # 设置邀请
     def __set_activation_code(self):
-        url = "https://api-drive.mypikpak.com/vip/v1/order/activation-code"
+        url = f"https://api-drive.mypikpak.com/vip/v1/order/activation-code"
         payload = {
             "activation_code": str(self.__activation_code),
             "page": "invite",
@@ -550,7 +564,7 @@ class PikPak:
 
     # 获取当前设备
     def __access_controller(self):
-        url = "https://access.mypikpak.com/access_controller/v1/area_accessible"
+        url = f"https://access.mypikpak.com/access_controller/v1/area_accessible"
         payload = {}
         headers = {
             "Channel-Id": "official",
@@ -600,7 +614,7 @@ class PikPak:
 
     # global_config
     def __global_config(self):
-        url = "https://config.mypikpak.com/config/v1/globalConfig"
+        url = f"https://config.mypikpak.com/config/v1/globalConfig"
         payload = {
             "data": {
                 "version": self.client_version,
@@ -659,7 +673,7 @@ class PikPak:
         logger.debug(f"当前设备global_config打印消息\n{res_json}")
 
     def __operating(self):
-        url = "https://api-drive.mypikpak.com/operating/v1/content"
+        url = f"https://api-drive.mypikpak.com/operating/v1/content"
         payload = {
             "data": {
                 "version": self.client_version,
@@ -707,7 +721,7 @@ class PikPak:
         logger.debug(f"当前设备operating打印消息\n{res_json}")
 
     def __logReportSwitch(self):
-        url = "https://config.mypikpak.com/config/v1/logReportSwitch"
+        url = f"https://config.mypikpak.com/config/v1/logReportSwitch"
         payload = {
             "data": {
                 "sdk_int": "25",
@@ -760,7 +774,7 @@ class PikPak:
         logger.debug(f"当前设备operating打印消息\n{res_json}")
 
     def __operating_report(self):
-        url = "https://api-drive.mypikpak.com/operating/v1/report"
+        url = f"https://api-drive.mypikpak.com/operating/v1/report"
         payload = {
             "data": {
                 "version": self.client_version,
@@ -812,7 +826,7 @@ class PikPak:
         logger.debug(f"当前设备__operating_report打印消息\n{res_json}")
 
     def __urlsOnInstall(self):
-        url = "https://config.mypikpak.com/config/v1/urlsOnInstall"
+        url = f"https://config.mypikpak.com/config/v1/urlsOnInstall"
         payload = {
             "data": {
                 "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
@@ -955,7 +969,7 @@ class PikPak:
         # share_url = "https://mypikpak.com/s/VNxHRUombIy7SWJs5Oyw-TDxo1"
         if not self.pass_code_token:
             self.__get_pikpak_share_passcode(share_id)
-        url = "https://api-drive.mypikpak.com/drive/v1/share/restore"
+        url = f"https://api-drive.mypikpak.com/drive/v1/share/restore"
         payload = {
             "folder_type": "",
             "share_id": share_id,
@@ -1005,7 +1019,7 @@ class PikPak:
 
     # 获取自己的邀请码
     def __req_self_invite_code(self):
-        url = "https://api-drive.mypikpak.com/vip/v1/activity/inviteCode"
+        url = f"https://api-drive.mypikpak.com/vip/v1/activity/inviteCode"
         payload = {}
         headers = {
             "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
@@ -1046,7 +1060,7 @@ class PikPak:
         return self.__req_self_invite_code()
 
     def __req_self_vip_info2(self):
-        url = "https://api-drive.mypikpak.com/drive/v1/privilege/vip"
+        url = f"https://api-drive.mypikpak.com/drive/v1/privilege/vip"
         payload = {}
         headers = {
             "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
@@ -1083,7 +1097,7 @@ class PikPak:
         return res_json
 
     def __req_self_vip_info(self):
-        url = "https://api-drive.mypikpak.com/vip/v1/vip/info"
+        url = f"https://api-drive.mypikpak.com/vip/v1/vip/info"
         payload = {}
         headers = {
             "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
@@ -1140,16 +1154,119 @@ class PikPak:
             self.vip_day_num = 0
         return self.vip_day_num
 
+    def get_path_list(self, path=""):
+        """获取指定路径下的所有文件 只获取一层
+
+        Args:
+            path (_type_): 需要获取的路径 默认是根目录
+        """
+        url = f"https://api-drive.mypikpak.com/drive/v1/files"
+        payload = {
+            "parent_id": path,
+            "thumbnail_size": "SIZE_MEDIUM",
+            "limit": 10,
+            "with_audit": "true",
+            "page_token": "",
+            "filters": json.dumps({}),
+        }
+        
+        pass
+
+    _path_id_cache = {}
+
+    def path_to_id(self, path: str, create: bool = False) -> List[Dict[str, str]]:
+        """
+        path: str - 路径
+        create: bool - 是否创建不存在的文件夹
+
+        将形如 /path/a/b 的路径转换为 文件夹的id
+        """
+        if not path or len(path) <= 0:
+            return []
+        paths = path.split("/")
+        paths = [p.strip() for p in paths if len(p) > 0]
+        # 构造不同级别的path表达式，尝试找到距离目标最近的那一层
+        multi_level_paths = [
+            "/" + "/".join(paths[: i + 1]) for i in range(len(paths))]
+        path_ids = [
+            self._path_id_cache[p]
+            for p in multi_level_paths
+            if p in self._path_id_cache
+        ]
+        # 判断缓存命中情况
+        hit_cnt = len(path_ids)
+        if hit_cnt == len(paths):
+            return path_ids
+        elif hit_cnt == 0:
+            count = 0
+            parent_id = None
+        else:
+            count = hit_cnt
+            parent_id = path_ids[-1]["id"]
+
+        next_page_token = None
+        while count < len(paths):
+            current_parent_path = "/" + "/".join(paths[:count])
+            data = await self.file_list(
+                parent_id=parent_id, next_page_token=next_page_token
+            )
+            record_of_target_path = None
+            for f in data.get("files", []):
+                current_path = "/" + "/".join(paths[:count] + [f.get("name")])
+                file_type = (
+                    "folder" if f.get("kind", "").find(
+                        "folder") != -1 else "file"
+                )
+                record = {
+                    "id": f.get("id"),
+                    "name": f.get("name"),
+                    "file_type": file_type,
+                }
+                self._path_id_cache[current_path] = record
+                if f.get("name") == paths[count]:
+                    record_of_target_path = record
+                    # 不break: 剩下的文件也同样缓存起来
+            if record_of_target_path is not None:
+                path_ids.append(record_of_target_path)
+                count += 1
+                parent_id = record_of_target_path["id"]
+            elif data.get("next_page_token") and (
+                not next_page_token or next_page_token != data.get(
+                    "next_page_token")
+            ):
+                next_page_token = data.get("next_page_token")
+            elif create:
+                data = await self.create_folder(name=paths[count], parent_id=parent_id)
+                id = data.get("file").get("id")
+                record = {
+                    "id": id,
+                    "name": paths[count],
+                    "file_type": "folder",
+                }
+                path_ids.append(record)
+                current_path = "/" + "/".join(paths[: count + 1])
+                self._path_id_cache[current_path] = record
+                count += 1
+                parent_id = id
+            else:
+                break
+        return path_ids
+
+
+def radom_password():
+    chars = string.ascii_letters+string.digits
+    # 得出的结果中字符会有重复的
+    return ''.join([random.choice(chars) for i in range(random.randint(6, 18))])
+    # return ''.join(random.sample(chars, 15))#得出的结果中字符不会有重复的
 
 # 创建一个新的账号并填写邀请码
 
 
 def crete_invite(invite) -> PikPak:
     try:
-        _mail = create_one_mail()
         pik_go = PikPak(
-            mail=_mail,
-            pd=config.def_password,
+            mail=create_one_mail(),
+            pd=radom_password(),
         )
         pik_go.set_activation_code(invite)
         logger.info("获取代理地址中。。。。。")
@@ -1159,7 +1276,9 @@ def crete_invite(invite) -> PikPak:
         pik_go.set_proxy(ip, proxy_type)
         pik_go.run_req_2invite()
         if pik_go.isInvise:
-            logger.info(f"{_mail}:注册成功 并邀请{invite}VIP")
+            run_new_test(pik_go)
+            logger.info(f"{pik_go.mail}:注册成功 并填写邀请码：{invite}")
+            logger.info(f"密码是:{pik_go.pd}")
             return pik_go
         else:
             logger.info(f"{invite} 注册失败！重新注册")
@@ -1173,16 +1292,74 @@ def crete_invite(invite) -> PikPak:
         return crete_invite(invite)
 
 
+def run_new_test(pikpak: PikPak):
+    try:
+        logger.info("开始下载 一个测试的 种子文件")
+
+        logger.debug(pikpak.get_self_invite_code())
+        logger.debug(pikpak.get_self_vip_info())
+        proxy = pikpak.proxies and pikpak.proxies.get("http", None) or None
+        pikpak.pikpakapi.httpx_client_args = {
+            "proxy": proxy
+        }
+        new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(new_loop)
+        main_loop = asyncio.get_event_loop()
+        if not pikpak.pikpakapi.user_id or not pikpak.pikpakapi.access_token or not pikpak.pikpakapi.refresh_token:
+            get_future = asyncio.ensure_future(pikpak.pikpakapi.login())
+            main_loop.run_until_complete(get_future)
+        # 获取Pack From Shared的id
+        get_future = asyncio.ensure_future(
+            pikpak.pikpakapi.offline_download(download_test))
+        main_loop.run_until_complete(get_future)
+        result = get_future.result()
+        logger.debug(result)
+        # get_future = asyncio.ensure_future(
+        #     pikpak.pikpakapi.get_task_status(result.task.id))
+        # main_loop.run_until_complete(get_future)
+        # result_status = get_future.result()
+        # logger.debug(result_status)
+        task = result.get("task")
+        name = task.get("file_name") or task.get("name")
+        task_id = task.get("id")
+        file_id = task.get('file_id')
+        result_status = None
+        while not result_status or result_status == DownloadStatus.downloading:
+            logger.info(f"等待下载结束{name}")
+            time.sleep(5)
+            get_future = asyncio.ensure_future(
+                pikpak.pikpakapi.get_task_status(task_id, file_id))
+            main_loop.run_until_complete(get_future)
+            result_status = get_future.result()
+            logger.debug(result_status)
+        # get_future = asyncio.ensure_future(
+        #     pikpak.pikpakapi.vip_info())
+        # main_loop.run_until_complete(get_future)
+        # result = get_future.result()
+        logger.debug(result)
+        logger.info(f"开始下载 一个测试的 种子{download_test}\n文件:{name}下载完成")
+    except Exception as e:
+        logger.info("测试 下载登陆错误  =====")
+        logger.debug(e)
+
+
 if __name__ == "__main__":
-    # # email = "zlyezm5338@cevipsa.com"
-    # email = "hamidan206@otemdi.com"
+    set_def_callback()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    # email = "bpzaof1188@nuclene.com"
     # password = "098poi"
-    # pikpak_ = PikPak(email, password, run=False)
-    # # pikpak_.set_proxy("114.132.202.246:8080")
-    # # pikpak_.set_activation_code(98105081)
-    # # pikpak_.run_req_2invite()
-    # # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
-    # # pikpak_.get_self_invite_code()
+    # pikpak_ = PikPak(email, password)
+    # from proxy_ip import pingPikpak
+    # # pingPikpak("43.134.68.153:3128 http", [])
+    # # pikpak_.set_proxy("43.134.68.153:3128")
+    # run_new_test(pikpak_)
+    # pikpak_.set_activation_code(98105081)
+    # pikpak_.run_req_2invite()
+    # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
+    # pikpak_.get_self_invite_code()
     # pikpak_.get_self_vip_info()
 
-    crete_invite(98105081)
+    crete_invite(78269860)
