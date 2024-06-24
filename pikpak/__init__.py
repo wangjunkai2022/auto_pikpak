@@ -5,6 +5,7 @@ import os
 import random
 import string
 from pikpak.PikPakAPI.pikpakapi.enums import DownloadStatus
+from pikpak.image import *
 from proxy_ip import pop_prxy_pikpak
 import enum
 import hashlib
@@ -14,17 +15,82 @@ import time
 import requests
 import config.config as config
 
-from mail.mail import create_one_mail
+from mail.mail import create_one_mail, get_code, get_mail
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
 
 from tools import set_def_callback
 
+from captcha.ai.yolov8_test import ai_test_byte
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 
 logger = logging.getLogger("pikpak")
 
 download_test = "magnet:?xt=urn:btih:C875E08EAC834DD82D34D2C385BBAB598415C98A"
+
+# 滑块数据加密
+
+
+def r(e, t):
+    n = t - 1
+    if n < 0:
+        n = 0
+    r = e[n]
+    u = r["row"] // 2 + 1
+    c = r["column"] // 2 + 1
+    f = r["matrix"][u][c]
+    l = t + 1
+    if l >= len(e):
+        l = t
+    d = e[l]
+    p = l % d["row"]
+    h = l % d["column"]
+    g = d["matrix"][p][h]
+    y = e[t]
+    m = 3 % y["row"]
+    v = 7 % y["column"]
+    w = y["matrix"][m][v]
+    b = i(f) + o(w)
+    x = i(w) - o(f)
+    return [s(a(i(f), o(f))), s(a(i(g), o(g))), s(a(i(w), o(w))), s(a(b, x))]
+
+
+def i(e):
+    return int(e.split(",")[0])
+
+
+def o(e):
+    return int(e.split(",")[1])
+
+
+def a(e, t):
+    return str(e) + "^⁣^" + str(t)
+
+
+def s(e):
+    t = 0
+    n = len(e)
+    for r in range(n):
+        t = u(31 * t + ord(e[r]))
+    return t
+
+
+def u(e):
+    t = -2147483648
+    n = 2147483647
+    if e > n:
+        return t + (e - n) % (n - t + 1) - 1
+    if e < t:
+        return n - (t - e) % (n - t + 1) + 1
+    return e
+
+
+def c(e, t):
+    return s(e + "⁣" + str(t))
+
+
+def img_jj(e, t, n):
+    return {"ca": r(e, t), "f": c(n, t)}
 
 
 class PikPak:
@@ -66,7 +132,7 @@ class PikPak:
     vip_day_num = None
 
     PIKPAK_API_HOST = "api-drive.mypikpak.com"
-    
+
     def __req_url(
             self,
             method,
@@ -205,8 +271,19 @@ class PikPak:
             # logger.debug("打开这个网址手动去执行验证 并获取的token复制到此\n")
             # token = input()
             # logger.debug(f"输入的token\n{token}")
-            self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
-            logger.info(f"获取的到Token是:{self.captcha_token}")
+            # self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
+            # logger.info(f"获取的到Token是:{self.captcha_token}")
+            self.captcha_token = res_json.get("captcha_token")
+            while True:
+                logger.info('验证滑块中...')
+                img_info = self._auto_captcha()
+                if img_info['response_data']['result'] == 'accept':
+                    logger.info('验证通过!!!')
+                    break
+                else:
+                    logger.info('验证失败, 重新验证滑块中...')
+            self.captcha_token = self.get_new_token(
+                img_info).get("captcha_token")
         else:
             error = res_json.get("error")
             if error:
@@ -267,7 +344,7 @@ class PikPak:
 
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
-        code = config.get_email_verification_code_callback()(self.mail)
+        code = get_code(self.mail)
         url = f"https://user.mypikpak.com/v1/auth/verification/verify"
         payload = {
             "client_id": self.client_id,
@@ -1154,103 +1231,80 @@ class PikPak:
             self.vip_day_num = 0
         return self.vip_day_num
 
-    def get_path_list(self, path=""):
-        """获取指定路径下的所有文件 只获取一层
-
-        Args:
-            path (_type_): 需要获取的路径 默认是根目录
-        """
-        url = f"https://api-drive.mypikpak.com/drive/v1/files"
-        payload = {
-            "parent_id": path,
-            "thumbnail_size": "SIZE_MEDIUM",
-            "limit": 10,
-            "with_audit": "true",
-            "page_token": "",
-            "filters": json.dumps({}),
+    # 这里是自动验证
+    def _auto_captcha(self):
+        url = "https://user.mypikpak.com/pzzl/gen"
+        params = {
+            "deviceid": self.device_id,
+            "traceid": ""
         }
-        
-        pass
+        response = self.__req_url(
+            "GET", url, params=params,
+            # proxies=self.proxies,
+        )
+        imgs_json = response.json()
+        frames = imgs_json["frames"]
+        pid = imgs_json['pid']
+        traceid = imgs_json['traceid']
+        logger.info('滑块ID:')
+        logger.debug(json.dumps(pid, indent=4))
+        params = {
+            'deviceid': self.device_id,
+            'pid': pid,
+            'traceid': traceid
+        }
+        url = "https://user.mypikpak.com/pzzl/image"
+        response1 = self.__req_url(
+            "GET", url, params=params,
+            # proxies=self.proxies,
+        )
+        img_data = response1.content
+        # 保存初始图片
+        save_requests_img(img_data, f'temp/1.png')
+        # 保存拼图图片
+        image_run(f'temp/1.png', frames)
+        # 识别图片
+        ima_path = "temp/"
+        for file in os.listdir(ima_path):
+            with open(f"{ima_path}/{file}", 'rb') as f:
+                image_bytes = f.read()
+                if ai_test_byte(image_bytes) == "ok":
+                    select_id = file.split(".")[0]
+                    break
+        # 删除缓存图片
+        delete_img()
+        json_data = img_jj(frames, int(select_id), pid)
+        f = json_data['f']
+        npac = json_data['ca']
+        params = {
+            'pid': pid,
+            'deviceid': self.device_id,
+            'traceid': traceid,
+            'f': f,
+            'n': npac[0],
+            'p': npac[1],
+            'a': npac[2],
+            'c': npac[3]
+        }
+        url = f"https://user.mypikpak.com/pzzl/verify"
+        response1 = self.__req_url(
+            "GET", url, params=params,
+            # proxies=self.proxies,
+        )
+        response_data = response1.json()
+        result = {'pid': pid, 'traceid': traceid,
+                  'response_data': response_data}
+        return result
 
-    _path_id_cache = {}
-
-    def path_to_id(self, path: str, create: bool = False) -> List[Dict[str, str]]:
-        """
-        path: str - 路径
-        create: bool - 是否创建不存在的文件夹
-
-        将形如 /path/a/b 的路径转换为 文件夹的id
-        """
-        if not path or len(path) <= 0:
-            return []
-        paths = path.split("/")
-        paths = [p.strip() for p in paths if len(p) > 0]
-        # 构造不同级别的path表达式，尝试找到距离目标最近的那一层
-        multi_level_paths = [
-            "/" + "/".join(paths[: i + 1]) for i in range(len(paths))]
-        path_ids = [
-            self._path_id_cache[p]
-            for p in multi_level_paths
-            if p in self._path_id_cache
-        ]
-        # 判断缓存命中情况
-        hit_cnt = len(path_ids)
-        if hit_cnt == len(paths):
-            return path_ids
-        elif hit_cnt == 0:
-            count = 0
-            parent_id = None
-        else:
-            count = hit_cnt
-            parent_id = path_ids[-1]["id"]
-
-        next_page_token = None
-        while count < len(paths):
-            current_parent_path = "/" + "/".join(paths[:count])
-            data = await self.file_list(
-                parent_id=parent_id, next_page_token=next_page_token
-            )
-            record_of_target_path = None
-            for f in data.get("files", []):
-                current_path = "/" + "/".join(paths[:count] + [f.get("name")])
-                file_type = (
-                    "folder" if f.get("kind", "").find(
-                        "folder") != -1 else "file"
-                )
-                record = {
-                    "id": f.get("id"),
-                    "name": f.get("name"),
-                    "file_type": file_type,
-                }
-                self._path_id_cache[current_path] = record
-                if f.get("name") == paths[count]:
-                    record_of_target_path = record
-                    # 不break: 剩下的文件也同样缓存起来
-            if record_of_target_path is not None:
-                path_ids.append(record_of_target_path)
-                count += 1
-                parent_id = record_of_target_path["id"]
-            elif data.get("next_page_token") and (
-                not next_page_token or next_page_token != data.get(
-                    "next_page_token")
-            ):
-                next_page_token = data.get("next_page_token")
-            elif create:
-                data = await self.create_folder(name=paths[count], parent_id=parent_id)
-                id = data.get("file").get("id")
-                record = {
-                    "id": id,
-                    "name": paths[count],
-                    "file_type": "folder",
-                }
-                path_ids.append(record)
-                current_path = "/" + "/".join(paths[: count + 1])
-                self._path_id_cache[current_path] = record
-                count += 1
-                parent_id = id
-            else:
-                break
-        return path_ids
+    def get_new_token(self, result):
+        traceid = result['traceid']
+        pid = result['pid']
+        url = f"https://user.mypikpak.com/credit/v1/report?deviceid={self.device_id}&captcha_token={self.captcha_token}&type=pzzlSlider&result=0&data={pid}&traceid={traceid}"
+        response2 = self.__req_url("GET", url)
+        response_data = response2.json()
+        logger.info('获取验证TOKEN:')
+        logger.debug(json.dumps(response_data, indent=4))
+        return response_data
 
 
 def radom_password():
@@ -1265,7 +1319,7 @@ def radom_password():
 def crete_invite(invite) -> PikPak:
     try:
         pik_go = PikPak(
-            mail=create_one_mail(),
+            mail=get_mail(),
             pd=radom_password(),
         )
         pik_go.set_activation_code(invite)
