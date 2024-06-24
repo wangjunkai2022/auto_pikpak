@@ -3,3 +3,6 @@ selenium
 pyTelegramBotAPI
 pyrclone
 httpx
+numpy
+opencv_python
+opencv_python_headless

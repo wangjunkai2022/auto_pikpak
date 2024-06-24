@@ -13,13 +13,10 @@ import uuid
 import time
 
 import requests
-import config.config as config
 
 from mail.mail import create_one_mail, get_code, get_mail
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
-
-from tools import set_def_callback
 
 from captcha.ai.yolov8_test import ai_test_byte
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
@@ -153,12 +150,12 @@ class PikPak:
             json=None,
     ):
 
-        for index in range(0, config.requests_retry):
+        for index in range(0, 3):
             try:
                 logger.debug(f"当前的代理是：{proxies}")
                 resp = requests.request(method=method, url=url, params=params, data=data, headers=headers,
                                         cookies=cookies,
-                                        files=files, auth=auth, timeout=config.requests_timeout,
+                                        files=files, auth=auth, timeout=30,
                                         allow_redirects=allow_redirects,
                                         proxies=proxies,
                                         hooks=hooks, stream=stream, verify=verify or False, cert=cert, json=json)
@@ -416,7 +413,7 @@ class PikPak:
 
     def __login2(self, refresh=False):
         if not refresh and self.authorization:
-            logger.info(f"已经登陆了 现在不需要登陆")
+            logger.debug(f"已经登陆了 现在不需要登陆")
             return
         url = f"https://user.mypikpak.com/v1/auth/token"
         payload = {
@@ -1398,7 +1395,6 @@ def run_new_test(pikpak: PikPak):
 
 
 if __name__ == "__main__":
-    set_def_callback()
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)

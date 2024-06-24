@@ -1,6 +1,5 @@
 import os
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -40,24 +39,6 @@ def re_img(img_list, height, width, matrix):
             img[i * height // len(matrix[0]): (i + 1) * height // len(matrix[0]),
                 j * width // len(matrix[0]): (j + 1) * width // len(matrix[0])] = new_img_list[i][j]
     return img
-
-
-# 图像展示
-def show_img_list(img_list):
-    n = len(img_list)
-    for i in range(n):
-        for j in range(n):
-            plt.subplot(n, n, i * n + j + 1)
-            plt.imshow(img_list[i][j])
-            plt.axis('off')
-    plt.show()
-
-
-def show_img(img):
-    plt.imshow(img)
-    plt.axis('off')
-    plt.show()
-
 
 # 保存图像
 def save_img(img, path):

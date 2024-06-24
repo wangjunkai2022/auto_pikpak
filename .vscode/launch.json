@@ -4,6 +4,18 @@
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
+        {
+            "name": "Python main",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
         {
             "name": "Python alist",
             "type": "debugpy",
@@ -16,10 +28,43 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python pikpak",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/__init__.py",
+            "cwd": "${workspaceFolder}:${workspaceFolder}/pikpak",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python pikpak_extensions",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/extensions.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/pikpak"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python pikpak_auto_invite",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/auto_invite.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/pikpak"
+            },
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python telegram",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/telegram/__init__.py",
+            "program": "${workspaceFolder}/telegram_auto.py",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"

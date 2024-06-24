@@ -1,5 +1,6 @@
 import base64
 from io import BytesIO
+import os
 import re
 import time
 from ultralytics import YOLO
@@ -16,7 +17,7 @@ def byte_to_image(byte_data, image_path=None):
 
 
 def ai_test_byte(byte):
-    model = YOLO('./runs/classify/train/weights/best.pt')
+    model = YOLO(os.path.join(os.path.dirname(__file__), "best.pt"))
     source = byte_to_image(byte)
     results = model(source)
     # mp.argmax(results[0].probs.data.tolist())
