@@ -10,7 +10,7 @@ from tools import set_def_callback
 
 logger = logging.getLogger("telegram")
 loging_names = [
-    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone", "telegram",
+    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone", "telegram", "system_service"
 ]
 
 
@@ -21,6 +21,7 @@ class 模式选项(enum.Enum):
     设置打印等级 = "设置打印等级"
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
+    重启系统服务 = "重启系统服务"
 
 
 class Telegram():
@@ -121,6 +122,18 @@ class Telegram():
         except Exception as e:
             self.send_print_to_tg(e)
         self._task_over()
+
+    def _重启系统服务(self, message: Message):
+        self.bot.send_message(chat_id=message.chat.id,
+                              text="选择需要重启的服务 只有在root用户下执行才有效果", disable_notification=True)
+        servers = ["all", "alist", "mount_alist2rclone", "emby",]
+        markup = InlineKeyboardMarkup(row_width=2)
+        for service in servers:
+            btn = InlineKeyboardButton(
+                logging.getLevelName(service), callback_data=service,)
+            markup.add(btn)
+        self.bot.send_message(message.chat.id, 模式选项.重启系统服务.name,
+                              reply_markup=markup)
 
     def send_print_to_tg(self, message_text):
         """发送消息到TG
@@ -251,6 +264,8 @@ class Telegram():
                 self.__setLoggerLevel(level)
                 self.bot.send_message(chat_id=call.message.chat.id,
                                       text=f"设置打印模式{logging.getLevelName(level)}完毕", disable_notification=True)
+            elif call.message.text == 模式选项.重启系统服务.name:
+                pass
 
     def __reply_button(self, call: CallbackQuery):
         if call.message.text == 模式选项.设置打印等级.name:
