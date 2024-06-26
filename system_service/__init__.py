@@ -34,14 +34,14 @@ class SystemService:
         elif tager == SystemServiceTager.emby:
             self.server_name = ["emby-server.service"]
 
-    def run(self):
-        self._run_command("start", self.server_name)
+    def run(self) -> SystemServiceOutput:
+        return self._run_command("start", self.server_name)
 
-    def stop(self):
-        self._run_command("stop", self.server_name)
+    def stop(self) -> SystemServiceOutput:
+        return self._run_command("stop", self.server_name)
 
-    def status(self):
-        self._run_command("status", self.server_name)
+    def status(self) -> SystemServiceOutput:
+        return self._run_command("status", self.server_name)
 
     def _run_command(
         self, command: str, arguments: Iterable[str] = tuple()

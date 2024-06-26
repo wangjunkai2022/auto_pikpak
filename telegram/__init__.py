@@ -6,6 +6,7 @@ import config.config
 import logging
 
 from main import ManagerAlistPikpak, run_all as mian_run_all, 所有的没有vip的PikPak, 注册新号激活
+from system_service import SystemService, SystemServiceTager
 from tools import set_def_callback
 
 logger = logging.getLogger("telegram")
@@ -126,11 +127,11 @@ class Telegram():
     def _重启系统服务(self, message: Message):
         self.bot.send_message(chat_id=message.chat.id,
                               text="选择需要重启的服务 只有在root用户下执行才有效果", disable_notification=True)
-        servers = ["all", "alist", "mount_alist2rclone", "emby",]
+
         markup = InlineKeyboardMarkup(row_width=2)
-        for service in servers:
+        for service in SystemServiceTager:
             btn = InlineKeyboardButton(
-                logging.getLevelName(service), callback_data=service,)
+                logging.getLevelName(service), callback_data=service.name,)
             markup.add(btn)
         self.bot.send_message(message.chat.id, 模式选项.重启系统服务.name,
                               reply_markup=markup)
@@ -265,7 +266,12 @@ class Telegram():
                 self.bot.send_message(chat_id=call.message.chat.id,
                                       text=f"设置打印模式{logging.getLevelName(level)}完毕", disable_notification=True)
             elif call.message.text == 模式选项.重启系统服务.name:
-                pass
+                service = SystemService(SystemServiceTager[call.data])
+                stop = service.status()
+                self.bot.send_message(call.message.chat.id,
+                                      f"停止系统{call.data}。。。。。。\n{stop.output}")
+                # run = service.run()
+                # self.bot.send_message(call.message.chat.id, f"启动系统{call.data}。。。。。。\n{run.output}")
 
     def __reply_button(self, call: CallbackQuery):
         if call.message.text == 模式选项.设置打印等级.name:
