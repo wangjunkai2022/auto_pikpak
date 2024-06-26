@@ -11,6 +11,7 @@ class SystemServiceTager(enum.Enum):
     alist = 2
     rclone = 3
     emby = 4
+    all_status = 5
 
 
 @dataclass
@@ -33,6 +34,9 @@ class SystemService:
             self.server_name = ["rclone.service"]
         elif tager == SystemServiceTager.emby:
             self.server_name = ["emby-server.service"]
+        elif tager == SystemServiceTager.all_status:
+            self.status()
+            self.server_name = []
 
     def run(self) -> SystemServiceOutput:
         return self._run_command("start", self.server_name)
@@ -71,15 +75,11 @@ class SystemService:
                     output.splitlines(),
                     error.splitlines(),
                 )
-        except FileNotFoundError as file_missing:
-            logger.exception(
-                f"Can't find rclone executable. {file_missing}")
-            return SystemServiceOutput([""], [""])
         except Exception as exception:
-            logger.exception(
-                f"Exception running {command_to_run}. Exception: {exception}"
-            )
-            return SystemServiceOutput([""], [""])
+            error_str = f"Exception running {
+                command_to_run}. Exception: {exception}"
+            logger.exception(error_str)
+            return SystemServiceOutput([""], [exception])
 
 
 if __name__ == "__main__":

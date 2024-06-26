@@ -130,8 +130,9 @@ class Telegram():
 
         markup = InlineKeyboardMarkup(row_width=2)
         for service in SystemServiceTager:
+            name_str = service.name
             btn = InlineKeyboardButton(
-                logging.getLevelName(service), callback_data=service.name,)
+                name_str, callback_data=name_str,)
             markup.add(btn)
         self.bot.send_message(message.chat.id, 模式选项.重启系统服务.name,
                               reply_markup=markup)
@@ -242,8 +243,8 @@ class Telegram():
 
     def __call_back(self, call: CallbackQuery):
         if call.data:
-            index = int(call.data)
             if call.message.text == 模式选项.选择激活.name:
+                index = int(call.data)
                 pikpak = self.run_temp_datas[index]
                 self.bot.send_message(call.message.chat.id,
                                       f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
@@ -267,14 +268,13 @@ class Telegram():
                                       text=f"设置打印模式{logging.getLevelName(level)}完毕", disable_notification=True)
             elif call.message.text == 模式选项.重启系统服务.name:
                 service = SystemService(SystemServiceTager[call.data])
-                stop = service.status()
-                self.bot.send_message(call.message.chat.id,
-                                      f"停止系统{call.data}。。。。。。\n{stop.output}")
-                # run = service.run()
-                # self.bot.send_message(call.message.chat.id, f"启动系统{call.data}。。。。。。\n{run.output}")
+                stop = service.stop()
+                self.bot.send_message(call.message.chat.id, f"停止系统{call.data}。\noutput:{stop.output}\nerror:{stop.error}")
+                run = service.run()
+                self.bot.send_message(call.message.chat.id, f"启动系统{call.data}。\noutput:{run.output}\nerror:{run.error}")
 
     def __reply_button(self, call: CallbackQuery):
-        if call.message.text == 模式选项.设置打印等级.name:
+        if (call.message.text == 模式选项.设置打印等级.name) or (call.message.text == 模式选项.重启系统服务.name):
             return True
 
         if self.runing_chat and self.runing_chat.id == call.message.chat.id:
