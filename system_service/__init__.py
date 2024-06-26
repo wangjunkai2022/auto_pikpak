@@ -6,7 +6,7 @@ from typing import Iterable, List, Tuple
 logger = logging.getLogger("system_service")
 
 
-class SystemServiceTager(enum):
+class SystemServiceTager(enum.Enum):
     all = 1
     alist = 2
     rclone = 3
