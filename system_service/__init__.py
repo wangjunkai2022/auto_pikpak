@@ -9,8 +9,8 @@ logger = logging.getLogger("system_service")
 class SystemServiceTager(enum):
     all = 1
     alist = 2
-    rclone = 3,
-    emby = 4,
+    rclone = 3
+    emby = 4
 
 
 @dataclass
