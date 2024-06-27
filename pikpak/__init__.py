@@ -277,7 +277,8 @@ class PikPak:
                 try:
                     img_info = self._auto_captcha()
                 except:
-                    logger.info('验证通过!!!')
+                    logger.info('验证失败, 重新验证滑块中...')
+                    continue
                 if img_info and img_info['response_data'] and img_info['response_data']['result'] and img_info['response_data']['result'] == 'accept':
                     logger.info('验证通过!!!')
                     break
