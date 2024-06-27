@@ -51,9 +51,39 @@ class Alist(object):
         data = {}
         data["time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         data["content"] = self.get_storage_list()["content"]
-        json_data.append(data)
+        temp_datas = []
+
+        new_json_data = []
+        for _data in json_data:
+            __json_data = []
+            for __data in _data["content"]:
+                if __data in temp_datas:
+                    continue
+                else:
+                    temp_datas.append(__data)
+                    __json_data.append(__data)
+            if len(__json_data) > 0:
+                new_json_data.append(
+                    {
+                        "content": __json_data,
+                        "time": _data["time"],
+                    }
+                )
+        __json_data = []
+        for _data in data["content"]:
+            if _data in temp_datas:
+                continue
+            else:
+                __json_data.append(_data)
+        if len(__json_data) > 0:
+            new_json_data.append(
+                {
+                    "content": __json_data,
+                    "time": data["time"],
+                }
+            )
         with open(self.cache_json_file, mode='w') as file:
-            json.dump(json_data, file, ensure_ascii=False, indent=4)
+            json.dump(new_json_data, file, ensure_ascii=False, indent=4)
 
     def _get_header(self):
         return {
@@ -243,6 +273,7 @@ class Alist(object):
 
 if __name__ == "__main__":
     alist = Alist()
+    alist.saveToNowConif()
     # storage_list_data = alist.get_storage_list()
     # import config
     # invites = config.pikpak_user
@@ -257,8 +288,8 @@ if __name__ == "__main__":
 
     # pikpaks = alist.get_storage_list()
     # logger.debug(pikpaks)
-    alist.copy_storages_2_alist(
-        Alist(domain="http://10.211.55.58:5244"), is_clean=True)
+    # alist.copy_storages_2_alist(
+    #     Alist(domain="http://10.211.55.58:5244"), is_clean=True)
     # alist.saveToNowConif()
 
     # alist=Alist(domain="http://10.211.55.58:5244").copy_storages_2_alist(Alist())
