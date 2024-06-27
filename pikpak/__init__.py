@@ -213,7 +213,8 @@ class PikPak:
     def __user_agent(self):
         # 创建随机UA
         t = time.time()
-        ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
+        ua = f"ANDROID-com.pikcloud.pikpak/{self.client_version} accessmode/ devicename/{self.phone_name.title()}_{self.phone_model.title()} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.client_id} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{
+            self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.1.200200 clientversion/{self.client_version} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/"
         return ua
 
     def __init__(self, mail: str = None, pd: str = None,):
@@ -273,14 +274,18 @@ class PikPak:
             self.captcha_token = res_json.get("captcha_token")
             while True:
                 logger.info('验证滑块中...')
-                img_info = self._auto_captcha()
-                if img_info['response_data']['result'] == 'accept':
+                try:
+                    img_info = self._auto_captcha()
+                except:
+                    logger.info('验证通过!!!')
+                if img_info and img_info['response_data'] and img_info['response_data']['result'] and img_info['response_data']['result'] == 'accept':
                     logger.info('验证通过!!!')
                     break
                 else:
                     logger.info('验证失败, 重新验证滑块中...')
             self.captcha_token = self.get_new_token(
                 img_info).get("captcha_token")
+
         else:
             error = res_json.get("error")
             if error:
@@ -408,7 +413,8 @@ class PikPak:
         else:
             logger.debug(f"注册登陆成功:\n{res_json}")
             self.user_id = res_json.get("sub")
-            self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
+            self.authorization = f"{res_json.get('token_type')} {
+                res_json.get('access_token')}"
             self.isReqMail = self.mail
 
     def __login2(self, refresh=False):
@@ -516,7 +522,8 @@ class PikPak:
         if response.status_code == 200:
             logger.debug(f"登陆成功{res_json}")
             self.user_id = res_json.get("sub")
-            self.authorization = f"{res_json.get('token_type')} {res_json.get('access_token')}"
+            self.authorization = f"{res_json.get('token_type')} {
+                res_json.get('access_token')}"
         else:
             if res_json.get("error") == "captcha_required":
                 self.captcha_action = "POST:/v1/auth/signin"
@@ -1002,7 +1009,8 @@ class PikPak:
 
     def __get_pikpak_share_passcode(self, share_id):
         # share_url = "https://mypikpak.com/s/VNxHRUombIy7SWJs5Oyw-TDxo1"
-        url = f"https://api-drive.mypikpak.com/drive/v1/share?share_id={share_id}&pass_code=&page_token=&pass_code_token={self.pass_code_token or ''}&thumbnail_size=SIZE_LARGE&limit=100"
+        url = f"https://api-drive.mypikpak.com/drive/v1/share?share_id={share_id}&pass_code=&page_token=&pass_code_token={
+            self.pass_code_token or ''}&thumbnail_size=SIZE_LARGE&limit=100"
         payload = {}
         headers = {
             "x-detection-time": "dl-a10b-0858:389,dl-a10b-0859:397,dl-a10b-0860:395,dl-a10b-0867:401,dl-a10b-0861:431,dl-a10b-0876:421,dl-a10b-0868:556,dl-a10b-0886:505,dl-a10b-0865:575,dl-a10b-0862:603,dl-a10b-0872:569,dl-a10b-0880:658,dl-a10b-0878:662,dl-a10b-0624:636,dl-a10b-0877:685,dl-a10b-0621:654,dl-a10b-0885:666,dl-a10b-0622:656,dl-a10b-0623:657,dl-a10b-0625:655,dl-a10b-0881:691,dl-a10b-0879:699,dl-a10b-0864:779,dl-a10b-0884:722,dl-a10b-0882:742,dl-a10b-0875:752,dl-a10b-0883:768,dl-a10b-0869:814,dl-a10b-0873:801,dl-a10b-0887:763,dl-a10b-0874:800,dl-a10b-0866:826,dl-a10b-0870:815,dl-a10b-0871:846,dl-a10b-0863:938",
@@ -1243,7 +1251,7 @@ class PikPak:
         frames = imgs_json["frames"]
         pid = imgs_json['pid']
         traceid = imgs_json['traceid']
-        logger.info('滑块ID:')
+        logger.debug('滑块ID:')
         logger.debug(json.dumps(pid, indent=4))
         params = {
             'deviceid': self.device_id,
@@ -1296,10 +1304,11 @@ class PikPak:
     def get_new_token(self, result):
         traceid = result['traceid']
         pid = result['pid']
-        url = f"https://user.mypikpak.com/credit/v1/report?deviceid={self.device_id}&captcha_token={self.captcha_token}&type=pzzlSlider&result=0&data={pid}&traceid={traceid}"
+        url = f"https://user.mypikpak.com/credit/v1/report?deviceid={self.device_id}&captcha_token={
+            self.captcha_token}&type=pzzlSlider&result=0&data={pid}&traceid={traceid}"
         response2 = self.__req_url("GET", url)
         response_data = response2.json()
-        logger.info('获取验证TOKEN:')
+        logger.debug('获取验证TOKEN:')
         logger.debug(json.dumps(response_data, indent=4))
         return response_data
 
