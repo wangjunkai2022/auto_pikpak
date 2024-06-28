@@ -297,3 +297,4 @@ if __name__ == "__main__":
     # # pingPikpak("43.134.68.153:3128 http", [])
     # # pikpak_.set_proxy("43.134.68.153:3128")
     # run_new_test(pikpak_)
+    # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
