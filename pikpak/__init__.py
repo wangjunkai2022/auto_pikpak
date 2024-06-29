@@ -273,11 +273,14 @@ class PikPak:
             self.captcha_token = res_json.get("captcha_token")
             while True:
                 logger.info('验证滑块中...')
-                img_info = self._auto_captcha()
-                if img_info['response_data']['result'] == 'accept':
-                    logger.info('验证通过!!!')
-                    break
-                else:
+                try:
+                    img_info = self._auto_captcha()
+                    if img_info['response_data']['result'] == 'accept':
+                        logger.info('验证通过!!!')
+                        break
+                    else:
+                        logger.info('验证失败, 重新验证滑块中...')
+                except:
                     logger.info('验证失败, 重新验证滑块中...')
             self.captcha_token = self.get_new_token(
                 img_info).get("captcha_token")
