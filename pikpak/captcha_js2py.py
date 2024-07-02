@@ -66,7 +66,6 @@ def get_d3(_0xd53a54, _0x17c071):
     return _temp2 & 0xffffffff
 
 
-
 # 滑块数据加密
 def r(e, t):
     n = t - 1
@@ -91,10 +90,10 @@ def r(e, t):
     x = i(w) - o(f)
     return [
         s(a(i(f), o(f))),
-        s(a(i(g), o(g))), 
+        s(a(i(g), o(g))),
         s(a(i(w), o(w))),
         s(a(b, x))
-        ]
+    ]
 
 
 def i(e):
