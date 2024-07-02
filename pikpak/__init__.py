@@ -5,6 +5,7 @@ import os
 import random
 import string
 from pikpak.PikPakAPI.pikpakapi.enums import DownloadStatus
+from pikpak.captcha_js2py import get_d, img_jj
 from pikpak.image import *
 from proxy_ip import pop_prxy_pikpak
 import enum
@@ -13,82 +14,18 @@ import uuid
 import time
 
 import requests
-
+from config.config import get_captcha_callback
 from mail.mail import create_one_mail, get_code, get_mail
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
 
 from captcha.ai.yolov8_test import ai_test_byte
+from tools import set_def_callback
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 
 logger = logging.getLogger("pikpak")
 
 download_test = "magnet:?xt=urn:btih:C875E08EAC834DD82D34D2C385BBAB598415C98A"
-
-# 滑块数据加密
-
-
-def r(e, t):
-    n = t - 1
-    if n < 0:
-        n = 0
-    r = e[n]
-    u = r["row"] // 2 + 1
-    c = r["column"] // 2 + 1
-    f = r["matrix"][u][c]
-    l = t + 1
-    if l >= len(e):
-        l = t
-    d = e[l]
-    p = l % d["row"]
-    h = l % d["column"]
-    g = d["matrix"][p][h]
-    y = e[t]
-    m = 3 % y["row"]
-    v = 7 % y["column"]
-    w = y["matrix"][m][v]
-    b = i(f) + o(w)
-    x = i(w) - o(f)
-    return [s(a(i(f), o(f))), s(a(i(g), o(g))), s(a(i(w), o(w))), s(a(b, x))]
-
-
-def i(e):
-    return int(e.split(",")[0])
-
-
-def o(e):
-    return int(e.split(",")[1])
-
-
-def a(e, t):
-    return str(e) + "^⁣^" + str(t)
-
-
-def s(e):
-    t = 0
-    n = len(e)
-    for r in range(n):
-        t = u(31 * t + ord(e[r]))
-    return t
-
-
-def u(e):
-    t = -2147483648
-    n = 2147483647
-    if e > n:
-        return t + (e - n) % (n - t + 1) - 1
-    if e < t:
-        return n - (t - e) % (n - t + 1) + 1
-    return e
-
-
-def c(e, t):
-    return s(e + "⁣" + str(t))
-
-
-def img_jj(e, t, n):
-    return {"ca": r(e, t), "f": c(n, t)}
-
 
 class PikPak:
     pikpakapi: PikPakApi = None
@@ -271,19 +208,25 @@ class PikPak:
             # self.captcha_token = config.get_captcha_callback()(res_json.get("url"))
             # logger.info(f"获取的到Token是:{self.captcha_token}")
             self.captcha_token = res_json.get("captcha_token")
-            while True:
-                logger.info('验证滑块中...')
+            expires_in = res_json.get("expires_in")
+            start_time = time.time()
+            isOk = False
+            while (time.time() - start_time) < expires_in:
+                logger.info(f'验证滑块中...')
                 try:
                     img_info = self._auto_captcha()
                     if img_info['response_data']['result'] == 'accept':
                         logger.info('验证通过!!!')
+                        isOk = True
                         break
                     else:
                         logger.info('验证失败, 重新验证滑块中...')
                 except:
                     logger.info('验证失败, 重新验证滑块中...')
-            self.captcha_token = self.get_new_token(
-                img_info).get("captcha_token")
+            if isOk:
+                self.captcha_token = self.get_new_token(img_info).get("captcha_token")
+            else:
+               self.captcha_token = get_captcha_callback()(res_json.get("url"))
         else:
             error = res_json.get("error")
             if error:
@@ -332,6 +275,12 @@ class PikPak:
             logger.debug(f"发送验证消息到邮箱 ERROR:\n{res_json}")
             if res_json.get("error") == "captcha_required":
                 self.captcha_token = ''
+                self.captcha_action = "POST:/v1/auth/verification"
+                self.__initCaptcha()
+                self.__send_code()
+            elif res_json.get("error") == "captcha_invalid":
+                logger.info("滑动验证失败 重新验证")
+                # self.captcha_token = ''
                 self.captcha_action = "POST:/v1/auth/verification"
                 self.__initCaptcha()
                 self.__send_code()
@@ -1240,7 +1189,7 @@ class PikPak:
         }
         response = self.__req_url(
             "GET", url, params=params,
-            # proxies=self.proxies,
+            proxies=self.proxies,
         )
         imgs_json = response.json()
         frames = imgs_json["frames"]
@@ -1256,7 +1205,7 @@ class PikPak:
         url = "https://user.mypikpak.com/pzzl/image"
         response1 = self.__req_url(
             "GET", url, params=params,
-            # proxies=self.proxies,
+            proxies=self.proxies,
         )
         img_data = response1.content
         # 保存初始图片
@@ -1284,12 +1233,13 @@ class PikPak:
             'n': npac[0],
             'p': npac[1],
             'a': npac[2],
-            'c': npac[3]
+            'c': npac[3],
+            'd': get_d(pid + self.device_id + str(f)),
         }
         url = f"https://user.mypikpak.com/pzzl/verify"
         response1 = self.__req_url(
             "GET", url, params=params,
-            # proxies=self.proxies,
+            proxies=self.proxies,
         )
         response_data = response1.json()
         result = {'pid': pid, 'traceid': traceid,
@@ -1300,7 +1250,7 @@ class PikPak:
         traceid = result['traceid']
         pid = result['pid']
         url = f"https://user.mypikpak.com/credit/v1/report?deviceid={self.device_id}&captcha_token={self.captcha_token}&type=pzzlSlider&result=0&data={pid}&traceid={traceid}"
-        response2 = self.__req_url("GET", url)
+        response2 = self.__req_url("GET", url, proxies=self.proxies,)
         response_data = response2.json()
         logger.info('获取验证TOKEN:')
         logger.debug(json.dumps(response_data, indent=4))
@@ -1402,17 +1352,23 @@ if __name__ == "__main__":
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
-    # email = "bpzaof1188@nuclene.com"
-    # password = "098poi"
-    # pikpak_ = PikPak(email, password)
-    # from proxy_ip import pingPikpak
-    # # pingPikpak("43.134.68.153:3128 http", [])
-    # # pikpak_.set_proxy("43.134.68.153:3128")
-    # run_new_test(pikpak_)
-    # pikpak_.set_activation_code(98105081)
-    # pikpak_.run_req_2invite()
-    # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
-    # pikpak_.get_self_invite_code()
-    # pikpak_.get_self_vip_info()
+    set_def_callback()
+    # # email = "bpzaof1188@nuclene.com"
+    # # password = "098poi"
+    # # pikpak_ = PikPak(email, password)
+    # # from proxy_ip import pingPikpak
+    # # # pingPikpak("43.134.68.153:3128 http", [])
+    # # # pikpak_.set_proxy("43.134.68.153:3128")
+    # # run_new_test(pikpak_)
+    # # pikpak_.set_activation_code(98105081)
+    # # pikpak_.run_req_2invite()
+    # # pikpak_.save_share("VNxHRUombIy7SWJs5Oyw-TDxo1")
+    # # pikpak_.get_self_invite_code()
+    # # pikpak_.get_self_vip_info()
 
     crete_invite(78269860)
+    # 文件:[47BT]末路狂花钱.The.Last.Frenzy.2024.WEB-DL.2160p.10Bit.60Fps.HEVC.DDP5.1下载完成
+    # j3o4wxt9@smykwb.com:注册成功 并填写邀请码：78269860
+    # 密码是:BKXlWy
+    
+    url = "https://user.mypikpak.com/captcha/v2/spritePuzzle.html?action=POST%3A%2Fv1%2Fauth%2Fverification&appName=NONE&appid=XBASE&captcha_token=ck0.ryeSyi8drH1QQyzHI9G9Vplq6_6TiZMhx1wub3zCRjGfR4kLH-iuamK6j_c8TviowjqX25kpYRw0VKsWv18vAwcEhd9Lcy7pZeTHoh47CVPnq_tkd-ufpkBJwOq7zDn9I-tDr7v8UyzjOzxZeGesAZarOzqtnBWOdXlOw5jh9u3kZ8927uRl1Y2IZY_UDpoiOuS5vD9XQLdU8QjctlVHkpWZXssU7gOcjQVKRSBSYVrFYJgvv5BEB5GLR6ayUVWmu1JSjipeQ1puzoivFUsu2YsZKOfDm7GR4fj2YCYAxAJLCpnHfiCtk8OP_3o55o8KqLwl161uUOTX6fjzE_5jgU2vKSPbNgLBGbBJwaTUWUeDkIgC-QHh0ZTOjDBNKndkvz99Yiy_1yBJPkpocU-xp728ipn5aa0yDGi9dKShCvJsZcQlg37Vt-1DYtHiT_aayrftpHRZXvdsbglLYVIqSTtsGdWVZHvsFZGuMDJvNizgJSJnSTB94x8Uk21VLqQe0tX4vpCxxnVj7REyeVqTtmHXX3xqRicU5MM9hyWibg0.ClgIhdPQ54YyEhBZTnhUOXc3R01kV3ZFT0thGgYxLjQyLjgiE2NvbS5waWtjbG91ZC5waWtwYWsqIGRjMjFlZDM0MjdmMDQ2MmY4NTI5NzhiMjQ3ZWYxMmZkEoABY8a3M0FJXoatflf1UYXc48DkrUTcpfrsuxvSxIR1EeGIHnPqox-xvKBi3dUUii0pmwkcx6x2YpGpH1WeDXVXuPEaFj49dEYZtLFJwMwNYiJpvnW6O4ZQD2JRGOOpa6_mmmM07U0PUz-COfk4X_RicaftPucj4Jai73AhzPSrx9w&clientVersion=NONE&client_id=YNxT9w7GMdWvEOKa&creditkey=ck0.ryeSyi8drH1QQyzHI9G9Vplq6_6TiZMhx1wub3zCRjGfR4kLH-iuamK6j_c8TviowjqX25kpYRw0VKsWv18vAwcEhd9Lcy7pZeTHoh47CVN414Y-E_vasNMFQI7b5_9CV56K8ujwQ5li9glahyTn9Fzge46FxgWZ181TObd68Vez4CncqQgq4UdoGxl9_sLeS5_8LzbPilxH4GbfmLjHp7KcdamH_y7urzPTOawoYXM-Rnio2N3w1nqE4xjeWHdEpD4o3_G-dLvtXj1yQg1JDrbdGWvUnVbleiRKqMW6H3MMn2yXGcfPughjhNbeOMqufTXObCYJ_SmRHJ2uwnhjxHbbItfvRJIJyVkhruPlefr_MRUbIEw36WH03ID7cIsnzOp18HJUAyfLPVkfZJHD1KVZBEW2iSZR0duIY2vngDJcnGD33bbEBqrsxqCEnye-4hebdSoieFJG6Q5B1XQbtzj_Sad75mF9aLHBisGoCayrlmLS8-XZtRqkqRWrnVb8.ClgIhdPQ54YyEhBZTnhUOXc3R01kV3ZFT0thGgYxLjQyLjgiE2NvbS5waWtjbG91ZC5waWtwYWsqIGRjMjFlZDM0MjdmMDQ2MmY4NTI5NzhiMjQ3ZWYxMmZkEoABY8a3M0FJXoatflf1UYXc48DkrUTcpfrsuxvSxIR1EeGIHnPqox-xvKBi3dUUii0pmwkcx6x2YpGpH1WeDXVXuPEaFj49dEYZtLFJwMwNYiJpvnW6O4ZQD2JRGOOpa6_mmmM07U0PUz-COfk4X_RicaftPucj4Jai73AhzPSrx9w&credittype=1&device_id=dc21ed3427f0462f852978b247ef12fd&deviceid=dc21ed3427f0462f852978b247ef12fd&event=xbase-auth-verification&hl=zh-TW&mainHost=user.mypikpak.com&platformVersion=NONE&privateStyle=&redirect_uri=xlaccsdk01%3A%2F%2Fxunlei.com%2Fcallback%3Fstate%3Ddharbor&traceid="
