@@ -76,8 +76,7 @@ class SystemService:
                     error.splitlines(),
                 )
         except Exception as exception:
-            error_str = f"Exception running {
-                command_to_run}. Exception: {exception}"
+            error_str = f"Exception running {command_to_run}. Exception: {exception}"
             logger.exception(error_str)
             return SystemServiceOutput([""], [exception])
 
