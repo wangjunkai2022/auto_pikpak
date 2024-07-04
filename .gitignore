@@ -5,3 +5,6 @@
 *.pt
 *.cache
 *.cpython-38.pyc
+*.pyc
+*venv/
+*.onnx
