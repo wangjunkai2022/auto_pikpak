@@ -9,12 +9,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 import threading
 import os
 
-import yolov8_test
+from captcha.ai.yolov8_test import ai_test_byte
 
 
-isDebug = False
+isDebug = True
 
-train_path = "./dataTrain/train"
+train_path = os.path.join(os.path.abspath(
+    os.path.dirname(__file__)), "ai/dataTrain/train")
 oldAllImg = []
 for root, dir, _file in os.walk(train_path):
     for file in _file:
@@ -45,7 +46,7 @@ def CheckImgBase64ToList(img):
 # 保存所有文件到文件系统中
 
 
-def SaveAllNewImg(ok_img):
+def SaveAllNewImg(ok_img=None):
     for img in newAllImg:
         saveImg(img, img == ok_img)
 
@@ -81,15 +82,16 @@ class Captcha_Chmod:
         self.runingTh = threading.Thread(target=self.__th_get_captured_url)
         self.runingTh.start()
         # self.saveImage()
-        # self.touchTh = threading.Thread(target=self.__th_touch_slider__button)
-        # self.touchTh.start()
-
-        if not isDebug:
-            self.runingTh.join()
-        if isDebug:
-            self.__print_button_info()
-            while True:
-                time.sleep(1)
+        self.touchTh = threading.Thread(target=self.__th_touch_slider__button)
+        self.touchTh.start()
+        self.touchTh.join()
+        self.runingTh.join()
+        # if not isDebug:
+        #     self.runingTh.join()
+        # if isDebug:
+        #     self.__print_button_info()
+        #     while True:
+        #         time.sleep(1)
 
     # 新线程获取验证
     def __th_get_captured_url(self):
@@ -116,96 +118,48 @@ class Captcha_Chmod:
             except Exception as e:
                 if "HTTPConnectionPool" in e.__str__():
                     # if isinstance(e, HTTPConnectionPool):
-                    # print("关闭了")
-                    break
+                    print("关闭了")
+                return
                 # print(f"没有值{e}")
-                pass
+                # os._exit(0)
         print(f"获取到了验证信息{self.captured_url}")
-        self.saveImage()
+        # self.saveImage()
         self.driver.quit()
         str_start = "captcha_token="
         str_end = "&expires_in"
         search = re.search(f"{str_start}.*{str_end}", self.captured_url)
         self.captcha_token = search.group()[len(str_start):-len(str_end)]
         print(f"运行后的获取到的 captcha_token:\n{self.captcha_token}")
+        # os._exit(0)
         # return self.captcha_token
-
-    def __get_track(self, distance):
-        """
-        计算滑块移动轨迹
-        :param distance: 滑块需要移动的距离
-        :return: 返回移动轨迹
-        """
-        track = []
-        current = 0
-        mid = distance * 3 / 4
-        t = 0.1
-        v = 0
-        while current < distance:
-            if current < mid:
-                a = 2
-            else:
-                a = -3
-            v0 = v
-            v = v0 + a * t
-            move = v0 * t + 1 / 2 * a * t * t
-            current += move
-            track.append(round(move))
-        return track
 
     def __th_touch_slider__button(self):
         button = self.driver.find_element(by=By.ID, value="slider__button")
         actions = ActionChains(self.driver)
         actions.click_and_hold(button).perform()
-
-        # distance = 200
-        # t = 0.2
-        # v = 0
-        # current = 0
         x = 0
         while True:
             try:
-                x += round(random.uniform(-1, 3))
+                x += 1
                 actions.move_by_offset(x, 0).perform()
                 if self.saveImage():
                     # print("当前移动的X:", distance)
-                    if yolov8_test.ai_test_byte(self.image) == "ok":
+                    if ai_test_byte(self.image) == "ok":
                         print("AI 判断通过")
                         actions.release().perform()
                         return
                     # time.sleep(random.random())
-            except:
-                print("报错：：：：")
-                ActionChains(self.driver).click_and_hold(
-                    button).move_by_offset(0, 0).release().perform()
+            except Exception as e:
+                print("报错：：：：", e)
+                self.image = None
+                # ActionChains(self.driver).click_and_hold(
+                #     button).move_by_offset(0, 0).release().perform()
                 break
         print("循环结束应该已经到最后位置了")
-        # actions.release().perform()
-        ActionChains(self.driver).pause(0.1).release().perform()
+        self.driver.quit()
+        # SaveAllNewImg()
+        # os._exit(0)
         # self.driver.quit()
-
-    def __print_button_info(self):
-        button = self.driver.find_element(by=By.ID, value="slider__button")
-        oldPos = button.location_once_scrolled_into_view
-        x, _time = [], []
-        # x.append(oldPos.get("x"))
-        # _time.append(time.time())
-        while not self.captcha_token:
-            try:
-                if button.location_once_scrolled_into_view != oldPos:
-                    oldPos = button.location_once_scrolled_into_view
-                    print(button.location_once_scrolled_into_view,
-                          "::::", time.time())
-                    x.append(oldPos.get("x"))
-                    _time.append(time.time())
-            except:
-                break
-        import matplotlib.pyplot as plt
-        # 1.线图
-        # 调用plt。plot来画图,横轴纵轴两个参数即可
-        plt.plot(_time, x)
-        # python要用show展现出来图
-        plt.show()
 
     def saveImage(self):
         canvas = self.driver.find_element(by=By.ID, value="pzzl-canvas")
@@ -224,27 +178,28 @@ class Captcha_Chmod:
 
 def open_url2token(url):
     captcha = Captcha_Chmod(url)
-    print(captcha.captcha_token)
-    if captcha.captcha_token:
-        SaveAllNewImg(captcha.image)
+    # print(captcha.captcha_token)
+    # if captcha.captcha_token:
+    SaveAllNewImg(captcha.image)
     newAllImg.clear()
 
 
 if __name__ == "__main__":
-    # temp_url = "https://user.mypikpak.com/captcha/v2/spritePuzzle.html?action=POST%3A%2Fv1%2Fauth%2Fverification&appName=NONE&appid=XBASE&captcha_token=ck0.GNUSo4m17OpSstL-qSAzyBUQyjUV2P0p5bEYgZzV-hljkShTX_6gRg2hcxJPMliURNP7BY0kAg2pwJO3sCvFnvmjh3cWDIA-1VO0sf9kJIUwwAS8emJf07i6IzskAZS5t1PVY4aenJNHuNWJta1Xk8Lum03XvyU6t1yolwXbfpHFtDqs1R3WJj0m6gwEaLuDzXbn2wh90nh0eOG6aZgD6HOcW5j1LrNhu-lT2zpS_ngL2ywOujjqZRrpfZjjDIh2HCNaYnJnDvsIYDLiBDE1-lg9PtauuDMpuN78O2e402Ar7CMHB8JKrAWxZ4X4xQBErkrT9b-2UH4d3gLdvjYSi2F2VZbe3UQlBq_KAmU_8zJrFUqiazvOi3m1QzIa2vjfQOfyC9OQlMpQ8rb56sLOPR8K4RE7TTO-uQyvcagViw82kkUJunyCtcIlJlLXny_jNeh9RuHOlx5MtegFwd-j1JVVHiKMvUkXjBxJv-rWHYGCYMxJUp4UOJjUjDLXQYgF&clientVersion=NONE&client_id=YNxT9w7GMdWvEOKa&creditkey=ck0.GNUSo4m17OpSstL-qSAzyBUQyjUV2P0p5bEYgZzV-hljkShTX_6gRg2hcxJPMliURNP7BY0kAg2pwJO3sCvFnvmjh3cWDIA-1VO0sf9kJIWMdlxDACQF1BCd60Eouu78b8-kzWbzzEKX9P677Uh47e9tIuJ--9u0i1GPcqTtMUbv6YhNMA7uBJ9o1dSH9wGkGUR96TmtKgHRWBqot_iKDgm9RK1vx-SCuH0ok1amd2rwqMLJL9JKdfIWEYBEDHAXiLJWQWBuLbnoUGDfeffAkU45tD8Z5OdSzITlW93SjfD0YEvi45kCPXu_YfwAMEHwKvn7ayzeydXWPWijTA1ORVDL0W5hWAnoyO9xsBfT94yp_Kw_w1kv9vTw5PaZUmLRioP6Y6VD0N-haNqdgvOh2mZ2VDLYt1z1HotAO05neMtWNthDR-QQS9FLwKASWib6SIUNBx3MGcEz0qQV9YRol9Y3MTugAe80YkT4EjLM39M&credittype=1&device_id=b7742fb931374efe85756ee936da40e5&deviceid=b7742fb931374efe85756ee936da40e5&event=xbase-auth-verification&hl=zh-TW&mainHost=user.mypikpak.com&platformVersion=NONE&privateStyle=&redirect_uri=xlaccsdk01%3A%2F%2Fxunlei.com%2Fcallback%3Fstate%3Ddharbor&traceid="  # 请替换为实际的网页地址
-    # # temp_url = "https://www.google.com/"
-    # # open_url2token(temp_url)
+    temp_url = "https://user.mypikpak.com/captcha/v2/spritePuzzle.html?action=POST%3A%2Fv1%2Fauth%2Fverification&appName=NONE&appid=XBASE&captcha_token=ck0.GNUSo4m17OpSstL-qSAzyBUQyjUV2P0p5bEYgZzV-hljkShTX_6gRg2hcxJPMliURNP7BY0kAg2pwJO3sCvFnvmjh3cWDIA-1VO0sf9kJIUwwAS8emJf07i6IzskAZS5t1PVY4aenJNHuNWJta1Xk8Lum03XvyU6t1yolwXbfpHFtDqs1R3WJj0m6gwEaLuDzXbn2wh90nh0eOG6aZgD6HOcW5j1LrNhu-lT2zpS_ngL2ywOujjqZRrpfZjjDIh2HCNaYnJnDvsIYDLiBDE1-lg9PtauuDMpuN78O2e402Ar7CMHB8JKrAWxZ4X4xQBErkrT9b-2UH4d3gLdvjYSi2F2VZbe3UQlBq_KAmU_8zJrFUqiazvOi3m1QzIa2vjfQOfyC9OQlMpQ8rb56sLOPR8K4RE7TTO-uQyvcagViw82kkUJunyCtcIlJlLXny_jNeh9RuHOlx5MtegFwd-j1JVVHiKMvUkXjBxJv-rWHYGCYMxJUp4UOJjUjDLXQYgF&clientVersion=NONE&client_id=YNxT9w7GMdWvEOKa&creditkey=ck0.GNUSo4m17OpSstL-qSAzyBUQyjUV2P0p5bEYgZzV-hljkShTX_6gRg2hcxJPMliURNP7BY0kAg2pwJO3sCvFnvmjh3cWDIA-1VO0sf9kJIWMdlxDACQF1BCd60Eouu78b8-kzWbzzEKX9P677Uh47e9tIuJ--9u0i1GPcqTtMUbv6YhNMA7uBJ9o1dSH9wGkGUR96TmtKgHRWBqot_iKDgm9RK1vx-SCuH0ok1amd2rwqMLJL9JKdfIWEYBEDHAXiLJWQWBuLbnoUGDfeffAkU45tD8Z5OdSzITlW93SjfD0YEvi45kCPXu_YfwAMEHwKvn7ayzeydXWPWijTA1ORVDL0W5hWAnoyO9xsBfT94yp_Kw_w1kv9vTw5PaZUmLRioP6Y6VD0N-haNqdgvOh2mZ2VDLYt1z1HotAO05neMtWNthDR-QQS9FLwKASWib6SIUNBx3MGcEz0qQV9YRol9Y3MTugAe80YkT4EjLM39M&credittype=1&device_id=b7742fb931374efe85756ee936da40e5&deviceid=b7742fb931374efe85756ee936da40e5&event=xbase-auth-verification&hl=zh-TW&mainHost=user.mypikpak.com&platformVersion=NONE&privateStyle=&redirect_uri=xlaccsdk01%3A%2F%2Fxunlei.com%2Fcallback%3Fstate%3Ddharbor&traceid="  # 请替换为实际的网页地址
+    # temp_url = "https://www.google.com/"
+    while True:
+        open_url2token(temp_url)
     # captcha = Captcha_Chmod(temp_url)
     # print(captcha.captcha_token)
     # if captcha.captcha_token:
     #     SaveAllNewImg(captcha.image)
     # newAllImg.clear()
 
-    import pikpak.pikpak as pikpak
-    _mail = pikpak.create_one_mail()
-    pik_go = pikpak.PikPak(_mail, "098poi",
-                           captcha_token_callback=open_url2token,
-                           mail_callback=pikpak.get_new_mail_code,
-                           invite=str(1234567)
-                           )
-    pik_go.run_req_2invite()
+    # import pikpak as pikpak
+    # _mail = pikpak.create_one_mail()
+    # pik_go = pikpak.PikPak(_mail, "098poi",
+    #                        captcha_token_callback=open_url2token,
+    #                        mail_callback=pikpak.get_new_mail_code,
+    #                        invite=str(1234567)
+    #                        )
+    # pik_go.run_req_2invite()
