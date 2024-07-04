@@ -1223,7 +1223,7 @@ class PikPak:
                     select_id = file.split(".")[0]
                     break
         # 删除缓存图片
-        delete_img()
+        delete_img(f'temp/1.png')
         json_data = img_jj(frames, int(select_id), pid)
         f = json_data['f']
         npac = json_data['ca']

@@ -41,6 +41,8 @@ def re_img(img_list, height, width, matrix):
     return img
 
 # 保存图像
+
+
 def save_img(img, path):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
@@ -56,9 +58,10 @@ def save_requests_img(content, path):
 # 删除缓存图像
 
 
-def delete_img():
-    for file in os.listdir('temp/'):
-        os.remove(f'temp/{file}')
+def delete_img(img_path):
+    dir_path = os.path.dirname(img_path)
+    for file in os.listdir(dir_path):
+        os.remove(os.path.join(dir_path, file))
     print('删除缓存图片成功')
 
 
@@ -68,4 +71,9 @@ def image_run(img_path, frames):
     for i in range(len(frames)):
         matrix = frames[i]['matrix']
         temp_img = re_img(img_list, height, width, matrix)
-        save_img(temp_img, f'temp/{i}.png')
+        save_img(temp_img, os.path.join(
+            os.path.abspath(
+                os.path.dirname(img_path)
+            ), str(i) + ".png"
+        )
+        )
