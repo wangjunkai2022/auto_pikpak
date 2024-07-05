@@ -212,7 +212,7 @@ class PikPak:
             expires_in = res_json.get("expires_in")
             start_time = time.time()
             isOk = False
-            while (time.time() - start_time) < expires_in:
+            while (time.time() - start_time) < expires_in * (3/4):
                 logger.info(f'验证滑块中...')
                 try:
                     img_info = self._auto_captcha()
@@ -222,7 +222,10 @@ class PikPak:
                         break
                     else:
                         logger.info('验证失败, 重新验证滑块中...')
-                except:
+                except Exception as e:
+                    if "请求失败" in e.__str__():
+                        logger.error(e)
+                        break
                     logger.info('验证失败, 重新验证滑块中...')
             if isOk:
                 self.captcha_token = self.get_new_token(
