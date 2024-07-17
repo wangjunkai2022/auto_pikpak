@@ -12,6 +12,7 @@ class SystemServiceTager(enum.Enum):
     rclone = 3
     emby = 4
     all_status = 5
+    reboot_syatem = 6
 
 
 @dataclass
@@ -37,6 +38,8 @@ class SystemService:
         elif tager == SystemServiceTager.all_status:
             self.status()
             self.server_name = []
+        elif tager == SystemServiceTager.reboot_syatem:
+            self._execute(["reboot"])
 
     def run(self) -> SystemServiceOutput:
         return self._run_command("start", self.server_name)

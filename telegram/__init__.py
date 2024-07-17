@@ -134,6 +134,8 @@ class Telegram():
             btn = InlineKeyboardButton(
                 name_str, callback_data=name_str,)
             markup.add(btn)
+        # markup.add(InlineKeyboardButton(
+        #     "重启服务器", callback_data="重启服务器",))
         self.bot.send_message(message.chat.id, 模式选项.重启系统服务.name,
                               reply_markup=markup)
 
@@ -267,11 +269,16 @@ class Telegram():
                 self.bot.send_message(chat_id=call.message.chat.id,
                                       text=f"设置打印模式{logging.getLevelName(level)}完毕", disable_notification=True)
             elif call.message.text == 模式选项.重启系统服务.name:
+                if call.data == "reboot_syatem":
+                    self.bot.send_message(
+                        call.message.chat.id, f"重启系统中。")
                 service = SystemService(SystemServiceTager[call.data])
                 stop = service.stop()
-                self.bot.send_message(call.message.chat.id, f"停止系统{call.data}。\noutput:{stop.output}\nerror:{stop.error}")
+                self.bot.send_message(
+                    call.message.chat.id, f"停止系统{call.data}。\noutput:{stop.output}\nerror:{stop.error}")
                 run = service.run()
-                self.bot.send_message(call.message.chat.id, f"启动系统{call.data}。\noutput:{run.output}\nerror:{run.error}")
+                self.bot.send_message(
+                    call.message.chat.id, f"启动系统{call.data}。\noutput:{run.output}\nerror:{run.error}")
 
     def __reply_button(self, call: CallbackQuery):
         if (call.message.text == 模式选项.设置打印等级.name) or (call.message.text == 模式选项.重启系统服务.name):

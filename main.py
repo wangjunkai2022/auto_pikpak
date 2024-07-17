@@ -1,5 +1,6 @@
 import json
 import os
+import random
 from typing import List
 from pikpak import PikPak, crete_invite, run_new_test
 from captcha.chmod import open_url2token
@@ -122,19 +123,21 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
     def pop_not_vip_pikpak(self) -> BasePikpakData:
         if len(self.pikpak_user_list) <= 0:
             return None
-        if self.pop_pikpak().get_vip_day_time_left() <= 0:
+        self.opation_index = self.opation_index + 1
+        if self.get_opation_pikpak().get_vip_day_time_left() <= 0:
             return self.opation_pikpak_go
         else:
             return self.pop_not_vip_pikpak()
 
     # 直接pop一个Alsit中的一个pikpak登陆
-    def pop_pikpak(self) -> BasePikpakData:
-        pikpak_data = self.pikpak_user_list.pop(0)
-        self.opation_pikpak_go = BasePikpakData(
-            mail=pikpak_data.get("username"),
-            pd=pikpak_data.get("password"),
-            name=pikpak_data.get("name")
-        )
+    def get_opation_pikpak(self) -> BasePikpakData:
+        pikpak_data = self.pikpak_user_list[self.opation_index]
+        if self.opation_pikpak_go.mail != pikpak_data.get("username") or self.opation_pikpak_go.pd != pikpak_data.get("password") or self.opation_pikpak_go.name != pikpak_data.get("name"):
+            self.opation_pikpak_go = BasePikpakData(
+                mail=pikpak_data.get("username"),
+                pd=pikpak_data.get("password"),
+                name=pikpak_data.get("name")
+            )
         return self.opation_pikpak_go
 
     def save_pikpak_2(self, pikpak_go: BasePikpakData):
@@ -257,6 +260,7 @@ def copye_list_2_rclone_config():
     logger.debug(rclone_configs)
     rclone_manager.json_config = rclone_configs
     rclone_manager.save_config()
+
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
