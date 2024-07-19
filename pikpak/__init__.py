@@ -231,7 +231,8 @@ class PikPak:
                 self.captcha_token = self.get_new_token(
                     img_info).get("captcha_token")
             else:
-                self.captcha_token = get_captcha_callback()(res_json.get("url"))
+                # self.captcha_token = get_captcha_callback()(res_json.get("url"))
+                raise Exception("滑块验证失败次数过多")
         else:
             error = res_json.get("error")
             if error:
