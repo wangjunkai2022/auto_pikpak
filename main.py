@@ -132,7 +132,7 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
     # 直接pop一个Alsit中的一个pikpak登陆
     def get_opation_pikpak(self) -> BasePikpakData:
         pikpak_data = self.pikpak_user_list[self.opation_index]
-        if self.opation_pikpak_go.mail != pikpak_data.get("username") or self.opation_pikpak_go.pd != pikpak_data.get("password") or self.opation_pikpak_go.name != pikpak_data.get("name"):
+        if not self.opation_pikpak_go or self.opation_pikpak_go.mail != pikpak_data.get("username") or self.opation_pikpak_go.pd != pikpak_data.get("password") or self.opation_pikpak_go.name != pikpak_data.get("name"):
             self.opation_pikpak_go = BasePikpakData(
                 mail=pikpak_data.get("username"),
                 pd=pikpak_data.get("password"),
