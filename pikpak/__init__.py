@@ -15,7 +15,7 @@ import time
 
 import requests
 from config.config import get_captcha_callback
-from mail.mail import create_one_mail, get_code, get_mail
+from mail.mail import create_one_mail,get_new_mail_code, get_code, get_mail
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
 
@@ -212,27 +212,29 @@ class PikPak:
             expires_in = res_json.get("expires_in")
             start_time = time.time()
             isOk = False
-            while (time.time() - start_time) < expires_in * (3/4):
-                logger.info(f'验证滑块中...')
-                try:
-                    img_info = self._auto_captcha()
-                    if img_info['response_data']['result'] == 'accept':
-                        logger.info('验证通过!!!')
-                        isOk = True
-                        break
-                    else:
-                        logger.info('验证失败, 重新验证滑块中...')
-                except Exception as e:
-                    if "请求失败" in e.__str__():
-                        logger.error(e)
-                        break
-                    logger.info('验证失败, 重新验证滑块中...')
+            # 官网修改了验证方式。这个滑块验证即将删除
+            # while (time.time() - start_time) < expires_in * (3/4):
+            #     logger.info(f'验证滑块中...')
+            #     try:
+            #         img_info = self._auto_captcha()
+            #         if img_info['response_data']['result'] == 'accept':
+            #             logger.info('验证通过!!!')
+            #             isOk = True
+            #             break
+            #         else:
+            #             logger.info('验证失败, 重新验证滑块中...')
+            #     except Exception as e:
+            #         if "请求失败" in e.__str__():
+            #             logger.error(e)
+            #             break
+            #         logger.info('验证失败, 重新验证滑块中...')
             if isOk:
-                self.captcha_token = self.get_new_token(
-                    img_info).get("captcha_token")
+                # self.captcha_token = self.get_new_token(
+                #     img_info).get("captcha_token")
+                pass
             else:
-                # self.captcha_token = get_captcha_callback()(res_json.get("url"))
-                raise Exception("滑块验证失败次数过多")
+                self.captcha_token = get_captcha_callback()(res_json.get("url"))
+                # raise Exception("滑块验证失败次数过多")
         else:
             error = res_json.get("error")
             if error:
@@ -299,7 +301,7 @@ class PikPak:
 
     # 设置获取的邮箱的验证码
     def __set_mail_2_code(self):
-        code = get_code(self.mail)
+        code = get_new_mail_code(self.mail)
         url = f"https://user.mypikpak.com/v1/auth/verification/verify"
         payload = {
             "client_id": self.client_id,
@@ -1275,7 +1277,7 @@ def radom_password():
 def crete_invite(invite) -> PikPak:
     try:
         pik_go = PikPak(
-            mail=get_mail(),
+            mail=create_one_mail(),
             pd=radom_password(),
         )
         pik_go.set_activation_code(invite)
