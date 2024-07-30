@@ -212,10 +212,19 @@ def run_all():
             break
         if pikpak_go.get_vip_day_time_left(is_update=True) > 0:
             logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
-            pikpak_go = alistPikpak.pop_not_vip_pikpak()
+            if config.change_model == "all":
+                # pikpak_go = alistPikpak.pop_not_vip_pikpak()
+                pass
+            elif config.change_model == "randam":
+                pikpak_go = alistPikpak.pop_not_vip_pikpak()
         if not pikpak_go:
             break
         if pikpak_go_new.get_vip_day_time_left() <= 0:
+            logger.error(
+                f"新账号邀请注册有问题 新账号：{pikpak_go_new.mail}的vip都是0天\n填写的邀请信息如下:\ninvite_code:{invite_code}\tmail:{pikpak_go.mail}")
+            pikpak_go = alistPikpak.pop_not_vip_pikpak()
+            continue
+        if config.change_model == "none":
             continue
         logger.info(
             f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
