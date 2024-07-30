@@ -1294,7 +1294,7 @@ def crete_invite(invite) -> PikPak:
         pik_go.set_proxy(ip, proxy_type)
         pik_go.run_req_2invite()
         if pik_go.isInvise:
-            run_new_test(pik_go)
+            # run_new_test(pik_go)
             logger.info(f"{pik_go.mail}:注册成功 并填写邀请码：{invite}")
             logger.info(f"密码是:{pik_go.pd}")
             return pik_go
