@@ -1,9 +1,9 @@
 # 免费邮箱API
 mail:
-  api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
+  api: API
 
 twocaptcha:
-  api: 7f43a85477b4b3ea96af20422a690487
+  api: API
 
 # 默认的密码
 def_password: 098poi
@@ -26,7 +26,7 @@ rclone:
   mount_root: /mnt/pikpak
 
 telegram:
-  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
+  api: API
 
 # 替换模式 为 all 全部替换。。 randam 一个新好替换下一个不是vip的账户。。 none 全部都是邀请不进行替换
 invate_change_model: randam
