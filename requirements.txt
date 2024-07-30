@@ -7,3 +7,5 @@ numpy
 opencv_python
 opencv_python_headless
 ultralytics
+
+2captcha-python

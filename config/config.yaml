@@ -2,6 +2,9 @@
 mail:
   api: API
 
+twocaptcha:
+  api: API
+
 # 默认的密码
 def_password: 098poi
 

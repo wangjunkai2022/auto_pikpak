@@ -15,11 +15,12 @@ import time
 
 import requests
 from config.config import get_captcha_callback
-from mail.mail import create_one_mail,get_new_mail_code, get_code, get_mail
+from mail.mail import create_one_mail, get_new_mail_code, get_code, get_mail
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
 
 from captcha.ai.yolov8_test import ai_test_byte
+from captcha.captcha_2captcha import open_url2token as twocaptcha_get_token
 from tools import set_def_callback
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 
@@ -211,23 +212,28 @@ class PikPak:
             self.captcha_token = res_json.get("captcha_token")
             expires_in = res_json.get("expires_in")
             start_time = time.time()
+            recaptcha_url: str = res_json.get("url")
             isOk = False
-            # 官网修改了验证方式。这个滑块验证即将删除
-            # while (time.time() - start_time) < expires_in * (3/4):
-            #     logger.info(f'验证滑块中...')
-            #     try:
-            #         img_info = self._auto_captcha()
-            #         if img_info['response_data']['result'] == 'accept':
-            #             logger.info('验证通过!!!')
-            #             isOk = True
-            #             break
-            #         else:
-            #             logger.info('验证失败, 重新验证滑块中...')
-            #     except Exception as e:
-            #         if "请求失败" in e.__str__():
-            #             logger.error(e)
-            #             break
-            #         logger.info('验证失败, 重新验证滑块中...')
+            if "spritePuzzle.html" in recaptcha_url:
+                # 官网修改了验证方式。这个滑块验证即将删除
+                while (time.time() - start_time) < expires_in * (3/4):
+                    logger.info(f'验证滑块中...')
+                    try:
+                        img_info = self._auto_captcha()
+                        if img_info['response_data']['result'] == 'accept':
+                            logger.info('验证通过!!!')
+                            isOk = True
+                            break
+                        else:
+                            logger.info('验证失败, 重新验证滑块中...')
+                    except Exception as e:
+                        if "请求失败" in e.__str__():
+                            logger.error(e)
+                            break
+                        logger.info('验证失败, 重新验证滑块中...')
+            elif "reCaptcha.html" in recaptcha_url:
+                self.captcha_token = twocaptcha_get_token(recaptcha_url)
+                isOk = True
             if isOk:
                 # self.captcha_token = self.get_new_token(
                 #     img_info).get("captcha_token")
