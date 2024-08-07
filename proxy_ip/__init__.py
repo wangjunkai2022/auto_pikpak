@@ -157,7 +157,8 @@ def pingPikpak(proxy, ok_ips):
             ok_ips.append(proxy_data)
             return True
     except:
-        print(f"{proxy} 失败")
+        # print(f"{proxy} 失败")
+        pass
     return False
 
 
