@@ -39,6 +39,28 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python pikpak_super",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/pikpak_super.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python chrome_pikpak",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/chrome_pikpak.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:"
+            },
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python pikpak_auto_invite",
             "type": "debugpy",
             "request": "launch",
@@ -65,6 +87,28 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/save_ai_img_captcha.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python captcha_2captcha",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/captcha/captcha_2captcha.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python captcha_slide_img",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/captcha/captcha_slide_img.py",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
