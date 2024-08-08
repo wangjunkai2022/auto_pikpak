@@ -53,7 +53,7 @@ class PikPakSuper(ChromePikpak):
         proxy = handler.run_get_proxy()
         _pikpak = PikPakSuper(mail, pd)
         _pikpak.setHandler(handler)
-        _pikpak.set_proxy(proxy)
+        _pikpak.set_proxy(*proxy)
         _pikpak.register()
         _pikpak.run_test()
         return _pikpak
