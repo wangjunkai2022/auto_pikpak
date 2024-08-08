@@ -222,6 +222,7 @@ def run_all():
     ) or ManagerRclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
+        logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
         if pikpak_go.try_get_vip():
             vip_day = pikpak_go.get_vip_day_time_left()
             logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
@@ -236,45 +237,22 @@ def run_all():
         )
         pikpak: BasePikpakData = BasePikpakData.create()
         time.sleep(60)
-        pikpak.reward_vip_upload_file()
-        time.sleep(5)
-        if pikpak.get_vip_day_time_left() > 0:
-            share_id = pikpak_go.start_share_self_files()
-            time.sleep(10)
-            pikpak.save_share(share_id)
-            alistPikpak.save_pikpak_2(pikpak)
-            pikpak_go = alistPikpak.pop_not_vip_pikpak()
-        # invite_code = pikpak_go.get_self_invite_code()
-        # logger.info(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
-        # pikpak_go_new = crete_invite(invite_code)
-        # if not pikpak_go_new:
-        #     logger.debug("新建的号有误")
-        #     logger.info(f"注册新号失败。。。。。。。。")
-        #     break
-        # if pikpak_go.get_vip_day_time_left(is_update=True) > 0:
-        #     logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
-        #     if config.change_model == "all":
-        #         # pikpak_go = alistPikpak.pop_not_vip_pikpak()
-        #         pass
-        #     elif config.change_model == "randam":
-        #         pikpak_go = alistPikpak.pop_not_vip_pikpak()
-        # if not pikpak_go:
-        #     break
-        # if pikpak_go_new.get_vip_day_time_left() <= 0:
-        #     logger.error(
-        #         f"新账号邀请注册有问题 新账号：{pikpak_go_new.mail}的vip都是0天\n填写的邀请信息如下:\ninvite_code:{invite_code}\tmail:{pikpak_go.mail}")
-        #     pikpak_go = alistPikpak.pop_not_vip_pikpak()
-        #     continue
-        # if config.change_model == "none":
-        #     continue
-        # logger.info(
-        #     f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
-        # share_id = get_start_share_id(pikpak_go)
-        # pikpak_go_new.set_proxy(None)
-        # pikpak_go_new.save_share(share_id)
-        # alistPikpak.save_pikpak_2(pikpak_go_new)
-        # # 新的获取新没有vip的pikpak
-        # pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        if pikpak.try_get_vip():
+            logger.info(f"新账号激活vip成功 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
+            time.sleep(5)
+            if pikpak.get_vip_day_time_left() > 0:
+                share_id = pikpak_go.start_share_self_files()
+                logger.info(
+                    f"分享原账号:\nemail: {pikpak_go.mail}\npd: {pikpak_go.pd}\n分享代码是: {share_id}")
+                time.sleep(10)
+                pikpak.save_share(share_id)
+                logger.info(f"保存原账号的资源到新账号")
+                alistPikpak.save_pikpak_2(pikpak)
+                logger.info(f"替换原账号的alit或者rclone中")
+                pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        else:
+            logger.error(f"新账号激活vip失败 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
+            return
     logger.info("Over")
 
 
