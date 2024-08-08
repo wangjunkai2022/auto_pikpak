@@ -1,8 +1,12 @@
 import logging
+import time
 from pikpak.chrome_pikpak import ChromePikpak, Handle
 
 logger = logging.getLogger("PikPakSuper")
-
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 class HandleSuper(Handle):
     def __def_email_address(self) -> str:
@@ -83,12 +87,35 @@ class PikPakSuper(ChromePikpak):
         """
         self.login()
         vip_data = self.vip_info()
+        def_day_num = -9999
         try:
-            return vip_data.get('data').get("vipItem")[0].get("surplus_day", -1)
+            def_day_num = vip_data.get('data').get("vipItem")[
+                0].get("surplus_day", def_day_num)
         except Exception as e:
             logger.debug(f"获取vip剩余天数错误{e}")
-            return -1
+            # def_day_num = -9999
+        return def_day_num
     # 获取自己的邀请码
+
+    def try_get_vip(self):
+        """
+        尝试获取vip
+        """
+        self.login()
+        vip_day = self.get_vip_day_time_left()
+        if vip_day > -7:
+            logger.info('当前vip过期天数没到7天 这里不获取vip')
+            return True
+        self.verifyRecaptchaToken()
+        self.reward_vip_upload_file()
+        time.sleep(5)
+        if self.try_get_vip():
+            return True
+        self.reward_vip_install_web_pikpak_extension()
+        time.sleep(5)
+        if self.try_get_vip():
+            return True
+        return False
 
     def get_self_invite_code(self) -> str:
         """
@@ -140,10 +167,6 @@ class PikPakSuper(ChromePikpak):
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
     # email = "covaxe9867@biowey.com"
     # password = "2dewmJR1"
     # # email = 'sotag69939@alientex.com'

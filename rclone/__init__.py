@@ -10,6 +10,10 @@ import json
 from typing import Iterable, List, Optional, Tuple
 
 logger: logging.Logger = logging.getLogger("Rclone")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 cache_json_file = os.path.join(os.path.abspath(
     os.path.dirname(__file__)), "rclone.json")

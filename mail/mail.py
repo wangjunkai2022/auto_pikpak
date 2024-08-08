@@ -7,7 +7,10 @@ import string
 import re
 import config.config as config
 logger = logging.getLogger("mail")
-
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 def _get_domains():
     url = "https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/"

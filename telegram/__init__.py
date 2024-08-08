@@ -10,8 +10,13 @@ from system_service import SystemService, SystemServiceTager
 from tools import set_def_callback
 
 logger = logging.getLogger("telegram")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
+
 loging_names = [
-    "main", "alist", "mail", "captch_chomd", "pikpak", "Rclone", "telegram", "system_service"
+    "main", "alist", "mail", "captch_chomd", "Rclone", "telegram", "system_service", 'Chrome_Pikpak', 'PikPakSuper',
 ]
 
 

@@ -4,7 +4,10 @@ import logging
 import subprocess
 from typing import Iterable, List, Tuple
 logger = logging.getLogger("system_service")
-
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 class SystemServiceTager(enum.Enum):
     all = 1
@@ -85,10 +88,5 @@ class SystemService:
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-
     output = SystemService().status()
     print(output)

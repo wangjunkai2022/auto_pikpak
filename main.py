@@ -16,8 +16,11 @@ from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 import telegram
 from tools import set_def_callback
-# logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 logger = logging.getLogger("main")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 def get_start_share_id(pikpak: PikPak = None):
@@ -124,7 +127,7 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
 
     # 直接pop一个Alsit中的一个Vip的剩余天数小于0的pikpak登陆
     def pop_not_vip_pikpak(self) -> BasePikpakData:
-        if len(self.pikpak_user_list) <= 0:
+        if len(self.pikpak_user_list) <= 0 or self.opation_index >= len(self.pikpak_user_list) - 1:
             return None
         self.opation_index = self.opation_index + 1
         if self.get_opation_pikpak().get_vip_day_time_left() <= 0:
@@ -219,6 +222,11 @@ def run_all():
     ) or ManagerRclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
+        if pikpak_go.try_get_vip():
+            vip_day = pikpak_go.get_vip_day_time_left()
+            logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
+            pikpak_go = alistPikpak.pop_not_vip_pikpak()
+            continue
         HandleSuper(
             get_token=config.get_captcha_callback(),
             get_mailcode=config.get_email_verification_code_callback(),
@@ -305,10 +313,6 @@ def copye_list_2_rclone_config():
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
     set_def_callback()
     # if config.telegram_api and len(config.telegram_api) > 1:
     #     telegram.Telegram()

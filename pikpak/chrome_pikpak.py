@@ -13,7 +13,10 @@ from captcha.captcha_slide_img import captcha
 from pikpak.PikPakAPI.pikpakapi import PikPakApi
 
 logger = logging.getLogger("Chrome_Pikpak")
-
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 class Handle():
     def __def_getTonek(self, url: str = ""):
@@ -1120,10 +1123,6 @@ class ChromePikpak():
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
     email = "covaxe9867@biowey.com"
     password = "2dewmJR1"
     # email = 'sotag69939@alientex.com'

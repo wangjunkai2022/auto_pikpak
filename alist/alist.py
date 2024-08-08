@@ -7,7 +7,10 @@ import requests
 from config.config import alist_domain, alist_pd, alist_user
 import json
 logger = logging.getLogger("alist")
-
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 class JsonDataStorage():
     id = None
@@ -272,8 +275,8 @@ class Alist(object):
 
 
 if __name__ == "__main__":
-    alist = Alist()
-    alist.saveToNowConif()
+    alist = Alist(domain="http://10.211.55.58:5244")
+    # alist.saveToNowConif()
     # storage_list_data = alist.get_storage_list()
     # import config
     # invites = config.pikpak_user
@@ -288,8 +291,8 @@ if __name__ == "__main__":
 
     # pikpaks = alist.get_storage_list()
     # logger.debug(pikpaks)
-    # alist.copy_storages_2_alist(
-    #     Alist(domain="http://10.211.55.58:5244"), is_clean=True)
+    alist.copy_storages_2_alist(
+        Alist(domain="http://10.211.55.60:5244"), is_clean=True)
     # alist.saveToNowConif()
 
     # alist=Alist(domain="http://10.211.55.58:5244").copy_storages_2_alist(Alist())
