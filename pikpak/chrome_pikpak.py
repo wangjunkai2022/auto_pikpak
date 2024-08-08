@@ -18,6 +18,7 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+
 class Handle():
     def __def_getTonek(self, url: str = ""):
         token_input = input(f"验证url: {url} \n请输入获取到的token并按回车结束\n")
@@ -96,6 +97,7 @@ class ChromePikpak():
             'user_id': self.user_id,
             'proxies': self.proxies,
             'device_id': self.device_id,
+            'password': self.pd,
         }
         with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
@@ -114,6 +116,7 @@ class ChromePikpak():
             self.user_id = data['user_id']
             self.proxies = data['proxies']
             self.device_id = data['device_id']
+            self.pd = data['password']
 
     def set_proxy(self, proxy_ip, type="http"):
         # if not proxy.startswith("http://"):
