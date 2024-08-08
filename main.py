@@ -1,15 +1,18 @@
 import json
 import os
 import random
+import string
 from typing import List
 from pikpak import PikPak, crete_invite, run_new_test
 from captcha.chmod import open_url2token
 import config.config as config
 import asyncio
 import alist.alist as alist
-from mail.mail import get_new_mail_code
+from mail.mail import create_one_mail, get_new_mail_code
 import time
 import logging
+from pikpak.pikpak_super import HandleSuper, PikPakSuper
+from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 import telegram
 from tools import set_def_callback
@@ -74,7 +77,7 @@ def get_start_share_id(pikpak: PikPak = None):
         return get_start_share_id(pikpak)
 
 
-class BasePikpakData(PikPak):
+class BasePikpakData(PikPakSuper):
     name = None
 
     def __init__(self, mail: str = None, pd: str = None, name=None):
@@ -195,6 +198,19 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
         self.save_config()
 
 
+def radom_password():
+    chars = string.ascii_letters+string.digits
+    # 得出的结果中字符会有重复的
+    return ''.join([random.choice(chars) for i in range(random.randint(8, 11))])
+
+
+def get_proxy():
+    logger.info("获取代理地址中。。。。。")
+    ip, proxy_type = pop_prxy_pikpak()
+    logger.info(f"获取到的代理:{ip}")
+    return ip, proxy_type
+
+
 def run_all():
     """运行所有的pikpak账号检测
     """
@@ -203,37 +219,54 @@ def run_all():
     ) or ManagerRclonePikpak()
     pikpak_go = alistPikpak.pop_not_vip_pikpak()
     while pikpak_go:
-        invite_code = pikpak_go.get_self_invite_code()
-        logger.info(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
-        pikpak_go_new = crete_invite(invite_code)
-        if not pikpak_go_new:
-            logger.debug("新建的号有误")
-            logger.info(f"注册新号失败。。。。。。。。")
-            break
-        if pikpak_go.get_vip_day_time_left(is_update=True) > 0:
-            logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
-            if config.change_model == "all":
-                # pikpak_go = alistPikpak.pop_not_vip_pikpak()
-                pass
-            elif config.change_model == "randam":
-                pikpak_go = alistPikpak.pop_not_vip_pikpak()
-        if not pikpak_go:
-            break
-        if pikpak_go_new.get_vip_day_time_left() <= 0:
-            logger.error(
-                f"新账号邀请注册有问题 新账号：{pikpak_go_new.mail}的vip都是0天\n填写的邀请信息如下:\ninvite_code:{invite_code}\tmail:{pikpak_go.mail}")
+        HandleSuper(
+            get_token=config.get_captcha_callback(),
+            get_mailcode=config.get_email_verification_code_callback(),
+            email_address=create_one_mail,
+            get_password=radom_password,
+            get_proxy=get_proxy,
+        )
+        pikpak: BasePikpakData = BasePikpakData.create()
+        time.sleep(60)
+        pikpak.reward_vip_upload_file()
+        time.sleep(5)
+        if pikpak.get_vip_day_time_left() > 0:
+            share_id = pikpak_go.start_share_self_files()
+            time.sleep(10)
+            pikpak.save_share(share_id)
+            alistPikpak.save_pikpak_2(pikpak)
             pikpak_go = alistPikpak.pop_not_vip_pikpak()
-            continue
-        if config.change_model == "none":
-            continue
-        logger.info(
-            f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
-        share_id = get_start_share_id(pikpak_go)
-        pikpak_go_new.set_proxy(None)
-        pikpak_go_new.save_share(share_id)
-        alistPikpak.save_pikpak_2(pikpak_go_new)
-        # 新的获取新没有vip的pikpak
-        pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        # invite_code = pikpak_go.get_self_invite_code()
+        # logger.info(f"注册新号填写邀请到:\n{pikpak_go.mail}\n邀请码:\n{invite_code}")
+        # pikpak_go_new = crete_invite(invite_code)
+        # if not pikpak_go_new:
+        #     logger.debug("新建的号有误")
+        #     logger.info(f"注册新号失败。。。。。。。。")
+        #     break
+        # if pikpak_go.get_vip_day_time_left(is_update=True) > 0:
+        #     logger.info(f"账号{pikpak_go.mail}现在已经是会员了")
+        #     if config.change_model == "all":
+        #         # pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        #         pass
+        #     elif config.change_model == "randam":
+        #         pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        # if not pikpak_go:
+        #     break
+        # if pikpak_go_new.get_vip_day_time_left() <= 0:
+        #     logger.error(
+        #         f"新账号邀请注册有问题 新账号：{pikpak_go_new.mail}的vip都是0天\n填写的邀请信息如下:\ninvite_code:{invite_code}\tmail:{pikpak_go.mail}")
+        #     pikpak_go = alistPikpak.pop_not_vip_pikpak()
+        #     continue
+        # if config.change_model == "none":
+        #     continue
+        # logger.info(
+        #     f"把账号:{pikpak_go.mail},中的所有数据分享到新的账号:{pikpak_go_new.mail} 上")
+        # share_id = get_start_share_id(pikpak_go)
+        # pikpak_go_new.set_proxy(None)
+        # pikpak_go_new.save_share(share_id)
+        # alistPikpak.save_pikpak_2(pikpak_go_new)
+        # # 新的获取新没有vip的pikpak
+        # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     logger.info("Over")
 
 
