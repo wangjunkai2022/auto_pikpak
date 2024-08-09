@@ -10,7 +10,6 @@ import uuid
 import requests
 from captcha.captcha_2captcha import captcha_rewardVip, get_token_register
 from captcha.captcha_slide_img import captcha
-from pikpak.PikPakAPI.pikpakapi import PikPakApi
 
 logger = logging.getLogger("Chrome_Pikpak")
 logger.setLevel(logging.DEBUG)
