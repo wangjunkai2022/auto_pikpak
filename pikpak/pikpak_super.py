@@ -104,8 +104,8 @@ class PikPakSuper(ChromePikpak):
         """
         self.login()
         vip_day = self.get_vip_day_time_left()
-        if vip_day > -7:
-            logger.info('当前vip过期天数没到7天 这里不获取vip')
+        if vip_day > 0:
+            logger.debug('当前vip没过期 这里不获取vip')
             return True
         self.verifyRecaptchaToken()
         self.reward_vip_upload_file()

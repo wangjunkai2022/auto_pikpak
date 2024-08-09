@@ -440,7 +440,7 @@ class ChromePikpak():
     def login(self):
         self.read_self()
         if self.authorization != DEF_AUTHORIZATION:
-            logger.info("已经登陆了")
+            logger.debug("已经登陆了")
             return
         url = "https://user.mypikpak.com/v1/auth/signin"
         body = {

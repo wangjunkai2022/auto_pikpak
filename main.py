@@ -163,6 +163,24 @@ def get_proxy():
     return ip, proxy_type
 
 
+def pikpakdata_2_pikpakdata(old_pikpak: BasePikpakData, new_pikpak: BasePikpakData):
+    """
+    旧账号的资源复制到新账号中
+    """
+    if new_pikpak.get_vip_day_time_left() > 0:
+        share = old_pikpak.start_share_self_files()
+        logger.info(
+            f"分享原账号:\nemail: {old_pikpak.mail}\npd: {old_pikpak.pd}\n分享代码是: {share}")
+        time.sleep(10)
+        share_id = share.get("share_id", None)
+        if not share_id:
+            raise Exception("分享错误")
+        new_pikpak.save_share(share_id)
+        logger.info(f"保存原账号的资源到新账号:\n{new_pikpak.mail}\n{new_pikpak.pd}")
+    else:
+        raise Exception("新账号没有vip")
+
+
 def change_all_pikpak():
     """
     注册新的pikpak替换原来的pikpak
@@ -179,21 +197,10 @@ def change_all_pikpak():
         pikpak: BasePikpakData = BasePikpakData.create(handler)
         time.sleep(60)
         pikpak.try_get_vip()
-        if pikpak.get_vip_day_time_left() > 0:
-            share = pikpak_go.start_share_self_files()
-            logger.info(
-                f"分享原账号:\nemail: {pikpak_go.mail}\npd: {pikpak_go.pd}\n分享代码是: {share}")
-            time.sleep(10)
-            share_id = share.get("share_id", None)
-            if not share_id:
-                raise Exception("分享错误")
-            pikpak.save_share(share_id)
-            logger.info(f"保存原账号的资源到新账号")
-            alistPikpak.change_opation_2(pikpak_go)
-            alistPikpak.save_pikpak_2(pikpak)
-            logger.info(f"替换原账号的alit或者rclone中")
-        else:
-            raise Exception("新账号没有vip")
+        pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+        alistPikpak.change_opation_2(pikpak_go)
+        alistPikpak.save_pikpak_2(pikpak)
+        logger.info(f"替换原账号的alit或者rclone中")
 
     logger.info('注册新的pikpak替换原来的pikpak over')
 
@@ -218,25 +225,12 @@ def check_all_pikpak_vip():
         )
         pikpak: BasePikpakData = BasePikpakData.create(handler)
         time.sleep(60)
-        if pikpak.try_get_vip():
-            logger.info(f"新账号激活vip成功 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
-            time.sleep(5)
-            if pikpak.get_vip_day_time_left() > 0:
-                share = pikpak_go.start_share_self_files()
-                logger.info(
-                    f"分享原账号:\nemail: {pikpak_go.mail}\npd: {pikpak_go.pd}\n分享代码是: {share}")
-                time.sleep(10)
-                share_id = share.get("share_id", None)
-                if not share_id:
-                    raise Exception("分享错误")
-                pikpak.save_share(share_id)
-                logger.info(f"保存原账号的资源到新账号")
-                alistPikpak.change_opation_2(pikpak_go)
-                alistPikpak.save_pikpak_2(pikpak)
-                logger.info(f"替换原账号的alit或者rclone中")
-        else:
-            logger.error(f"新账号激活vip失败 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
-            return
+        pikpak.try_get_vip()
+        pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+        alistPikpak.change_opation_2(pikpak_go)
+        alistPikpak.save_pikpak_2(pikpak)
+        logger.info(f"替换原账号的alit或者rclone中")
+
     logger.info("Over")
 
 
@@ -261,25 +255,11 @@ def 注册新号激活(pikpak_go: BasePikpakData = None):
     )
     pikpak: BasePikpakData = BasePikpakData.create(handler)
     time.sleep(60)
-    if pikpak.try_get_vip():
-        logger.info(f"新账号激活vip成功 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
-        time.sleep(5)
-        if pikpak.get_vip_day_time_left() > 0:
-            share = pikpak_go.start_share_self_files()
-            logger.info(
-                f"分享原账号:\nemail: {pikpak_go.mail}\npd: {pikpak_go.pd}\n分享代码是: {share}")
-            time.sleep(10)
-            share_id = share.get("share_id", None)
-            if not share_id:
-                raise Exception("分享错误")
-            pikpak.save_share(share_id)
-            logger.info(f"保存原账号的资源到新账号")
-            ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
-            ManagerAlistPikpak.get_instance().save_pikpak_2(pikpak)
-            logger.info(f"替换原账号的alit或者rclone中")
-    else:
-        logger.error(f"新账号激活vip失败 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
-        return
+    pikpak.try_get_vip()
+    pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+    ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
+    ManagerAlistPikpak.get_instance().save_pikpak_2(pikpak)
+    logger.info(f"替换原账号的alit或者rclone中")
 
 
 def copye_list_2_rclone_config():
