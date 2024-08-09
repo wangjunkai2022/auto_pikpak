@@ -66,6 +66,9 @@ class ManagerPikPak(Singleton):
                     # pikpak_go.set_proxy(*get_proxy())
                     if pikpak_go.get_vip_day_time_left() <= 0:
                         not_vip_list.append(pikpak_go)
+                        logger.info(f"{pikpak_go.name} 不是会员")
+                    else:
+                        logger.info(f"{pikpak_go.name} 是会员")
                     break
                 except requests.exceptions.ProxyError:
                     logger.error("代理异常 重新获取一个代理")
