@@ -18,6 +18,7 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+
 class BasePikpakData(PikPakSuper):
     name = None
 
@@ -26,18 +27,21 @@ class BasePikpakData(PikPakSuper):
         self.name = name
 
 
-class ManagerPikPak:
-    _instance = None
+class Singleton:
+    _instance = None  # 存储唯一实例
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:  # 如果实例不存在，则创建新实例
-            cls._instance = super(ManagerPikPak, cls).__new__(cls)
+            cls._instance = super(Singleton, cls).__new__(cls)
         return cls._instance
 
     @staticmethod
     def get_instance():
         """ 返回自身类型的实例 """
-        return ManagerPikPak()
+        return Singleton()
+
+
+class ManagerPikPak(Singleton):
 
     opation_index: int = -1
     pikpak_go_list: List[BasePikpakData] = []
@@ -68,6 +72,10 @@ class ManagerPikPak:
 
 
 class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
+    @staticmethod
+    def get_instance():
+        """ 返回自身类型的实例 """
+        return ManagerAlistPikpak()
 
     def __init__(self):
         alist.Alist.__init__(self)
