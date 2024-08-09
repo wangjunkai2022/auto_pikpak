@@ -1,5 +1,7 @@
 import enum
+import io
 import time
+import traceback
 from telebot import TeleBot
 from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import config.config
@@ -127,7 +129,7 @@ class Telegram():
         try:
             mian_run_all()
         except Exception as e:
-            self.send_print_to_tg(e)
+            self.send_error(e)
         self._task_over()
 
     def _重启系统服务(self, message: Message):
@@ -156,10 +158,17 @@ class Telegram():
         try:
             change_all_pikpak()
         except Exception as e:
-            self.send_print_to_tg("报错了")
-            self.send_print_to_tg(e)
-            self.send_print_to_tg(e.__traceback__)
+            self.send_error(e)
+
         self._task_over()
+
+    def send_error(self, e: Exception):
+        self.send_print_to_tg(f"报错了{str(e)}")
+        # 使用 StringIO 捕获 traceback 输出
+        output = io.StringIO()
+        traceback.print_exc(file=output)  # 将 traceback 输出到 StringIO
+        error_message = output.getvalue()  # 获取字符串
+        self.send_print_to_tg(f"track:\n{error_message}")
 
     def send_print_to_tg(self, message_text):
         """发送消息到TG
@@ -243,7 +252,8 @@ class Telegram():
             self.run_temp_datas = 所有的没有vip的PikPak()
         except Exception as e:
             self.run_temp_datas = None
-            self.send_print_to_tg(e)
+            self.send_error(e)
+
         if self.run_temp_datas and len(self.run_temp_datas) > 0:
             markup = InlineKeyboardMarkup(row_width=2)
             index = 0
