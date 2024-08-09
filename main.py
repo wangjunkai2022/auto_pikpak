@@ -100,12 +100,17 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         for data in storage_list.get("content"):
             addition = json.loads(data.get("addition"))
             if addition.get("username") == self.get_opation_pikpak().mail:
+                path = data.get("mount_path", "None")
+                old_username = addition.get('username', 'None')
+                old_password = addition.get('password', 'None')
+                logger.info(
+                    f"更新Alist中的pikpak\npath:{path}\n原账户:{old_username}\n原密码{old_password}")
                 addition["username"] = pikpak_go.mail
                 addition["password"] = pikpak_go.pd
                 data["addition"] = json.dumps(addition)
                 logger.debug(data)
                 self.update_storage(data)
-            logger.debug(addition)
+                break
 
 
 class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
@@ -289,7 +294,7 @@ if __name__ == "__main__":
     set_def_callback()
     # if config.telegram_api and len(config.telegram_api) > 1:
     #     telegram.Telegram()
-    check_all_pikpak_vip()
+    # check_all_pikpak_vip()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
@@ -321,3 +326,4 @@ if __name__ == "__main__":
     # # pikpak_.set_proxy("43.134.68.153:3128")
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
+    ManagerAlistPikpak.get_instance().save_pikpak_2(None)
