@@ -55,6 +55,7 @@ class PikPakSuper(ChromePikpak):
         _pikpak = PikPakSuper(mail, pd)
         _pikpak.setHandler(handler)
         _pikpak.set_proxy(*proxy)
+        logger.info(f"开始注册\n账号:{mail}\n密码:{pd}")
         _pikpak.register()
         _pikpak.run_test()
         return _pikpak
