@@ -286,6 +286,11 @@ class ChromePikpak():
             self._change_request_values(
                 old_authorization, self.authorization, headers, **kwargs)
             return self._requests(method, url, headers, **kwargs)
+        elif error and error == 'aborted':
+            logger.error(
+                f"{self.mail}此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
+            raise Exception(
+                f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
