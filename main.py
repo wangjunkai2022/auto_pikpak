@@ -61,7 +61,7 @@ class ManagerPikPak(Singleton):
         not_vip_list: List[BasePikpakData] = []
         for pikpak_go in self.pikpak_go_list:
             if pikpak_go.get_vip_day_time_left() <= 0:
-                not_vip_list.append(not_vip_list)
+                not_vip_list.append(pikpak_go)
         return not_vip_list
 
     def change_opation_2(self, pikpak_data: BasePikpakData):
@@ -239,7 +239,7 @@ def check_all_pikpak_vip():
     logger.info("Over")
 
 
-def 所有的没有vip的PikPak():
+def 所有的没有vip的PikPak() -> List[BasePikpakData]:
     logger.info("开始获取本地所有不是会员的配置")
     base_pikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
     return base_pikpak.get_all_not_vip()
