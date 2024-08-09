@@ -289,8 +289,9 @@ class ChromePikpak():
         elif error and error == 'aborted':
             logger.error(
                 f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
-            raise Exception(
+            logger.error(
                 f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
+            raise Exception(error)
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
@@ -474,6 +475,36 @@ class ChromePikpak():
                 return
             logger.error(f"登陆失败{json_data}")
             raise Exception(error_str)
+
+    def vip_info_v2(self):
+        json_data = self.get(
+            url=f"https://api-drive.mypikpak.com/drive/v1/privilege/vip",)
+        logger.debug(f"vip_info_v2:{json_data}")
+        return json_data
+
+    def login_v2(self) -> None:
+        """
+        Login to PikPak 免验证登陆
+        """
+        login_url = f"https://user.mypikpak.com/v1/auth/token"
+        login_data = {
+            "client_id": self.CLIENT_ID,
+            "client_secret": 'dbw2OtmVEeuUvIptb1Coyg',
+            "password": self.pd,
+            "username": self.mail,
+            "grant_type": "password",
+        }
+        json_data = self.post(
+            login_url,
+            json=login_data,
+            headers=
+            {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        )
+        self.authorization = f"Bearer {json_data.get('access_token')}"
+        self.user_id = json_data["sub"]
+        self.save_self()
 
     def me(self):
         url = 'https://user.mypikpak.com/v1/user/me'
@@ -1137,34 +1168,41 @@ class ChromePikpak():
 
 
 if __name__ == "__main__":
-    email = ""
-    password = ""
+    # email = ""
+    # password = ""
+    # pikpak_ = ChromePikpak(email, password)
+    # pikpak_.login()
+    # SukebeiEnyo合集一 = pikpak_.path_to_id(
+    #     "/Pack From Shared/test")[-1]
+    # next_page_token = None
+    # move_path = pikpak_.path_to_id(
+    #     "/Pack From Shared/", True)[-1]
+    # while True:
+    #     file_list = pikpak_.file_list(10, SukebeiEnyo合集一.get(
+    #         "id"), next_page_token=next_page_token)
+    #     next_page_token = file_list.get('next_page_token')
+    #     for max_folder_50G in file_list.get("files"):
+    #         if 'max_folder_50G' in max_folder_50G.get("name"):
+    #             ids = []
+    #             for file in pikpak_.file_list(
+    #                     500, max_folder_50G.get("id")).get('files'):
+    #                 ids.append(file.get("id"))
+    #             if len(ids) > 0:
+    #                 pikpak_.file_batch_move(ids, move_path.get("id"))
+    #             time.sleep(2)
+    #             if len(pikpak_.file_list(
+    #                     2, max_folder_50G.get("id")).get('files')) <= 0:
+    #                 pikpak_.delete_to_trash([max_folder_50G.get("id")])
+    #         else:
+    #             pikpak_.file_batch_move(
+    #                 [max_folder_50G.get('id')], move_path.get("id"))
+    #     if len(file_list.get('files')) <= 0:
+    #         break
+    #     time.sleep(2)
+
+    email = 'nawiney632@vip4e.com'
+    password = '098poi'
     pikpak_ = ChromePikpak(email, password)
-    pikpak_.login()
-    SukebeiEnyo合集一 = pikpak_.path_to_id(
-        "/Pack From Shared/test")[-1]
-    next_page_token = None
-    move_path = pikpak_.path_to_id(
-        "/Pack From Shared/", True)[-1]
-    while True:
-        file_list = pikpak_.file_list(10, SukebeiEnyo合集一.get(
-            "id"), next_page_token=next_page_token)
-        next_page_token = file_list.get('next_page_token')
-        for max_folder_50G in file_list.get("files"):
-            if 'max_folder_50G' in max_folder_50G.get("name"):
-                ids = []
-                for file in pikpak_.file_list(
-                        500, max_folder_50G.get("id")).get('files'):
-                    ids.append(file.get("id"))
-                if len(ids) > 0:
-                    pikpak_.file_batch_move(ids, move_path.get("id"))
-                time.sleep(2)
-                if len(pikpak_.file_list(
-                        2, max_folder_50G.get("id")).get('files')) <= 0:
-                    pikpak_.delete_to_trash([max_folder_50G.get("id")])
-            else:
-                pikpak_.file_batch_move(
-                    [max_folder_50G.get('id')], move_path.get("id"))
-        if len(file_list.get('files')) <= 0:
-            break
-        time.sleep(2)
+    pikpak_.login_v2()
+    vip_info = pikpak_.vip_info()
+    logger.debug(vip_info)

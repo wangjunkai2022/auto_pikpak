@@ -97,12 +97,12 @@ class PikPakSuper(ChromePikpak):
         """
         获取当前pikpak账号的剩余vip天数
         """
-        self.login()
+        self.login_v2()
         vip_data = self.vip_info()
         def_day_num = -9999
         try:
             def_day_num = vip_data.get('data').get("vipItem")[
-                0].get("surplus_day", def_day_num)
+                -1].get("surplus_day", def_day_num)
         except Exception as e:
             logger.debug(f"获取vip剩余天数错误{e}")
             # def_day_num = -9999
