@@ -1,5 +1,6 @@
 import logging
 import time
+import requests
 from pikpak.chrome_pikpak import ChromePikpak, Handle
 
 logger = logging.getLogger("PikPakSuper")
@@ -56,7 +57,16 @@ class PikPakSuper(ChromePikpak):
         _pikpak.setHandler(handler)
         _pikpak.set_proxy(*proxy)
         logger.info(f"开始注册\n账号:{mail}\n密码:{pd}")
-        _pikpak.register()
+        while True:
+            try:
+                _pikpak.register()
+                break
+            except requests.exceptions.ProxyError:
+                logger.info("代理异常 重新获取一个代理")
+                proxy = handler.run_get_proxy()
+                _pikpak.set_proxy(*proxy)
+            except Exception as e:
+                raise e
         _pikpak.run_test()
         return _pikpak
 

@@ -60,7 +60,7 @@ class ChromePikpak():
     CLIENT_VERSION = '2.0.0'
 
     # 网络连接重试状态码
-    RETRY_STATUS_CODE = [502]
+    RETRY_STATUS_CODE = [502,]
 
     handler: Handle = Handle()
     old_captcha_token = None
@@ -243,14 +243,16 @@ class ChromePikpak():
 
     def _requests(self, method: str, url: str, headers=None, **kwargs):
         headers = headers or self.headers(url)
-        for count in range(0, 3):
+        for count in range(3):
             try:
                 response = requests.request(method, url, headers=headers,
                                             proxies=self.proxies, verify=False, **kwargs)
             except Exception as e:
                 logger.error(f"{method}请求报错了{e}")
                 time.sleep(30)
-                logger.error(f"{method}请求正在重试{count}/3")
+                logger.error(f"{method}请求正在重试{count + 1}/3")
+                if count + 1 >= 3:
+                    raise e
                 continue
             if response.status_code == 200:
                 break
