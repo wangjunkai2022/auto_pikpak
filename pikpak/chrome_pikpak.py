@@ -60,7 +60,7 @@ class ChromePikpak():
     CLIENT_VERSION = '2.0.0'
 
     # 网络连接重试状态码
-    RETRY_STATUS_CODE = [502,]
+    RETRY_STATUS_CODE = [502]
 
     handler: Handle = Handle()
     old_captcha_token = None
@@ -248,7 +248,8 @@ class ChromePikpak():
                 response = requests.request(method, url, headers=headers,
                                             proxies=self.proxies, verify=False, **kwargs)
             except Exception as e:
-                logger.error(f"get请求报错了{e}")
+                logger.error(f"get请求报错了{e}\nresponse:{response}")
+                continue
             if response.status_code == 200:
                 break
             elif response.status_code in self.RETRY_STATUS_CODE:
