@@ -276,6 +276,7 @@ class ChromePikpak():
             self.captcha(f"{method.upper()}:{path}")
             self._change_request_values(
                 old_capctah, self.captcha_token, headers, **kwargs)
+            time.sleep(5)
             return self._requests(method, url, headers, **kwargs)
         elif error and error == 'unauthenticated':
             self.authorization = DEF_AUTHORIZATION
@@ -287,6 +288,7 @@ class ChromePikpak():
                 old_capctah, self.captcha_token, headers, **kwargs)
             self._change_request_values(
                 old_authorization, self.authorization, headers, **kwargs)
+            time.sleep(5)
             return self._requests(method, url, headers, **kwargs)
         elif error and error == 'aborted':
             logger.error(

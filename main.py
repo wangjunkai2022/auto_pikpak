@@ -112,7 +112,10 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
             if data.get("mount_path")[1:] == self.get_opation_pikpak().name:
                 alist_storage = data
                 break
-        remark_json = json.loads(alist_storage.get("remark", '{}'))
+        remark_str = alist_storage.get("remark")
+        if remark_str == "":
+            remark_str = '{}'
+        remark_json = json.loads(remark_str,)
         share = remark_json.get("share")
         if share:
             # 拥有分享地址 直接分享
@@ -225,7 +228,7 @@ def change_all_pikpak():
         pikpak: BasePikpakData = BasePikpakData.create(handler)
         time.sleep(60)
         pikpak.try_get_vip()
-        pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+        # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
         alistPikpak.change_opation_2(pikpak_go)
         alistPikpak.update_opation_pikpak_go(pikpak)
         logger.info(f"替换原账号的alit或者rclone中")
@@ -254,7 +257,7 @@ def check_all_pikpak_vip():
         pikpak: BasePikpakData = BasePikpakData.create(handler)
         time.sleep(60)
         pikpak.try_get_vip()
-        pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+        # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
         alistPikpak.change_opation_2(pikpak_go)
         alistPikpak.update_opation_pikpak_go(pikpak)
         logger.info(f"替换原账号的alit或者rclone中")
@@ -284,7 +287,7 @@ def 注册新号激活(pikpak_go: BasePikpakData = None):
     pikpak: BasePikpakData = BasePikpakData.create(handler)
     time.sleep(60)
     pikpak.try_get_vip()
-    pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+    # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
     ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
     ManagerAlistPikpak.get_instance().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账号的alit或者rclone中")
@@ -317,7 +320,7 @@ if __name__ == "__main__":
     set_def_callback()
     # if config.telegram_api and len(config.telegram_api) > 1:
     #     telegram.Telegram()
-    check_all_pikpak_vip()
+    change_all_pikpak()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
