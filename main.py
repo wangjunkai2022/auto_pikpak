@@ -49,9 +49,6 @@ class ManagerPikPak(Singleton):
     def __init__(self) -> None:
         self.opation_index = 0
 
-    def save_pikpak_2(self, pikpak_go: BasePikpakData):
-        pass
-
     def get_all_not_vip(self) -> List[BasePikpakData]:
         """获取所有不是会员的Pikpak
 
@@ -93,25 +90,34 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
     def get_opation_pikpak(self) -> BasePikpakData:
         return self.pikpak_go_list[self.opation_index]
 
-    def save_pikpak_2(self, pikpak_go: BasePikpakData):
-        storage_list = self.get_storage_list()
-        if not self.get_opation_pikpak():
-            raise Exception("保存失败 当前操作的pikpak错误")
-        for data in storage_list.get("content"):
-            addition = json.loads(data.get("addition"))
-            if addition.get("username") == self.get_opation_pikpak().mail:
-                path = data.get("mount_path", "None")
-                old_username = addition.get('username', 'None')
-                old_password = addition.get('password', 'None')
-                logger.info(
-                    f"更新Alist中的pikpak\npath:{path}\n原账户:{old_username}\n原密码{old_password}")
-                addition["username"] = pikpak_go.mail
-                addition["password"] = pikpak_go.pd
-                data["addition"] = json.dumps(addition)
-                logger.debug(data)
-                self.update_storage(data)
+    def update_opation_pikpak_go(self, pikpak_go: BasePikpakData):
+        alist_storage = None
+        for data in self.get_storage_list().get('content'):
+            if data.get("mount_path")[1:] == self.get_opation_pikpak().name:
+                alist_storage = data
                 break
-
+        remark_json = json.loads(alist_storage.get("remark", '{}'))
+        share = remark_json.get("share")
+        if share:
+            # 拥有分享地址 直接分享
+            pass
+        else:
+            # 没有分享地址 开始分享opatins Pikpak
+            share = self.get_opation_pikpak().start_share_self_files()
+        remark_json["share"] = share
+        share_task = pikpak_go.save_share(share.get("share_id"))
+        time.sleep(10)  # 等待10秒保证分享保存成功
+        addition = json.loads(alist_storage.get("addition"))
+        old_username = addition.get('username', 'None')
+        old_password = addition.get('password', 'None')
+        logger.info(
+            f"更新Alist中的pikpak\npath:{self.get_opation_pikpak().name}\n原账户:{old_username}\n原密码{old_password}")
+        addition["username"] = pikpak_go.mail
+        addition["password"] = pikpak_go.pd
+        alist_storage["addition"] = json.dumps(addition)
+        alist_storage['remark'] = json.dumps(remark_json)
+        logger.debug(alist_storage)
+        self.update_storage(alist_storage)
 
 class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
     pass
@@ -204,7 +210,7 @@ def change_all_pikpak():
         pikpak.try_get_vip()
         pikpakdata_2_pikpakdata(pikpak_go, pikpak)
         alistPikpak.change_opation_2(pikpak_go)
-        alistPikpak.save_pikpak_2(pikpak)
+        alistPikpak.update_opation_pikpak_go(pikpak)
         logger.info(f"替换原账号的alit或者rclone中")
 
     logger.info('注册新的pikpak替换原来的pikpak over')
@@ -233,7 +239,7 @@ def check_all_pikpak_vip():
         pikpak.try_get_vip()
         pikpakdata_2_pikpakdata(pikpak_go, pikpak)
         alistPikpak.change_opation_2(pikpak_go)
-        alistPikpak.save_pikpak_2(pikpak)
+        alistPikpak.update_opation_pikpak_go(pikpak)
         logger.info(f"替换原账号的alit或者rclone中")
 
     logger.info("Over")
@@ -263,7 +269,7 @@ def 注册新号激活(pikpak_go: BasePikpakData = None):
     pikpak.try_get_vip()
     pikpakdata_2_pikpakdata(pikpak_go, pikpak)
     ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
-    ManagerAlistPikpak.get_instance().save_pikpak_2(pikpak)
+    ManagerAlistPikpak.get_instance().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账号的alit或者rclone中")
 
 
@@ -326,4 +332,4 @@ if __name__ == "__main__":
     # # pikpak_.set_proxy("43.134.68.153:3128")
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
-    ManagerAlistPikpak.get_instance().save_pikpak_2(None)
+    ManagerAlistPikpak.get_instance().update_opation_pikpak_go(None)

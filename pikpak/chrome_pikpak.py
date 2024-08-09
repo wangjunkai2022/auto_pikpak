@@ -288,7 +288,7 @@ class ChromePikpak():
             return self._requests(method, url, headers, **kwargs)
         elif error and error == 'aborted':
             logger.error(
-                f"{self.mail}此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
+                f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
             raise Exception(
                 f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
         if error and error != '':

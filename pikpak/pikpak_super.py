@@ -168,7 +168,7 @@ class PikPakSuper(ChromePikpak):
         #     fils_id.append(result[-1].get("id"))
         if len(fils_id) < 1:
             raise Exception("没有分享文件")
-        json_data = self.file_batch_share(fils_id, expiration_days=7)
+        json_data = self.file_batch_share(fils_id)
         logger.debug(json_data)
         return json_data
 
@@ -177,7 +177,7 @@ class PikPakSuper(ChromePikpak):
         保存人家的分享到自己的账号
         """
         self.login()
-        self.save_share_2_self(shareid)
+        return self.save_share_2_self(shareid)
 
 
 if __name__ == "__main__":
