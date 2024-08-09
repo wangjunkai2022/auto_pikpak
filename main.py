@@ -3,10 +3,7 @@ import os
 import random
 import string
 from typing import List
-from pikpak import PikPak, crete_invite, run_new_test
-from captcha.chmod import open_url2token
 import config.config as config
-import asyncio
 import alist.alist as alist
 from mail.mail import create_one_mail, get_new_mail_code
 import time
@@ -14,71 +11,12 @@ import logging
 from pikpak.pikpak_super import HandleSuper, PikPakSuper
 from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
-import telegram
 from tools import set_def_callback
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
-
-
-def get_start_share_id(pikpak: PikPak = None):
-    try:
-        pikpak_api = pikpak.pikpakapi
-        # 创建一个事件循环thread_loop
-        new_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(new_loop)
-        main_loop = asyncio.get_event_loop()
-        get_future = asyncio.ensure_future(pikpak_api.login())
-        main_loop.run_until_complete(get_future)
-        # 获取Pack From Shared的id
-        get_future = asyncio.ensure_future(
-            pikpak_api.path_to_id("Pack From Shared"))
-        main_loop.run_until_complete(get_future)
-        result = get_future.result()
-        if len(result) == 1:
-            id_Pack_From_Shared = result[-1].get("id")
-            # 获取Pack From Shared文件夹下的所有文件夹
-            get_future = asyncio.ensure_future(
-                pikpak_api.file_list(parent_id=id_Pack_From_Shared))
-            main_loop.run_until_complete(get_future)
-            result = get_future.result()
-            if len(result.get("files")) <= 0:
-                id_Pack_From_Shared = None
-        else:
-            id_Pack_From_Shared = None
-
-        # 获取Pack From Shared文件夹下的所有文件夹
-        get_future = asyncio.ensure_future(
-            pikpak_api.file_list(parent_id=id_Pack_From_Shared))
-        main_loop.run_until_complete(get_future)
-        result = get_future.result()
-
-        # 需要分享的文件夹id
-        fils_id = []
-        for file in result.get("files"):
-            if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
-                pass
-            else:
-                fils_id.append(file.get("id"))
-        # for file in invite.get("share", []):
-        #     get_future = asyncio.ensure_future(pikpak_api.path_to_id(file))
-        #     main_loop.run_until_complete(get_future)
-        #     result = get_future.result()
-        #     fils_id.append(result[-1].get("id"))
-        get_future = asyncio.ensure_future(
-            pikpak_api.file_batch_share(fils_id, expiration_days=7)
-        )
-        main_loop.run_until_complete(get_future)
-        result = get_future.result()
-        logger.debug(result)
-        return result.get("share_id", None)
-    except:
-        logger.error("分享失败 重新分享")
-        time.sleep(30)
-        return get_start_share_id(pikpak)
-
 
 class BasePikpakData(PikPakSuper):
     name = None
@@ -89,6 +27,18 @@ class BasePikpakData(PikPakSuper):
 
 
 class ManagerPikPak:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:  # 如果实例不存在，则创建新实例
+            cls._instance = super(ManagerPikPak, cls).__new__(cls)
+        return cls._instance
+
+    @staticmethod
+    def get_instance():
+        """ 返回自身类型的实例 """
+        return ManagerPikPak()
+
     opation_index: int = -1
     pikpak_go_list: List[BasePikpakData] = []
 
@@ -209,7 +159,7 @@ def change_all_pikpak():
     """
     注册新的pikpak替换原来的pikpak
     """
-    alistPikpak: ManagerPikPak = ManagerAlistPikpak()
+    alistPikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
     for pikpak_go in alistPikpak.pikpak_go_list:
         handler = HandleSuper(
             get_token=config.get_captcha_callback(),
@@ -244,7 +194,7 @@ def check_all_pikpak_vip():
     """运行所有的pikpak账号检测
     """
     logger.info("开始执行系统中的会员状态检测")
-    alistPikpak: ManagerPikPak = ManagerAlistPikpak()
+    alistPikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
     for pikpak_go in alistPikpak.get_all_not_vip():
         logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
         if pikpak_go.try_get_vip():
@@ -284,20 +234,51 @@ def check_all_pikpak_vip():
 
 def 所有的没有vip的PikPak():
     logger.info("开始获取本地所有不是会员的配置")
-    base_pikpak: ManagerPikPak = config.alist_enable and ManagerAlistPikpak(
-    ) or ManagerRclonePikpak()
+    base_pikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
     return base_pikpak.get_all_not_vip()
 
 
-def 注册新号激活(pikpak: PikPak = None):
-    return crete_invite(pikpak.get_self_invite_code())
+def 注册新号激活(pikpak_go: BasePikpakData = None):
+    logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
+    if pikpak_go.try_get_vip():
+        vip_day = pikpak_go.get_vip_day_time_left()
+        logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
+        return
+    handler = HandleSuper(
+        get_token=config.get_captcha_callback(),
+        get_mailcode=config.get_email_verification_code_callback(),
+        email_address=create_one_mail,
+        get_password=radom_password,
+        get_proxy=get_proxy,
+    )
+    pikpak: BasePikpakData = BasePikpakData.create(handler)
+    time.sleep(60)
+    if pikpak.try_get_vip():
+        logger.info(f"新账号激活vip成功 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
+        time.sleep(5)
+        if pikpak.get_vip_day_time_left() > 0:
+            share = pikpak_go.start_share_self_files()
+            logger.info(
+                f"分享原账号:\nemail: {pikpak_go.mail}\npd: {pikpak_go.pd}\n分享代码是: {share}")
+            time.sleep(10)
+            share_id = share.get("share_id", None)
+            if not share_id:
+                raise Exception("分享错误")
+            pikpak.save_share(share_id)
+            logger.info(f"保存原账号的资源到新账号")
+            ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
+            ManagerAlistPikpak.get_instance().save_pikpak_2(pikpak)
+            logger.info(f"替换原账号的alit或者rclone中")
+    else:
+        logger.error(f"新账号激活vip失败 \nemail: {pikpak.mail}\npd: {pikpak.pd}")
+        return
 
 
 def copye_list_2_rclone_config():
     """复制alist的配置到rclone的配置json配置中
     """
     alist_server = alist.Alist()
-    rclone_manager = ManagerRclonePikpak()
+    rclone_manager = ManagerRclonePikpak.get_instance()
     # alist_server.saveToNowConif()
     rclone_configs: List[PikPakJsonData] = []
     for _alist in alist_server.get_storage_list()["content"]:
