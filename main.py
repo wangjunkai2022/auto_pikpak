@@ -61,6 +61,8 @@ class ManagerPikPak(Singleton):
         for pikpak_go in self.pikpak_go_list:
             while True:
                 try:
+                    logger.info(
+                        f"检测是不是会员\nname:{pikpak_go.name}\nemail:{pikpak_go.mail}\npd:{pikpak_go.pd}\nproxy:{pikpak_go.proxies}")
                     # pikpak_go.set_proxy(*get_proxy())
                     if pikpak_go.get_vip_day_time_left() <= 0:
                         not_vip_list.append(pikpak_go)
