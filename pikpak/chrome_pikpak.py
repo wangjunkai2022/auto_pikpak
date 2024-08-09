@@ -287,7 +287,8 @@ class ChromePikpak():
                 old_authorization, self.authorization, headers, **kwargs)
             return self._requests(method, url, headers, **kwargs)
         if error and error != '':
-            raise Exception(error)
+            raise Exception(
+                f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
         return json_data
 
     def get(self, url, headers=None, **kwargs):
