@@ -248,7 +248,9 @@ class ChromePikpak():
                 response = requests.request(method, url, headers=headers,
                                             proxies=self.proxies, verify=False, **kwargs)
             except Exception as e:
-                logger.error(f"get请求报错了{e}\nresponse:{response}")
+                logger.error(f"{method}请求报错了{e}\nresponse:{response}")
+                time.sleep(2)
+                logger.error(f"{method}请求正在重试{count}/3")
                 continue
             if response.status_code == 200:
                 break
