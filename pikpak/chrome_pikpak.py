@@ -248,15 +248,15 @@ class ChromePikpak():
                 response = requests.request(method, url, headers=headers,
                                             proxies=self.proxies, verify=False, **kwargs)
             except Exception as e:
-                logger.error(f"{method}请求报错了{e}\nresponse:{response}")
-                time.sleep(2)
+                logger.error(f"{method}请求报错了{e}")
+                time.sleep(30)
                 logger.error(f"{method}请求正在重试{count}/3")
                 continue
             if response.status_code == 200:
                 break
             elif response.status_code in self.RETRY_STATUS_CODE:
                 logger.error(f"请求报错了等待重试 {response}")
-                time.sleep(5)
+                time.sleep(30)
             else:
                 logger.debug(f"正常吗？{response}")
                 break
