@@ -156,7 +156,9 @@ class Telegram():
         try:
             change_all_pikpak()
         except Exception as e:
+            self.send_print_to_tg("报错了")
             self.send_print_to_tg(e)
+            self.send_print_to_tg(e.__traceback__)
         self._task_over()
 
     def send_print_to_tg(self, message_text):
