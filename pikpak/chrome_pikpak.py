@@ -486,6 +486,10 @@ class ChromePikpak():
         """
         Login to PikPak 免验证登陆
         """
+        self.read_self()
+        if self.authorization != DEF_AUTHORIZATION:
+            logger.debug("已经登陆了 V2 这里不进行登陆")
+            return
         login_url = f"https://user.mypikpak.com/v1/auth/token"
         login_data = {
             "client_id": self.CLIENT_ID,
