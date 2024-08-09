@@ -61,7 +61,7 @@ class ManagerPikPak(Singleton):
         for pikpak_go in self.pikpak_go_list:
             while True:
                 try:
-                    pikpak_go.set_proxy(*get_proxy())
+                    # pikpak_go.set_proxy(*get_proxy())
                     if pikpak_go.get_vip_day_time_left() <= 0:
                         not_vip_list.append(pikpak_go)
                     break
