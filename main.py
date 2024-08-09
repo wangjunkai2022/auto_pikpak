@@ -3,6 +3,8 @@ import os
 import random
 import string
 from typing import List
+
+import requests
 import config.config as config
 import alist.alist as alist
 from mail.mail import create_one_mail, get_new_mail_code
@@ -57,8 +59,17 @@ class ManagerPikPak(Singleton):
         """
         not_vip_list: List[BasePikpakData] = []
         for pikpak_go in self.pikpak_go_list:
-            if pikpak_go.get_vip_day_time_left() <= 0:
-                not_vip_list.append(pikpak_go)
+            while True:
+                try:
+                    pikpak_go.set_proxy(*get_proxy())
+                    if pikpak_go.get_vip_day_time_left() <= 0:
+                        not_vip_list.append(pikpak_go)
+                    break
+                except requests.exceptions.ProxyError:
+                    logger.error("代理异常 重新获取一个代理")
+                    pikpak_go.set_proxy(*get_proxy())
+                except Exception as e:
+                    raise e
         return not_vip_list
 
     def change_opation_2(self, pikpak_data: BasePikpakData):
@@ -118,6 +129,7 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         alist_storage['remark'] = json.dumps(remark_json)
         logger.debug(alist_storage)
         self.update_storage(alist_storage)
+
 
 class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
     pass
@@ -300,7 +312,7 @@ if __name__ == "__main__":
     set_def_callback()
     # if config.telegram_api and len(config.telegram_api) > 1:
     #     telegram.Telegram()
-    # check_all_pikpak_vip()
+    check_all_pikpak_vip()
     # alistPikpak = AlistPikpak()
     # pikpak_go = alistPikpak.pop_not_vip_pikpak()
     # invite_code = pikpak_go.get_self_invite_code()
@@ -332,4 +344,4 @@ if __name__ == "__main__":
     # # pikpak_.set_proxy("43.134.68.153:3128")
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
-    ManagerAlistPikpak.get_instance().update_opation_pikpak_go(None)
+    # ManagerAlistPikpak.get_instance().update_opation_pikpak_go(None)
