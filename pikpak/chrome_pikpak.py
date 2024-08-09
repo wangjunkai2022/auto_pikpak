@@ -265,6 +265,8 @@ class ChromePikpak():
         json_data = response.json()
         error = json_data.get("error")
         if error and (error == "captcha_invalid" or error == "captcha_required"):
+            logger.debug(
+                f"capctha验证不通过再次验证\nurl:{url}\nresponse:{response}\nerror:{error}")
             # 使用 urlparse 解析 URL
             parsed_url = urlparse(url)
             # 获取域名和路径
@@ -501,8 +503,7 @@ class ChromePikpak():
         json_data = self.post(
             login_url,
             json=login_data,
-            headers=
-            {
+            headers={
                 "Content-Type": "application/x-www-form-urlencoded",
             },
         )
