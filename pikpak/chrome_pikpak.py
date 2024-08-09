@@ -726,6 +726,7 @@ class ChromePikpak():
         json_data = self.post(
             url, json=payload)
         logger.info(f"保存分享文件{json_data}")
+        return json_data
 
     # #######################文件操作 这里复制pikpakapi的内容###########
     # 如果 继承方式实现 需要重新写sync token哪些也不好公用 就直接复制关键请求就好了
@@ -1126,33 +1127,34 @@ class ChromePikpak():
 
 
 if __name__ == "__main__":
-    email = "covaxe9867@biowey.com"
-    password = "2dewmJR1"
-    # email = 'sotag69939@alientex.com'
-    # password = '12poi900'
+    email = ""
+    password = ""
     pikpak_ = ChromePikpak(email, password)
     pikpak_.login()
-    # pikpak_.register()
-    # pikpak_.me()
-    # pikpak_.configs()
-    # pikpak_.lbsInfo()
-    # pikpak_.user_settings_bookmark()
-    # pikpak_.about()
-    # pikpak_.inviteCode()
-    # pikpak_.vip_checkInvite()
-    pikpak_.vip_info()
-    # pikpak_.vip_inviteList()
-    # pikpak_.upgradeToPro()
-    # pikpak_.inviteInfo()
-    # pikpak_.task_free_vip()
-    # pikpak_.task_reference_resource()
-    # pikpak_.check_task_status()
-    # pikpak_.invite()
-    # pikpak_.verifyRecaptchaToken()
-    # pikpak_.reward_vip_upload_file()
-
-    # result = pikpak_.create_folder()
-    # result = pikpak_.file_move_or_copy_by_path(
-    #     ['/新建文件夹2/新建文件夹/会飞的象@第一会所@1Pondo 101723_001/'], '/test/', True, True)
-    # print(result)
-    pikpak_.save_share_2_self("VO0UAyoBjunwgtyhTtnMWl5Lo1")
+    SukebeiEnyo合集一 = pikpak_.path_to_id(
+        "/Pack From Shared/test")[-1]
+    next_page_token = None
+    move_path = pikpak_.path_to_id(
+        "/Pack From Shared/", True)[-1]
+    while True:
+        file_list = pikpak_.file_list(10, SukebeiEnyo合集一.get(
+            "id"), next_page_token=next_page_token)
+        next_page_token = file_list.get('next_page_token')
+        for max_folder_50G in file_list.get("files"):
+            if 'max_folder_50G' in max_folder_50G.get("name"):
+                ids = []
+                for file in pikpak_.file_list(
+                        500, max_folder_50G.get("id")).get('files'):
+                    ids.append(file.get("id"))
+                if len(ids) > 0:
+                    pikpak_.file_batch_move(ids, move_path.get("id"))
+                time.sleep(2)
+                if len(pikpak_.file_list(
+                        2, max_folder_50G.get("id")).get('files')) <= 0:
+                    pikpak_.delete_to_trash([max_folder_50G.get("id")])
+            else:
+                pikpak_.file_batch_move(
+                    [max_folder_50G.get('id')], move_path.get("id"))
+        if len(file_list.get('files')) <= 0:
+            break
+        time.sleep(2)

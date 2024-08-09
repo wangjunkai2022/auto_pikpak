@@ -8,6 +8,7 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+
 class HandleSuper(Handle):
     def __def_email_address(self) -> str:
         """
@@ -154,9 +155,11 @@ class PikPakSuper(ChromePikpak):
         #     main_loop.run_until_complete(get_future)
         #     result = get_future.result()
         #     fils_id.append(result[-1].get("id"))
+        if len(fils_id) < 1:
+            raise Exception("没有分享文件")
         json_data = self.file_batch_share(fils_id, expiration_days=7)
         logger.debug(json_data)
-        return json_data.get("share_id", None)
+        return json_data
 
     def save_share(self, shareid: str) -> None:
         """

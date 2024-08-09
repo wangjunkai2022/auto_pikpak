@@ -5,7 +5,7 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
-from main import ManagerAlistPikpak, run_all as mian_run_all, 所有的没有vip的PikPak, 注册新号激活
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有的没有vip的PikPak, 注册新号激活
 from system_service import SystemService, SystemServiceTager
 from tools import set_def_callback
 
@@ -23,6 +23,7 @@ loging_names = [
 class 模式选项(enum.Enum):
     开始 = "start"
     扫描所有 = "激活所有"
+    新建所有 = "新建所有"
     选择激活 = "选择激活"
     设置打印等级 = "设置打印等级"
     结束 = "stop"
@@ -143,6 +144,20 @@ class Telegram():
         #     "重启服务器", callback_data="重启服务器",))
         self.bot.send_message(message.chat.id, 模式选项.重启系统服务.name,
                               reply_markup=markup)
+
+    def _新建所有(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(
+                message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        self.bot.send_message(
+            self.runing_chat.id, "你好！现在服务器开启了替换所有的pikpak", disable_notification=True)
+        try:
+            change_all_pikpak()
+        except Exception as e:
+            self.send_print_to_tg(e)
+        self._task_over()
 
     def send_print_to_tg(self, message_text):
         """发送消息到TG
