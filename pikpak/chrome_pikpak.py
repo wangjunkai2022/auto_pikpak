@@ -279,9 +279,9 @@ class ChromePikpak():
             time.sleep(5)
             return self._requests(method, url, headers, **kwargs)
         elif error and error == 'unauthenticated':
-            self.authorization = DEF_AUTHORIZATION
             old_capctah = self.captcha_token
             old_authorization = self.authorization
+            self.authorization = DEF_AUTHORIZATION
             self.save_self()
             self.login()
             self._change_request_values(
