@@ -7,7 +7,7 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有的没有vip的PikPak, 注册新号激活
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有pikpak容器, 注册新号激活
 from system_service import SystemService, SystemServiceTager
 from tools import set_def_callback
 
@@ -249,7 +249,7 @@ class Telegram():
             return
         self.runing_chat = message.chat
         try:
-            self.run_temp_datas = 所有的没有vip的PikPak()
+            self.run_temp_datas = 所有pikpak容器()
         except Exception as e:
             self.run_temp_datas = None
             self.send_error(e)

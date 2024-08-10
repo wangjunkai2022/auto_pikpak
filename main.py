@@ -265,10 +265,10 @@ def check_all_pikpak_vip():
     logger.info("Over")
 
 
-def 所有的没有vip的PikPak() -> List[BasePikpakData]:
+def 所有pikpak容器() -> List[BasePikpakData]:
     logger.info("开始获取本地所有不是会员的配置")
     base_pikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
-    return base_pikpak.get_all_not_vip()
+    return base_pikpak.pikpak_go_list
 
 
 def 注册新号激活(pikpak_go: BasePikpakData = None):
