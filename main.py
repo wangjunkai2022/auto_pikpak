@@ -221,20 +221,29 @@ def change_all_pikpak():
     """
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
     for pikpak_go in alistPikpak.pikpak_go_list:
-        handler = HandleSuper(
-            get_token=config.get_captcha_callback(),
-            get_mailcode=config.get_email_verification_code_callback(),
-            email_address=create_one_mail,
-            get_password=radom_password,
-            get_proxy=get_proxy,
-        )
-        pikpak: BasePikpakData = BasePikpakData.create(handler)
-        time.sleep(60)
-        pikpak.try_get_vip()
-        # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
-        alistPikpak.change_opation_2(pikpak_go)
-        alistPikpak.update_opation_pikpak_go(pikpak)
-        logger.info(f"替换原账号的alit或者rclone中")
+        error = None
+        for count in range(3):
+            try:
+                handler = HandleSuper(
+                    get_token=config.get_captcha_callback(),
+                    get_mailcode=config.get_email_verification_code_callback(),
+                    email_address=create_one_mail,
+                    get_password=radom_password,
+                    get_proxy=get_proxy,
+                )
+                pikpak: BasePikpakData = BasePikpakData.create(handler)
+                time.sleep(60)
+                pikpak.try_get_vip()
+                # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+                alistPikpak.change_opation_2(pikpak_go)
+                alistPikpak.update_opation_pikpak_go(pikpak)
+                logger.info(f"替换原账号的alit或者rclone中")
+                error = None
+                break
+            except Exception as e:
+                error = e
+        if error:
+            raise error
 
     logger.info('注册新的pikpak替换原来的pikpak over')
 
