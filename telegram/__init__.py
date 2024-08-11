@@ -282,9 +282,12 @@ class Telegram():
                 pikpak = self.run_temp_datas[index]
                 self.bot.send_message(call.message.chat.id,
                                       f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
-                new_pikpak = 注册新号激活(pikpak)
-                self.bot.send_message(call.message.chat.id,
+                try:
+                    new_pikpak = 注册新号激活(pikpak)
+                    self.bot.send_message(call.message.chat.id,
                                       f"注册新号成功\n{new_pikpak.mail}")
+                except:
+                    pass
                 self._task_over()
             elif call.message.text == 模式选项.挂载Rclone到系统.name:
                 # pikpak = self.rclone_manager.conifg_2_pikpak_rclone(

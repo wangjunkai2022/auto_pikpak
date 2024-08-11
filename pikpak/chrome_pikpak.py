@@ -257,8 +257,12 @@ class ChromePikpak():
             if response.status_code == 200:
                 break
             elif response.status_code in self.RETRY_STATUS_CODE:
-                logger.error(f"请求报错了等待重试 {response}")
+                logger.error(f"{method}请求报错了{e}")
                 time.sleep(30)
+                logger.error(f"{method}请求正在重试{count + 1}/3")
+                if count + 1 >= 3:
+                    raise e
+                continue
             else:
                 logger.debug(f"正常吗？{response}")
                 break

@@ -38,9 +38,11 @@ class SingletonMeta(type):
             cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
+
 class Singleton(metaclass=SingletonMeta):
     """单例基类，使用 SingletonMeta 元类"""
     pass
+
 
 class ManagerPikPak(Singleton):
 
@@ -272,7 +274,7 @@ def 所有pikpak容器() -> List[BasePikpakData]:
     return base_pikpak.pikpak_go_list
 
 
-def 注册新号激活(pikpak_go: BasePikpakData = None):
+def 注册新号激活(pikpak_go: BasePikpakData = None) -> BasePikpakData:
     logger.info(f"正在整理的pikpak\n {pikpak_go.name}")
     # if pikpak_go.try_get_vip():
     #     vip_day = pikpak_go.get_vip_day_time_left()
@@ -292,6 +294,7 @@ def 注册新号激活(pikpak_go: BasePikpakData = None):
     ManagerAlistPikpak().change_opation_2(pikpak_go)
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账号的alit或者rclone中")
+    return pikpak
 
 
 def copye_list_2_rclone_config():
