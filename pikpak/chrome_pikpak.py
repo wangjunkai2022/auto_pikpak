@@ -10,6 +10,11 @@ import uuid
 import requests
 from captcha.captcha_2captcha import captcha_rewardVip, get_token_register
 from captcha.captcha_slide_img import captcha
+import warnings
+
+# 忽略 InsecureRequestWarning 警告
+warnings.filterwarnings(
+    "ignore", message="Unverified HTTPS request is being made")
 
 logger = logging.getLogger("Chrome_Pikpak")
 logger.setLevel(logging.DEBUG)
@@ -58,9 +63,6 @@ class ChromePikpak():
 
     CLIENT_ID = 'YUMx5nI8ZU8Ap8pm'
     CLIENT_VERSION = '2.0.0'
-
-    # 网络连接重试状态码
-    RETRY_STATUS_CODE = [502,]
 
     handler: Handle = Handle()
     old_captcha_token = None
@@ -246,26 +248,33 @@ class ChromePikpak():
         for count in range(3):
             try:
                 response = requests.request(method, url, headers=headers,
-                                            proxies=self.proxies, verify=False, **kwargs)
-            except Exception as e:
-                logger.error(f"{method}请求报错了{e}")
-                time.sleep(30)
-                logger.error(f"{method}请求正在重试{count + 1}/3")
-                if count + 1 >= 3:
-                    raise e
-                continue
-            if response.status_code == 200:
+                                            proxies=self.proxies, verify=False, timeout=5, **kwargs)
+
+            except requests.exceptions.HTTPError as http_err:
+                logger.debug(f"Http请求异常: {http_err}")
                 break
-            elif response.status_code in self.RETRY_STATUS_CODE:
-                logger.error(f"{method}请求报错了{e}")
-                time.sleep(30)
-                logger.error(f"{method}请求正在重试{count + 1}/3")
+            except (
+                requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.TooManyRedirects,
+            ) as error:
+                logger.error(f"请求报错:\n{error}\n{count + 1}/3")
+                logger.error(
+                    f"url:{url}\nheaders:{headers}\nkwargs:{kwargs}")
+                time.sleep(10)
                 if count + 1 >= 3:
-                    raise e
+                    raise error
                 continue
-            else:
-                logger.debug(f"正常吗？{response}")
-                break
+            except (
+                requests.exceptions.URLRequired,
+                    requests.exceptions.InvalidURL,
+                    requests.exceptions.SSLError,
+            ) as req_err:
+                logger.error(
+                    f"请求报错:\n{req_err}\nurl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
+                raise error
+            break
+
         json_data = response.json()
         error = json_data.get("error")
         if error and (error == "captcha_invalid" or error == "captcha_required"):
@@ -300,6 +309,9 @@ class ChromePikpak():
             logger.error(
                 f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
             raise Exception(error)
+        elif error and error == 'invalid_account_or_password':
+            logger.error(f"当前账号登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
+            raise Exception("密码错误")
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")

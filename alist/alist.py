@@ -12,6 +12,7 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+
 class JsonDataStorage():
     id = None
     mount_path = None
@@ -145,15 +146,27 @@ class Alist(object):
         if response.status_code == 200:
             return data_json.get("data")
 
-    def update_storage(self, data: dict) -> None:
+    def update_storage(self, data: dict, isAddUpdateTime=True) -> None:
         """修改存储库
 
         Args:
             data (dict): 需要修改的库
-
+            isAddUpdateTime: 是否需要添加操作时间到备注中
         Returns:
             _type_: _description_
         """
+        if isAddUpdateTime:
+            remark_str = data.get("remark")
+            if remark_str == '':
+                remark_str = "{}"
+            remark_json = json.loads(remark_str)
+            # 获取当前时间
+            now = datetime.datetime.now()
+            # 将当前时间转换为字符串
+            time_string = now.strftime("%Y-%m-%d %H:%M:%S")
+            remark_json["update_time"] = time_string
+            remark_str = json.dumps(remark_json, ensure_ascii=False, indent=4)
+            data['remark'] = remark_str
         url = f"{self._domain}/api/admin/storage/update"
         payload = data
         response = self.__request("POST", url, json=payload)
@@ -236,11 +249,19 @@ class Alist(object):
             addition = json.loads(data.get("addition"))
             username = addition.get("username")
             password = addition.get("password")
+            remark_str = data.get("remark")
+            disabled = data.get("disabled")
+            if remark_str == "":
+                remark_str = '{}'
+            remark_json = json.loads(remark_str,)
+            update_time = remark_json.get("update_time", None)
             pikpaks.append(
                 {
                     "username": username,
                     "password": password,
-                    "name": data.get("mount_path")[1:]
+                    "name": data.get("mount_path")[1:],
+                    'update_time': update_time,
+                    'disabled': disabled
                 }
             )
         return pikpaks

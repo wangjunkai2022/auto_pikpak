@@ -7,7 +7,7 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有pikpak容器, 注册新号激活
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 注册新号激活
 from system_service import SystemService, SystemServiceTager
 from tools import set_def_callback
 
@@ -177,8 +177,23 @@ class Telegram():
             message_text (_type_): _description_
         """
         if self.runing_chat or self.start_chat:
-            self.bot.send_message(self.runing_chat.id or self.start_chat.id,
-                                  message_text, disable_notification=True)
+            # self.bot.send_message(self.runing_chat.id or self.start_chat.id,
+            #                       message_text, disable_notification=True)
+            max_length = 4096
+            if len(message_text) > max_length:
+                self.bot.send_message(
+                        chat_id=self.runing_chat.id or self.start_chat.id, text="以下是超长信息:")
+                while len(message_text) > max_length:
+                    # 拆分消息
+                    part = message_text[:max_length]
+                    self.bot.send_message(
+                        chat_id=self.runing_chat.id or self.start_chat.id, text=part)
+                    message_text = message_text[max_length:]  # 剩余部分继续处理
+
+            # 发送剩余部分
+            if message_text:
+                self.bot.send_message(
+                    chat_id=self.runing_chat.id or self.start_chat.id, text=message_text)
 
     def send_get_token(self, url: str):
         """发送验证url消息到TG TG需要回复才继续运行
@@ -249,7 +264,7 @@ class Telegram():
             return
         self.runing_chat = message.chat
         try:
-            self.run_temp_datas = 所有pikpak容器()
+            self.run_temp_datas = 所有Alist的储存库()
         except Exception as e:
             self.run_temp_datas = None
             self.send_error(e)
@@ -258,8 +273,11 @@ class Telegram():
             markup = InlineKeyboardMarkup(row_width=2)
             index = 0
             for pikpak in self.run_temp_datas:
+                name = pikpak.get("name")
+                statu = pikpak.get("disabled") == True and "禁用" or "启用"
+                time_str = pikpak.get("update_time")
                 btn = InlineKeyboardButton(
-                    pikpak.name, callback_data=str(index),)
+                    f"{name} 状态:{statu} 时间:{time_str}", callback_data=str(index),)
                 markup.add(btn)
                 index += 1
             self.bot.send_message(message.chat.id, 模式选项.选择激活.name,
@@ -280,14 +298,15 @@ class Telegram():
             if call.message.text == 模式选项.选择激活.name:
                 index = int(call.data)
                 pikpak = self.run_temp_datas[index]
+                pikpak_name = pikpak.get("mail")
                 self.bot.send_message(call.message.chat.id,
-                                      f"正在注册新号中 请等待 邀请的号是{pikpak.mail}")
+                                      f"正在注册新号中 请等待 邀请的号是{pikpak_name}")
                 try:
                     new_pikpak = 注册新号激活(pikpak)
                     self.bot.send_message(call.message.chat.id,
-                                      f"注册新号成功\n{new_pikpak.mail}")
-                except:
-                    pass
+                                          f"注册新号成功\n{new_pikpak.mail}")
+                except Exception as e:
+                    self.send_error(e)
                 self._task_over()
             elif call.message.text == 模式选项.挂载Rclone到系统.name:
                 # pikpak = self.rclone_manager.conifg_2_pikpak_rclone(

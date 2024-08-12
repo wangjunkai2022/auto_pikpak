@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import random
@@ -90,6 +91,15 @@ class ManagerPikPak(Singleton):
                     self.opation_index = self.pikpak_go_list.index(pikpak)
                     break
 
+    def change_opation_storage_name_2(self, storage_name: str):
+        """
+        替换操作的pikpak为此名字的存储
+        """
+        for pikpak in self.pikpak_go_list:
+            if pikpak.name == storage_name:
+                self.opation_index = self.pikpak_go_list.index(pikpak)
+                break
+
 
 class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
 
@@ -137,7 +147,8 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         addition["username"] = pikpak_go.mail
         addition["password"] = pikpak_go.pd
         alist_storage["addition"] = json.dumps(addition)
-        alist_storage['remark'] = json.dumps(remark_json)
+        alist_storage['remark'] = json.dumps(
+            remark_json, ensure_ascii=False, indent=4)
         logger.debug(alist_storage)
         self.update_storage(alist_storage)
 
@@ -277,14 +288,14 @@ def check_all_pikpak_vip():
     logger.info("Over")
 
 
-def 所有pikpak容器() -> List[BasePikpakData]:
+def 所有Alist的储存库() -> List[BasePikpakData]:
     logger.info("开始获取本地所有的配置")
     base_pikpak: ManagerPikPak = ManagerAlistPikpak()
-    return base_pikpak.pikpak_go_list
+    return base_pikpak.get_all_pikpak_storage()
 
 
-def 注册新号激活(pikpak_go: BasePikpakData = None) -> BasePikpakData:
-    logger.info(f"正在整理的pikpak\n {pikpak_go.name}")
+def 注册新号激活(alist_storage) -> BasePikpakData:
+    logger.info(f"正在整理的pikpak\n {alist_storage.get('name')}")
     # if pikpak_go.try_get_vip():
     #     vip_day = pikpak_go.get_vip_day_time_left()
     #     logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
@@ -300,7 +311,7 @@ def 注册新号激活(pikpak_go: BasePikpakData = None) -> BasePikpakData:
     time.sleep(60)
     pikpak.try_get_vip()
     # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
-    ManagerAlistPikpak().change_opation_2(pikpak_go)
+    ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账号的alit或者rclone中")
     return pikpak
@@ -366,3 +377,8 @@ if __name__ == "__main__":
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
     # ManagerAlistPikpak().update_opation_pikpak_go(None)
+
+    # pikpak = BasePikpakData("jobqhe4986@cevipsa.com",'ajCFv1zDR','影视一')
+    # # pikpak.save_share('VO44iG2bp7jjWNdbjgZy_o9Wo1')
+    # ManagerAlistPikpak().change_opation_storage_name_2('影视一')
+    # ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
