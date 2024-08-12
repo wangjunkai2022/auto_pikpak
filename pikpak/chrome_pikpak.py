@@ -356,7 +356,7 @@ class ChromePikpak():
             parts = hostname.split('.')
             if len(parts) >= 3:  # 确保有足够的部分
                 second_level_domain = parts[-3]  # 倒数第三个部分
-                logger.debug(f'二级域名: {second_level_domain}')
+                # logger.debug(f'二级域名: {second_level_domain}')
         header_config = {
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br, zstd',
@@ -1191,41 +1191,34 @@ class ChromePikpak():
 
 
 if __name__ == "__main__":
-    # email = ""
-    # password = ""
-    # pikpak_ = ChromePikpak(email, password)
-    # pikpak_.login()
-    # SukebeiEnyo合集一 = pikpak_.path_to_id(
-    #     "/Pack From Shared/test")[-1]
-    # next_page_token = None
-    # move_path = pikpak_.path_to_id(
-    #     "/Pack From Shared/", True)[-1]
-    # while True:
-    #     file_list = pikpak_.file_list(10, SukebeiEnyo合集一.get(
-    #         "id"), next_page_token=next_page_token)
-    #     next_page_token = file_list.get('next_page_token')
-    #     for max_folder_50G in file_list.get("files"):
-    #         if 'max_folder_50G' in max_folder_50G.get("name"):
-    #             ids = []
-    #             for file in pikpak_.file_list(
-    #                     500, max_folder_50G.get("id")).get('files'):
-    #                 ids.append(file.get("id"))
-    #             if len(ids) > 0:
-    #                 pikpak_.file_batch_move(ids, move_path.get("id"))
-    #             time.sleep(2)
-    #             if len(pikpak_.file_list(
-    #                     2, max_folder_50G.get("id")).get('files')) <= 0:
-    #                 pikpak_.delete_to_trash([max_folder_50G.get("id")])
-    #         else:
-    #             pikpak_.file_batch_move(
-    #                 [max_folder_50G.get('id')], move_path.get("id"))
-    #     if len(file_list.get('files')) <= 0:
-    #         break
-    #     time.sleep(2)
-
-    email = 'nawiney632@vip4e.com'
-    password = '098poi'
+    email = ""
+    password = ""
     pikpak_ = ChromePikpak(email, password)
-    pikpak_.login_v2()
-    vip_info = pikpak_.vip_info()
-    logger.debug(vip_info)
+    pikpak_.login()
+    需要整理的文件夹 = pikpak_.path_to_id(
+        "/Pack From Shared/影视/三级电影")[-1]
+    next_page_token = None
+    move_path = pikpak_.path_to_id(
+        "/Pack From Shared/影视/三级电影_2", True)[-1]
+    while True:
+        file_list = pikpak_.file_list(10, 需要整理的文件夹.get(
+            "id"), next_page_token=next_page_token)
+        next_page_token = file_list.get('next_page_token')
+        for max_folder_50G in file_list.get("files"):
+            if 'max_folder_50G' in max_folder_50G.get("name"):
+                ids = []
+                for file in pikpak_.file_list(
+                        500, max_folder_50G.get("id")).get('files'):
+                    ids.append(file.get("id"))
+                if len(ids) > 0:
+                    pikpak_.file_batch_move(ids, move_path.get("id"))
+                time.sleep(2)
+                if len(pikpak_.file_list(
+                        2, max_folder_50G.get("id")).get('files')) <= 0:
+                    pikpak_.delete_to_trash([max_folder_50G.get("id")])
+            else:
+                pikpak_.file_batch_move(
+                    [max_folder_50G.get('id')], move_path.get("id"))
+        if len(file_list.get('files')) <= 0:
+            break
+        time.sleep(2)
