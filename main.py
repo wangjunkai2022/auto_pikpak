@@ -377,8 +377,3 @@ if __name__ == "__main__":
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
     # ManagerAlistPikpak().update_opation_pikpak_go(None)
-
-    # pikpak = BasePikpakData("jobqhe4986@cevipsa.com",'ajCFv1zDR','影视一')
-    # # pikpak.save_share('VO44iG2bp7jjWNdbjgZy_o9Wo1')
-    # ManagerAlistPikpak().change_opation_storage_name_2('影视一')
-    # ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
