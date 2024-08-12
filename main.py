@@ -29,18 +29,19 @@ class BasePikpakData(PikPakSuper):
         self.name = name
 
 
-class Singleton:
-    _instance = None  # 存储唯一实例
+class SingletonMeta(type):
+    """自定义元类，用于创建单例类"""
+    _instances = {}  # 用于存储每个类的单例实例
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:  # 如果实例不存在，则创建新实例
-            cls._instance = super(Singleton, cls).__new__(cls)
-        return cls._instance
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-    @staticmethod
-    def get_instance():
-        """ 返回自身类型的实例 """
-        return Singleton()
+
+class Singleton(metaclass=SingletonMeta):
+    """单例基类，使用 SingletonMeta 元类"""
+    pass
 
 
 class ManagerPikPak(Singleton):
@@ -81,14 +82,16 @@ class ManagerPikPak(Singleton):
         """
         替换操作的pikpak为次pikpak
         """
-        self.opation_index = self.pikpak_go_list.index(pikpak_data)
+        try:
+            self.opation_index = self.pikpak_go_list.index(pikpak_data)
+        except:
+            for pikpak in self.pikpak_go_list:
+                if pikpak.name == pikpak_data.name:
+                    self.opation_index = self.pikpak_go_list.index(pikpak)
+                    break
 
 
 class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
-    @staticmethod
-    def get_instance():
-        """ 返回自身类型的实例 """
-        return ManagerAlistPikpak()
 
     def __init__(self):
         alist.Alist.__init__(self)
@@ -216,22 +219,31 @@ def change_all_pikpak():
     """
     注册新的pikpak替换原来的pikpak
     """
-    alistPikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
+    alistPikpak: ManagerPikPak = ManagerAlistPikpak()
     for pikpak_go in alistPikpak.pikpak_go_list:
-        handler = HandleSuper(
-            get_token=config.get_captcha_callback(),
-            get_mailcode=config.get_email_verification_code_callback(),
-            email_address=create_one_mail,
-            get_password=radom_password,
-            get_proxy=get_proxy,
-        )
-        pikpak: BasePikpakData = BasePikpakData.create(handler)
-        time.sleep(60)
-        pikpak.try_get_vip()
-        # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
-        alistPikpak.change_opation_2(pikpak_go)
-        alistPikpak.update_opation_pikpak_go(pikpak)
-        logger.info(f"替换原账号的alit或者rclone中")
+        error = None
+        for count in range(3):
+            try:
+                handler = HandleSuper(
+                    get_token=config.get_captcha_callback(),
+                    get_mailcode=config.get_email_verification_code_callback(),
+                    email_address=create_one_mail,
+                    get_password=radom_password,
+                    get_proxy=get_proxy,
+                )
+                pikpak: BasePikpakData = BasePikpakData.create(handler)
+                time.sleep(60)
+                pikpak.try_get_vip()
+                # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+                alistPikpak.change_opation_2(pikpak_go)
+                alistPikpak.update_opation_pikpak_go(pikpak)
+                logger.info(f"替换原账号的alit或者rclone中")
+                error = None
+                break
+            except Exception as e:
+                error = e
+        if error:
+            raise error
 
     logger.info('注册新的pikpak替换原来的pikpak over')
 
@@ -240,7 +252,7 @@ def check_all_pikpak_vip():
     """运行所有的pikpak账号检测
     """
     logger.info("开始执行系统中的会员状态检测")
-    alistPikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
+    alistPikpak: ManagerPikPak = ManagerAlistPikpak()
     for pikpak_go in alistPikpak.get_all_not_vip():
         logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
         if pikpak_go.try_get_vip():
@@ -266,17 +278,17 @@ def check_all_pikpak_vip():
 
 
 def 所有pikpak容器() -> List[BasePikpakData]:
-    logger.info("开始获取本地所有不是会员的配置")
-    base_pikpak: ManagerPikPak = ManagerAlistPikpak.get_instance()
+    logger.info("开始获取本地所有的配置")
+    base_pikpak: ManagerPikPak = ManagerAlistPikpak()
     return base_pikpak.pikpak_go_list
 
 
-def 注册新号激活(pikpak_go: BasePikpakData = None):
-    logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
-    if pikpak_go.try_get_vip():
-        vip_day = pikpak_go.get_vip_day_time_left()
-        logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
-        return
+def 注册新号激活(pikpak_go: BasePikpakData = None) -> BasePikpakData:
+    logger.info(f"正在整理的pikpak\n {pikpak_go.name}")
+    # if pikpak_go.try_get_vip():
+    #     vip_day = pikpak_go.get_vip_day_time_left()
+    #     logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
+    #     return
     handler = HandleSuper(
         get_token=config.get_captcha_callback(),
         get_mailcode=config.get_email_verification_code_callback(),
@@ -288,16 +300,17 @@ def 注册新号激活(pikpak_go: BasePikpakData = None):
     time.sleep(60)
     pikpak.try_get_vip()
     # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
-    ManagerAlistPikpak.get_instance().change_opation_2(pikpak_go)
-    ManagerAlistPikpak.get_instance().update_opation_pikpak_go(pikpak)
+    ManagerAlistPikpak().change_opation_2(pikpak_go)
+    ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账号的alit或者rclone中")
+    return pikpak
 
 
 def copye_list_2_rclone_config():
     """复制alist的配置到rclone的配置json配置中
     """
     alist_server = alist.Alist()
-    rclone_manager = ManagerRclonePikpak.get_instance()
+    rclone_manager = ManagerRclonePikpak()
     # alist_server.saveToNowConif()
     rclone_configs: List[PikPakJsonData] = []
     for _alist in alist_server.get_storage_list()["content"]:
@@ -352,4 +365,4 @@ if __name__ == "__main__":
     # # pikpak_.set_proxy("43.134.68.153:3128")
     # run_new_test(pikpak_)
     # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
-    # ManagerAlistPikpak.get_instance().update_opation_pikpak_go(None)
+    # ManagerAlistPikpak().update_opation_pikpak_go(None)
