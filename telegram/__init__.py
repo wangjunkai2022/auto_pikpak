@@ -1,3 +1,6 @@
+from tools import set_def_callback
+from system_service import SystemService, SystemServiceTager
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 注册新号激活
 import enum
 import io
 import time
@@ -7,9 +10,15 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 注册新号激活
-from system_service import SystemService, SystemServiceTager
-from tools import set_def_callback
+
+# 配置日志
+logging.basicConfig(
+    filename='./logs.log',  # 指定日志文件名
+    filemode='a',        # 'a' 表示追加模式，'w' 表示覆盖模式
+    level=logging.DEBUG,  # 设置日志级别
+    format='%(asctime)s - %(levelname)s - %(message)s'  # 日志格式
+)
+
 
 logger = logging.getLogger("telegram")
 logger.setLevel(logging.DEBUG)
