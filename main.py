@@ -295,7 +295,7 @@ def 所有Alist的储存库() -> List[BasePikpakData]:
 
 
 def 注册新号激活(alist_storage) -> BasePikpakData:
-    logger.info(f"正在整理的pikpak\n {alist_storage.get('name')}")
+    logger.info(f"正在整理的存储\n {alist_storage.get('name')}")
     # if pikpak_go.try_get_vip():
     #     vip_day = pikpak_go.get_vip_day_time_left()
     #     logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")

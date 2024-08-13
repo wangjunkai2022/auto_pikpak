@@ -248,7 +248,7 @@ class ChromePikpak():
         for count in range(3):
             try:
                 response = requests.request(method, url, headers=headers,
-                                            proxies=self.proxies, verify=False, timeout=5, **kwargs)
+                                            proxies=self.proxies, verify=False, timeout=60, **kwargs)
 
             except requests.exceptions.HTTPError as http_err:
                 logger.debug(f"Http请求异常: {http_err}")

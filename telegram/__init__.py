@@ -182,7 +182,7 @@ class Telegram():
             max_length = 4096
             if len(message_text) > max_length:
                 self.bot.send_message(
-                        chat_id=self.runing_chat.id or self.start_chat.id, text="以下是超长信息:")
+                    chat_id=self.runing_chat.id or self.start_chat.id, text="以下是超长信息:")
                 while len(message_text) > max_length:
                     # 拆分消息
                     part = message_text[:max_length]
@@ -298,9 +298,10 @@ class Telegram():
             if call.message.text == 模式选项.选择激活.name:
                 index = int(call.data)
                 pikpak = self.run_temp_datas[index]
-                pikpak_name = pikpak.get("mail")
+                pikpak_name = pikpak.get("username")
+                pikpak_pd = pikpak.get("password")
                 self.bot.send_message(call.message.chat.id,
-                                      f"正在注册新号中 请等待 邀请的号是{pikpak_name}")
+                                      f"正在注册新号中 请等待 邀请的号是\n{pikpak_name}\n密码:{pikpak_pd}")
                 try:
                     new_pikpak = 注册新号激活(pikpak)
                     self.bot.send_message(call.message.chat.id,
