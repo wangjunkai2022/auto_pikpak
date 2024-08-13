@@ -296,7 +296,7 @@ def 所有Alist的储存库() -> List[BasePikpakData]:
 
 def 激活存储库vip(alist_storage) -> BasePikpakData:
     base_pikpak: ManagerPikPak = ManagerAlistPikpak()
-    base_pikpak.change_opation_storage_name_2(alist_storage)
+    base_pikpak.change_opation_storage_name_2(alist_storage.get('name'))
     pikpak_ = base_pikpak.get_opation_pikpak()
     if pikpak_.try_get_vip():
         return pikpak_

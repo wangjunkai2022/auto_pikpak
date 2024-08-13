@@ -340,8 +340,9 @@ class Telegram():
                 pikpak = self.run_temp_datas[index]
                 pikpak_name = pikpak.get("username")
                 pikpak_pd = pikpak.get("password")
+                storage_name = pikpak.get("name")
                 self.bot.send_message(call.message.chat.id,
-                                      f"正在注册新号中 请等待 邀请的号是\n{pikpak_name}\n密码:{pikpak_pd}")
+                                      f"正在激活中 请等待邀请的库是\n{storage_name}\n{pikpak_name}\n密码:{pikpak_pd}")
                 try:
                     new_pikpak = 激活存储库vip(pikpak)
                     self.bot.send_message(call.message.chat.id,
