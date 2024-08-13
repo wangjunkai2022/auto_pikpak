@@ -497,12 +497,6 @@ class ChromePikpak():
             logger.error(f"登陆失败{json_data}")
             raise Exception(error_str)
 
-    def vip_info_v2(self):
-        json_data = self.get(
-            url=f"https://api-drive.mypikpak.com/drive/v1/privilege/vip",)
-        logger.debug(f"vip_info_v2:{json_data}")
-        return json_data
-
     def login_v2(self) -> None:
         """
         Login to PikPak 免验证登陆
@@ -529,6 +523,27 @@ class ChromePikpak():
         self.authorization = f"Bearer {json_data.get('access_token')}"
         self.user_id = json_data["sub"]
         self.save_self()
+
+    def login_out(self):
+        try:
+            with open(self.cache_json_file, mode="r", encoding="utf-8") as file:
+                json_str = file.read()
+                json_data = json.loads(json_str)
+        except:
+            json_data = {}
+
+        json_data.pop(self.mail)
+        with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
+            file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
+        self.authorization = DEF_AUTHORIZATION
+        self.captcha_token = DEF_CAPTCHATOKEN
+        self.user_id = DEF_USERID
+
+    def vip_info_v2(self):
+        json_data = self.get(
+            url=f"https://api-drive.mypikpak.com/drive/v1/privilege/vip",)
+        logger.debug(f"vip_info_v2:{json_data}")
+        return json_data
 
     def me(self):
         url = 'https://user.mypikpak.com/v1/user/me'
