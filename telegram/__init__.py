@@ -482,18 +482,14 @@ class Telegram():
                 index = int(call.data)
                 alistPikpak = ManagerAlistPikpak()
                 storage = alistPikpak.get_storage_list().get("content")[index]
-                remark = storage["remark"]
                 try:
-                    remark = json.loads(remark)
+                    storage["remark"] = json.loads(storage["remark"])
                 except:
-                    remark = {}
-                addition = storage["addition"]
+                    storage["remark"] = {}
                 try:
-                    addition = json.loads(addition)
+                    storage["addition"] = json.loads(storage["addition"])
                 except:
-                    addition = {}
-                storage["remark"] = remark
-                storage["addition"] = addition
+                    storage["addition"] = {}
                 self.bot.send_message(call.message.chat.id,
                                       f"选中的存储库的详细信息如下:\n{json.dumps(storage,ensure_ascii=False, indent=4)}")
                 self._task_over()
