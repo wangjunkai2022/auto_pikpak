@@ -294,9 +294,18 @@ def 所有Alist的储存库() -> List[BasePikpakData]:
     return base_pikpak.get_all_pikpak_storage()
 
 
+def 激活存储库vip(alist_storage) -> BasePikpakData:
+    base_pikpak: ManagerPikPak = ManagerAlistPikpak()
+    base_pikpak.change_opation_storage_name_2(alist_storage)
+    pikpak_ = base_pikpak.get_opation_pikpak()
+    if pikpak_.try_get_vip():
+        return pikpak_
+    return 注册新号激活(alist_storage)
+
+
 def 注册新号激活(alist_storage) -> BasePikpakData:
     logger.info(f"正在整理的存储\n {alist_storage.get('name')}")
-    # if pikpak_go.try_get_vip():
+    # if isTryGetVip pikpak_go.try_get_vip():
     #     vip_day = pikpak_go.get_vip_day_time_left()
     #     logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
     #     return
