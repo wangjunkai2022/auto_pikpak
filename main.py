@@ -288,6 +288,16 @@ def check_all_pikpak_vip():
     logger.info("Over")
 
 
+def 替换Alist储存库(email, pd, name):
+    pikpak = BasePikpakData(email, pd, name)
+    if pikpak.try_get_vip():
+        alist = ManagerAlistPikpak()
+        alist.change_opation_storage_name_2(name)
+        alist.update_opation_pikpak_go(pikpak)
+    else:
+        raise Exception("传入的账号没有vip")
+
+
 def 所有Alist的储存库() -> List[BasePikpakData]:
     logger.info("开始获取本地所有的配置")
     base_pikpak: ManagerPikPak = ManagerAlistPikpak()

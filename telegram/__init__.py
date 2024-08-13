@@ -1,6 +1,6 @@
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 注册新号激活, 激活存储库vip
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 替换Alist储存库, 注册新号激活, 激活存储库vip
 import enum
 import io
 import time
@@ -37,10 +37,14 @@ class 模式选项(enum.Enum):
     新建所有 = "新建所有"
     选择激活 = "选择激活"
     选择替换 = "选择替换"
+    手动替换存储 = "手动替换存储"
     设置打印等级 = "设置打印等级"
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
     重启系统服务 = "重启系统服务"
+
+
+START_手动替换存储_STR = "_手动替换存储__"
 
 
 class Telegram():
@@ -49,6 +53,21 @@ class Telegram():
     run_temp_datas = None
     start_chat = None
     logLevel = logging.INFO
+
+    # select手动替换存储 = {
+    #     '请选择需要替换的存储库': -1,
+    #     '输入新Pikpak账户': '',
+    #     '输入新Pikpak密码': '',
+    #     'opation_message': None
+    # }
+    # {"请选择需要替换的存储库": -1, },
+    # {"输入新Pikpak账户": ''},
+    # {"输入新Pikpak密码": ''},
+
+    select手动替换存储 = -1
+    input_email = ''
+    input_pd = ''
+    select_message: Message = None
 
     class CustomHandler(logging.Handler):
         def __init__(self, callback):
@@ -141,6 +160,33 @@ class Telegram():
         except Exception as e:
             self.send_error(e)
         self._task_over()
+
+    def _手动替换存储(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(
+                message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        self.bot.send_message(
+            self.runing_chat.id, "现在我们开始替换", disable_notification=True)
+        try:
+            self.run_temp_datas = 所有Alist的储存库()
+        except Exception as e:
+            self.run_temp_datas = None
+            self.send_error(e)
+        if self.run_temp_datas and len(self.run_temp_datas) > 0:
+            markup = InlineKeyboardMarkup(row_width=2)
+            index = 0
+            for pikpak in self.run_temp_datas:
+                name = pikpak.get("name")
+                statu = pikpak.get("disabled") == True and "禁用" or "启用"
+                time_str = pikpak.get("update_time")
+                btn = InlineKeyboardButton(
+                    f"{name} 状态:{statu} 时间:{time_str}", callback_data=str(index),)
+                markup.add(btn)
+                index += 1
+            self.bot.send_message(message.chat.id, "请选择需要替换的存储库",
+                                  reply_markup=markup)
 
     def _重启系统服务(self, message: Message):
         self.bot.send_message(chat_id=message.chat.id,
@@ -389,6 +435,46 @@ class Telegram():
                 run = service.run()
                 self.bot.send_message(
                     call.message.chat.id, f"启动系统{call.data}。\noutput:{run.output}\nerror:{run.error}")
+            elif call.message.text == "请选择需要替换的存储库":
+                index = int(call.data)
+                self.select手动替换存储 = index
+                storage = self.run_temp_datas[self.select手动替换存储]
+                name = storage.get("name")
+                message = self.bot.send_message(
+                    self.runing_chat.id or self.start_chat.id,
+                    f'激活的存储库:{name}\n请回复新Pikpak账户'
+                )
+                self.select_message = message
+                self.bot.register_for_reply(message, self.输入新Pikpak账户)
+
+    def 输入新Pikpak账户(self, message: Message):
+        self.bot.clear_reply_handlers(
+            self.select_message)
+        self.input_email = message.text
+        message = self.bot.send_message(
+            self.runing_chat.id or self.start_chat.id,
+            '回复新Pikpak密码'
+        )
+        self.select_message = message
+        self.bot.register_for_reply(
+            message, self.输入新Pikpak密码)
+
+    def 输入新Pikpak密码(self, message: Message):
+        storage = self.run_temp_datas[self.select手动替换存储]
+        self.bot.clear_reply_handlers(
+            self.select_message
+        )
+        name = storage.get("name")
+        self.bot.send_message(
+            chat_id=message.chat.id,
+            text=f"手动激活的库为{name}\n输入的Pikapk是:{self.input_email}\n{message.text}\n替换中......",
+            disable_notification=True
+        )
+        try:
+            替换Alist储存库(self.input_email, message.text, name)
+        except Exception as e:
+            self.send_error(e)
+        self._task_over()
 
     def __reply_button(self, call: CallbackQuery):
         if (call.message.text == 模式选项.设置打印等级.name) or (call.message.text == 模式选项.重启系统服务.name):
