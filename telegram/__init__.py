@@ -1,3 +1,4 @@
+import json
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
 from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 替换Alist储存库, 注册新号激活, 激活存储库vip
@@ -481,8 +482,20 @@ class Telegram():
                 index = int(call.data)
                 alistPikpak = ManagerAlistPikpak()
                 storage = alistPikpak.get_storage_list().get("content")[index]
+                remark = storage["remark"]
+                try:
+                    remark = json.loads(remark)
+                except:
+                    remark = {}
+                addition = storage["addition"]
+                try:
+                    addition = json.loads(addition)
+                except:
+                    addition = {}
+                storage["remark"] = remark
+                storage["addition"] = addition
                 self.bot.send_message(call.message.chat.id,
-                                      f"选中的存储库的详细信息如下:\n{storage}")
+                                      f"选中的存储库的详细信息如下:\n{json.dumps(storage,ensure_ascii=False, indent=4)}")
                 self._task_over()
 
     def 输入新Pikpak账户(self, message: Message):
