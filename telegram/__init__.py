@@ -38,6 +38,7 @@ class 模式选项(enum.Enum):
     选择激活 = "选择激活"
     选择替换 = "选择替换"
     手动替换存储 = "手动替换存储"
+    查看存储库的信息 = "查看存储库的信息"
     设置打印等级 = "设置打印等级"
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
@@ -373,6 +374,36 @@ class Telegram():
                 message.chat.id, "没有需要执行的任务", disable_notification=True)
             self._task_over()
 
+    def _查看存储库的信息(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(
+                message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        try:
+            self.run_temp_datas = 所有Alist的储存库()
+        except Exception as e:
+            self.run_temp_datas = None
+            self.send_error(e)
+
+        if self.run_temp_datas and len(self.run_temp_datas) > 0:
+            markup = InlineKeyboardMarkup(row_width=2)
+            index = 0
+            for pikpak in self.run_temp_datas:
+                name = pikpak.get("name")
+                statu = pikpak.get("disabled") == True and "禁用" or "启用"
+                time_str = pikpak.get("update_time")
+                btn = InlineKeyboardButton(
+                    f"{name} 状态:{statu} 时间:{time_str}", callback_data=str(index),)
+                markup.add(btn)
+                index += 1
+            self.bot.send_message(message.chat.id, 模式选项.查看存储库的信息.name,
+                                  reply_markup=markup)
+        else:
+            self.bot.send_message(
+                message.chat.id, "没有需要执行的任务", disable_notification=True)
+            self._task_over()
+
     def _task_over(self):
         self.bot.send_message(
             self.runing_chat.id, "任务结束。。。。。可以执行新的任务了", disable_notification=True)
@@ -446,6 +477,13 @@ class Telegram():
                 )
                 self.select_message = message
                 self.bot.register_for_reply(message, self.输入新Pikpak账户)
+            elif call.message.text == 模式选项.查看存储库的信息.name:
+                index = int(call.data)
+                alistPikpak = ManagerAlistPikpak()
+                storage = alistPikpak.get_storage_list().get("content")[index]
+                self.bot.send_message(call.message.chat.id,
+                                      f"选中的存储库的详细信息如下:\n{storage}")
+                self._task_over()
 
     def 输入新Pikpak账户(self, message: Message):
         self.bot.clear_reply_handlers(
