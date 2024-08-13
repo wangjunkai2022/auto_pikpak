@@ -142,35 +142,41 @@ class PikPakSuper(ChromePikpak):
         分享自己的文件
         """
         self.login()
-        json_data = self.path_to_id("Pack From Shared")
-        if len(json_data) == 1:
-            id_Pack_From_Shared = json_data[-1].get("id")
-            # 获取Pack From Shared文件夹下的所有文件夹
-            json_data = self.file_list(parent_id=id_Pack_From_Shared)
-            if len(json_data.get("files")) <= 0:
-                id_Pack_From_Shared = None
-        else:
-            id_Pack_From_Shared = None
-         # 获取Pack From Shared文件夹下的所有文件夹
+        for count in range(3):
+            try:
+                json_data = self.path_to_id("Pack From Shared")
+                if len(json_data) == 1:
+                    id_Pack_From_Shared = json_data[-1].get("id")
+                    # 获取Pack From Shared文件夹下的所有文件夹
+                    json_data = self.file_list(parent_id=id_Pack_From_Shared)
+                    if len(json_data.get("files")) <= 0:
+                        id_Pack_From_Shared = None
+                else:
+                    id_Pack_From_Shared = None
+                # 获取Pack From Shared文件夹下的所有文件夹
 
-        json_data = self.file_list(parent_id=id_Pack_From_Shared)
-        # 需要分享的文件夹id
-        fils_id = []
-        for file in json_data.get("files"):
-            if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
-                pass
-            else:
-                fils_id.append(file.get("id"))
-        # for file in invite.get("share", []):
-        #     get_future = asyncio.ensure_future(pikpak_api.path_to_id(file))
-        #     main_loop.run_until_complete(get_future)
-        #     result = get_future.result()
-        #     fils_id.append(result[-1].get("id"))
-        if len(fils_id) < 1:
-            raise Exception("没有分享文件")
-        json_data = self.file_batch_share(fils_id)
-        logger.debug(json_data)
-        return json_data
+                json_data = self.file_list(parent_id=id_Pack_From_Shared)
+                # 需要分享的文件夹id
+                fils_id = []
+                for file in json_data.get("files"):
+                    if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
+                        pass
+                    else:
+                        fils_id.append(file.get("id"))
+                # for file in invite.get("share", []):
+                #     get_future = asyncio.ensure_future(pikpak_api.path_to_id(file))
+                #     main_loop.run_until_complete(get_future)
+                #     result = get_future.result()
+                #     fils_id.append(result[-1].get("id"))
+                if len(fils_id) < 1:
+                    raise Exception("没有分享文件")
+                json_data = self.file_batch_share(fils_id)
+                logger.debug(json_data)
+                return json_data
+            except Exception as e:
+                logger.error(f"分享时报错了\nerror:{e}\n{count}/3")
+                time.sleep(30)
+        raise Exception("分享失败")
 
     def save_share(self, shareid: str) -> None:
         """
