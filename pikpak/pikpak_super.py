@@ -176,6 +176,7 @@ class PikPakSuper(ChromePikpak):
             except Exception as e:
                 logger.error(f"分享时报错了\nerror:{e}\n{count}/3")
                 time.sleep(30)
+                self.login_out()
         raise Exception("分享失败")
 
     def save_share(self, shareid: str) -> None:
@@ -187,10 +188,10 @@ class PikPakSuper(ChromePikpak):
 
 
 if __name__ == "__main__":
-    # email = "covaxe9867@biowey.com"
-    # password = "2dewmJR1"
+    email = "yeyogl7325@anypsd.com"
+    password = "098poi"
     # # email = 'sotag69939@alientex.com'
     # # password = '12poi900'
-    # pikpak_ = PikPakSuper(email, password)
-    # pikpak_.start_share_self_files()
-    PikPakSuper.create()
+    pikpak_ = PikPakSuper(email, password,)
+    pikpak_.start_share_self_files()
+    # PikPakSuper.create()
