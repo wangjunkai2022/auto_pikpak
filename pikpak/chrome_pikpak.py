@@ -257,6 +257,7 @@ class ChromePikpak():
                 requests.exceptions.ConnectionError,
                     requests.exceptions.Timeout,
                     requests.exceptions.TooManyRedirects,
+                    requests.exceptions.ProxyError,
             ) as error:
                 logger.error(f"请求报错:\n{error}\n{count + 1}/3")
                 logger.error(
