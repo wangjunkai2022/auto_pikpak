@@ -141,7 +141,7 @@ class PikPakSuper(ChromePikpak):
         """
         分享自己的文件
         """
-        self.login()
+        self.login_v2()
         for count in range(3):
             try:
                 json_data = self.path_to_id("Pack From Shared")
@@ -177,6 +177,9 @@ class PikPakSuper(ChromePikpak):
                 logger.error(f"分享时报错了\nerror:{e}\n{count}/3")
                 time.sleep(30)
                 self.login_out()
+                time.sleep(10)
+                self.login_v2()
+
         raise Exception("分享失败")
 
     def save_share(self, shareid: str) -> None:
@@ -188,10 +191,8 @@ class PikPakSuper(ChromePikpak):
 
 
 if __name__ == "__main__":
-    email = "yeyogl7325@anypsd.com"
-    password = "098poi"
-    # # email = 'sotag69939@alientex.com'
-    # # password = '12poi900'
+    email = ""
+    password = ""
     pikpak_ = PikPakSuper(email, password,)
     pikpak_.start_share_self_files()
     # PikPakSuper.create()

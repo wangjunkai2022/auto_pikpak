@@ -313,6 +313,12 @@ class ChromePikpak():
         elif error and error == 'invalid_account_or_password':
             logger.error(f"当前账号登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
             raise Exception("密码错误")
+        elif error and error == 'file_not_found':
+            file_params = kwargs.get("params")
+            logger.error(f"获取文件失败:{file_params}")
+            logger.error(
+                f"当前状态状态:\ndevice_id:{self.device_id}\nproxies:{self.proxies}\nauthorization:{self.authorization}\ncaptcha_token:{self.captcha_token}")
+            raise Exception("获取文件失败")
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
@@ -538,6 +544,7 @@ class ChromePikpak():
         self.authorization = DEF_AUTHORIZATION
         self.captcha_token = DEF_CAPTCHATOKEN
         self.user_id = DEF_USERID
+        self.proxies = None
 
     def vip_info_v2(self):
         json_data = self.get(
