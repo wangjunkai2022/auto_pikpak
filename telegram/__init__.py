@@ -1,4 +1,5 @@
 import json
+import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
 from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 所有Alist的储存库, 替换Alist储存库, 注册新号激活, 激活存储库vip
@@ -47,6 +48,25 @@ class 模式选项(enum.Enum):
 
 
 START_手动替换存储_STR = "_手动替换存储__"
+
+
+def extract_account_and_password(log):
+    """
+    # 匹配账号和密码
+    """
+    # 使用正则表达式匹配邮箱格式
+    account_pattern = r'账号:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+    password_pattern = r'密码:\s*(\S+)'
+
+    # 提取账号
+    account_match = re.search(account_pattern, log)
+    account = account_match.group(1) if account_match else None
+
+    # 提取密码
+    password_match = re.search(password_pattern, log)
+    password = password_match.group(1) if password_match else None
+
+    return account, password
 
 
 class Telegram():
@@ -474,10 +494,10 @@ class Telegram():
                 name = storage.get("name")
                 message = self.bot.send_message(
                     self.runing_chat.id or self.start_chat.id,
-                    f'激活的存储库:{name}\n请回复新Pikpak账户'
+                    f'激活的存储库:{name}\n请回复以下格式的账户和密码\n账户:****\n密码:*****'
                 )
                 self.select_message = message
-                self.bot.register_for_reply(message, self.输入新Pikpak账户)
+                self.bot.register_for_reply(message, self.输入新Pikpak账户和密码)
             elif call.message.text == 模式选项.查看存储库的信息.name:
                 index = int(call.data)
                 alistPikpak = ManagerAlistPikpak()
@@ -494,33 +514,23 @@ class Telegram():
                                       f"选中的存储库的详细信息如下:\n{json.dumps(storage,ensure_ascii=False, indent=4)}")
                 self._task_over()
 
-    def 输入新Pikpak账户(self, message: Message):
-        self.bot.clear_reply_handlers(
-            self.select_message)
-        self.input_email = message.text
-        message = self.bot.send_message(
-            self.runing_chat.id or self.start_chat.id,
-            '回复新Pikpak密码'
-        )
-        self.select_message = message
-        self.bot.register_for_reply(
-            message, self.输入新Pikpak密码)
-
-    def 输入新Pikpak密码(self, message: Message):
-        storage = self.run_temp_datas[self.select手动替换存储]
-        self.bot.clear_reply_handlers(
-            self.select_message
-        )
-        name = storage.get("name")
-        self.bot.send_message(
-            chat_id=message.chat.id,
-            text=f"手动激活的库为{name}\n输入的Pikapk是:{self.input_email}\n{message.text}\n替换中......",
-            disable_notification=True
-        )
-        try:
-            替换Alist储存库(self.input_email, message.text, name)
-        except Exception as e:
-            self.send_error(e)
+    def 输入新Pikpak账户和密码(self, message: Message):
+        user, pd = extract_account_and_password(message.text)
+        if not user or user == "" or not pd or pd == "":
+            message = self.bot.send_message(
+                self.runing_chat.id or self.start_chat.id,
+                f'输入的账户和密码有问题'
+            )
+        else:
+            message = self.bot.send_message(
+                self.runing_chat.id or self.start_chat.id,
+                f'输入的账户和密码是：\n账户:{user}\n密码:{pd}'
+            )
+            try:
+                storage = self.run_temp_datas[self.select手动替换存储]
+                替换Alist储存库(user, pd, storage.get("name"))
+            except Exception as e:
+                self.send_error(e)
         self._task_over()
 
     def __reply_button(self, call: CallbackQuery):
