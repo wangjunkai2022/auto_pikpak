@@ -503,33 +503,6 @@ class ChromePikpak():
             logger.error(f"登陆失败{json_data}")
             raise Exception(error_str)
 
-    def login_v2(self) -> None:
-        """
-        Login to PikPak 免验证登陆
-        """
-        self.read_self()
-        if self.authorization != DEF_AUTHORIZATION:
-            logger.debug("已经登陆了 V2 这里不进行登陆")
-            return
-        login_url = f"https://user.mypikpak.com/v1/auth/token"
-        login_data = {
-            "client_id": self.CLIENT_ID,
-            "client_secret": 'dbw2OtmVEeuUvIptb1Coyg',
-            "password": self.pd,
-            "username": self.mail,
-            "grant_type": "password",
-        }
-        json_data = self.post(
-            login_url,
-            json=login_data,
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        )
-        self.authorization = f"Bearer {json_data.get('access_token')}"
-        self.user_id = json_data["sub"]
-        self.save_self()
-
     def login_out(self):
         try:
             with open(self.cache_json_file, mode="r", encoding="utf-8") as file:

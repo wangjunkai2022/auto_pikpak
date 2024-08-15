@@ -97,7 +97,7 @@ class PikPakSuper(ChromePikpak):
         """
         获取当前pikpak账号的剩余vip天数
         """
-        self.login_v2()
+        self.login()
         vip_data = self.vip_info()
         def_day_num = -9999
         try:
@@ -141,7 +141,7 @@ class PikPakSuper(ChromePikpak):
         """
         分享自己的文件
         """
-        self.login_v2()
+        self.login()
         for count in range(3):
             try:
                 json_data = self.path_to_id("Pack From Shared")
@@ -178,7 +178,7 @@ class PikPakSuper(ChromePikpak):
                 time.sleep(30)
                 self.login_out()
                 time.sleep(10)
-                self.login_v2()
+                self.login()
 
         raise Exception("分享失败")
 
