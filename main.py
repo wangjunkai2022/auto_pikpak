@@ -362,38 +362,4 @@ def copye_list_2_rclone_config():
 
 if __name__ == "__main__":
     set_def_callback()
-    # if config.telegram_api and len(config.telegram_api) > 1:
-    #     telegram.Telegram()
     change_all_pikpak()
-    # alistPikpak = AlistPikpak()
-    # pikpak_go = alistPikpak.pop_not_vip_pikpak()
-    # invite_code = pikpak_go.get_self_invite_code()
-    # pikpak_go_new = crete_invite(invite_code)
-    # get_start_share_id("mwrtye3718@tenvil.com","098poi")
-    # https://mypikpak.com/s/VNzDxRlK3CYk0Z6HfkzTEw1uo1
-    # pikpak = crete_invite(78269860)
-    # print(pikpak.mail)
-
-    # rclone_conifgs = get_save_json_config()
-    # print(rclone_conifgs)
-    # index = 1
-    # rclone = rclone_conifgs[index]
-    # data = rclone_conifgs[index]
-    # data["pikpak_user"] = data["pikpak_user"]+"0909090"
-    # # rclone.update(data)
-    # print(rclone_conifgs)
-    # copye_list_2_rclone_config()
-
-    # logger.setLevel(logging.DEBUG)
-    # handler = logging.StreamHandler()
-    # handler.setLevel(logging.DEBUG)
-    # logger.addHandler(handler)
-    # email = "bpzaof1188@nuclene.com"
-    # password = "098poi"
-    # pikpak_ = PikPak(email, password)
-    # from proxy_ip import pingPikpak
-    # # pingPikpak("43.134.68.153:3128 http", [])
-    # # pikpak_.set_proxy("43.134.68.153:3128")
-    # run_new_test(pikpak_)
-    # https://mypikpak.com/s/VO0UAyoBjunwgtyhTtnMWl5Lo1
-    # ManagerAlistPikpak().update_opation_pikpak_go(None)
