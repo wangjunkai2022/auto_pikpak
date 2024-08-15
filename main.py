@@ -107,12 +107,13 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         alist.Alist.__init__(self)
         self.saveToNowConif()
         for pikpak_data in self.get_all_pikpak_storage():
-            pikpak_go = BasePikpakData(
-                mail=pikpak_data.get("username"),
-                pd=pikpak_data.get("password"),
-                name=pikpak_data.get("name")
-            )
-            self.pikpak_go_list.append(pikpak_go)
+            if not pikpak_data.get("disabled"):
+                pikpak_go = BasePikpakData(
+                    mail=pikpak_data.get("username"),
+                    pd=pikpak_data.get("password"),
+                    name=pikpak_data.get("name")
+                )
+                self.pikpak_go_list.append(pikpak_go)
         self.opation_index = 0
 
     # 直接pop一个Alsit中的一个pikpak登陆
@@ -264,7 +265,7 @@ def check_all_pikpak_vip():
     """
     logger.info("开始执行系统中的会员状态检测")
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
-    for pikpak_go in alistPikpak.get_all_not_vip():
+    for pikpak_go in alistPikpak.pikpak_go_list:
         logger.info(f"正在整理的pikpak\n {pikpak_go.mail}")
         if pikpak_go.try_get_vip():
             vip_day = pikpak_go.get_vip_day_time_left()
