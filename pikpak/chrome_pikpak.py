@@ -298,11 +298,8 @@ class ChromePikpak():
             old_capctah = self.captcha_token
             old_authorization = self.authorization
             self.authorization = DEF_AUTHORIZATION
-            if self.refresh_token:
-                self.save_self()
-            else:
-                self.login()
-            self.refresh_access_token()
+            self.save_self()
+            self.login()
             self._change_request_values(
                 old_capctah, self.captcha_token, headers, **kwargs)
             self._change_request_values(
@@ -324,6 +321,8 @@ class ChromePikpak():
             logger.error(
                 f"当前状态状态:\ndevice_id:{self.device_id}\nproxies:{self.proxies}\nauthorization:{self.authorization}\ncaptcha_token:{self.captcha_token}")
             raise Exception("获取文件失败")
+        # elif error and error == 'invalid_argument':
+        #     self.refresh_access_token()
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
@@ -486,6 +485,10 @@ class ChromePikpak():
         """
         Refresh access token
         """
+        if not self.refresh_token or self.refresh_token == '':
+            logger.debug("refresh_token没有 直接走登陆")
+            self.login()
+            return
         refresh_url = f"https://user.mypikpak.com/v1/auth/token"
         refresh_data = {
             "client_id": self.CLIENT_ID,
