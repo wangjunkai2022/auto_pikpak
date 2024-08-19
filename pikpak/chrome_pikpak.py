@@ -58,7 +58,7 @@ class ChromePikpak():
     authorization = DEF_AUTHORIZATION
     captcha_token = DEF_CAPTCHATOKEN
     user_id = DEF_USERID
-
+    refresh_token = None
     proxies = None
 
     CLIENT_ID = 'YUMx5nI8ZU8Ap8pm'
@@ -99,6 +99,7 @@ class ChromePikpak():
             'proxies': self.proxies,
             'device_id': self.device_id,
             'password': self.pd,
+            'refresh_token': self.refresh_token
         }
         with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
@@ -118,6 +119,7 @@ class ChromePikpak():
             self.proxies = data['proxies']
             self.device_id = data['device_id']
             self.pd = data['password']
+            self.refresh_token = data.get('refresh_token')
 
     def set_proxy(self, proxy_ip, type="http"):
         # if not proxy.startswith("http://"):
@@ -296,8 +298,11 @@ class ChromePikpak():
             old_capctah = self.captcha_token
             old_authorization = self.authorization
             self.authorization = DEF_AUTHORIZATION
-            self.save_self()
-            self.login()
+            if self.refresh_token:
+                self.save_self()
+            else:
+                self.login()
+            self.refresh_access_token()
             self._change_request_values(
                 old_capctah, self.captcha_token, headers, **kwargs)
             self._change_request_values(
@@ -474,6 +479,23 @@ class ChromePikpak():
             raise Exception(json_data.get('error'))
         self.user_id = json_data.get('sub')
         self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
+        self.refresh_token = json_data.get('refresh_token')
+        self.save_self()
+
+    def refresh_access_token(self):
+        """
+        Refresh access token
+        """
+        refresh_url = f"https://user.mypikpak.com/v1/auth/token"
+        refresh_data = {
+            "client_id": self.CLIENT_ID,
+            "refresh_token": self.refresh_token,
+            "grant_type": "refresh_token",
+        }
+        json_data = self.post(refresh_url, refresh_data)
+        self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
+        self.refresh_token = json_data["refresh_token"]
+        self.user_id = json_data["sub"]
         self.save_self()
 
     def login(self):
@@ -492,6 +514,7 @@ class ChromePikpak():
             logger.debug(f"登陆成功{json_data}")
             self.user_id = json_data.get("sub")
             self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
+            self.refresh_token = json_data.get('refresh_token')
             self.save_self()
         else:
             error_str = json_data.get("error")

@@ -141,12 +141,22 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         share_task = pikpak_go.save_share(share.get("share_id"))
         time.sleep(10)  # 等待10秒保证分享保存成功
         addition = json.loads(alist_storage.get("addition"))
-        old_username = addition.get('username', 'None')
-        old_password = addition.get('password', 'None')
+        old_username = addition.get('username')
+        old_password = addition.get('password')
+        pikpak_user = remark_json.get("pikpak_user")
+        if not old_username and pikpak_user:
+            old_username = pikpak_user.get('username')
+            old_password = pikpak_user.get('password')
         logger.info(
             f"更新Alist中的pikpak\npath:{self.get_opation_pikpak().name}\n原账户:{old_username}\n原密码{old_password}")
         addition["username"] = pikpak_go.mail
         addition["password"] = pikpak_go.pd
+        addition['refresh_token'] = pikpak_go.refresh_token
+        addition['platform'] = "web"
+        remark_json['pikpak_user'] = {
+            'username': pikpak_go.mail,
+            'password': pikpak_go.pd,
+        }
         alist_storage["addition"] = json.dumps(addition)
         alist_storage['remark'] = json.dumps(
             remark_json, ensure_ascii=False, indent=4)
