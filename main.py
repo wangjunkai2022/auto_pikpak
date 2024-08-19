@@ -53,32 +53,6 @@ class ManagerPikPak(Singleton):
     def __init__(self) -> None:
         self.opation_index = 0
 
-    def get_all_not_vip(self) -> List[BasePikpakData]:
-        """获取所有不是会员的Pikpak
-
-        Returns:
-            List[PikPak]: _description_
-        """
-        not_vip_list: List[BasePikpakData] = []
-        for pikpak_go in self.pikpak_go_list:
-            while True:
-                try:
-                    logger.info(
-                        f"检测是不是会员\nname:{pikpak_go.name}\nemail:{pikpak_go.mail}\npd:{pikpak_go.pd}\nproxy:{pikpak_go.proxies}")
-                    # pikpak_go.set_proxy(*get_proxy())
-                    if pikpak_go.get_vip_day_time_left() <= 0:
-                        not_vip_list.append(pikpak_go)
-                        logger.info(f"{pikpak_go.name} 不是会员")
-                    else:
-                        logger.info(f"{pikpak_go.name} 是会员")
-                    break
-                except requests.exceptions.ProxyError:
-                    logger.error("代理异常 重新获取一个代理")
-                    pikpak_go.set_proxy(*get_proxy())
-                except Exception as e:
-                    raise e
-        return not_vip_list
-
     def change_opation_2(self, pikpak_data: BasePikpakData):
         """
         替换操作的pikpak为次pikpak
@@ -244,22 +218,27 @@ def change_all_pikpak():
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
     for pikpak_go in alistPikpak.pikpak_go_list:
         error = None
+        pikpak: BasePikpakData = None
         for count in range(3):
             try:
-                handler = HandleSuper(
-                    get_token=config.get_captcha_callback(),
-                    get_mailcode=config.get_email_verification_code_callback(),
-                    email_address=create_one_mail,
-                    get_password=radom_password,
-                    get_proxy=get_proxy,
-                )
-                pikpak: BasePikpakData = BasePikpakData.create(handler)
+                if not pikpak:
+                    handler = HandleSuper(
+                        get_token=config.get_captcha_callback(),
+                        get_mailcode=config.get_email_verification_code_callback(),
+                        email_address=create_one_mail,
+                        get_password=radom_password,
+                        get_proxy=get_proxy,
+                    )
+                    pikpak = BasePikpakData.create(handler)
+                else:
+                    logger.info("pikpak 已经注册成功 但是后续报错 这里继续使用pikpak")
                 time.sleep(60)
                 pikpak.try_get_vip()
                 # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
                 alistPikpak.change_opation_2(pikpak_go)
                 alistPikpak.update_opation_pikpak_go(pikpak)
                 logger.info(f"替换原账号的alit或者rclone中")
+                pikpak = None
                 error = None
                 break
             except Exception as e:
