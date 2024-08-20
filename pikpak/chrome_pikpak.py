@@ -316,6 +316,7 @@ class ChromePikpak():
             logger.error(f"当前账号登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
             raise Exception("密码错误")
         elif error and error == 'file_not_found':
+            self._path_id_cache = {}
             file_params = kwargs.get("params")
             logger.error(f"获取文件失败:{file_params}")
             logger.error(
