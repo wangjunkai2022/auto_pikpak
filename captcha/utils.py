@@ -27,6 +27,15 @@ def remove_parameters(url):
 
     return new_url
 
+
+def domain_get(url):
+    # 使用 urlparse 解析 URL
+    parsed_url = urlparse(url)
+
+    # 获取域名
+    domain = parsed_url.netloc
+    return domain
+
 # 删除图片
 
 
