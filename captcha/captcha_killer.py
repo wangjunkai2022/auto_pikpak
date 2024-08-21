@@ -25,7 +25,10 @@ def solvev2e_reg(url: str = "", sitekey=sitekey_login):
         "x-rapidapi-host": "captchakiller1.p.rapidapi.com"
     }
     result = requests.get(solvev2e_url, headers=headers, params=querystring)
-    logger.info(result)
+    if result.status_code != 200:
+        logger.error(f"solvev2e_reg 失败:{result}")
+        raise Exception("captcha_kill 报错了")
+    result_json = result.json()
     url = "https://user.mypikpak.com/credit/v1/report"
     captcha_token = params_dict.get("captcha_token")
     headers = {
@@ -40,7 +43,7 @@ def solvev2e_reg(url: str = "", sitekey=sitekey_login):
         'captcha_token': captcha_token,
         'type': "recaptcha",
         "result": '0',
-        'data': result['code']
+        'data': result_json.get("result")
 
     }
 
@@ -72,8 +75,12 @@ def captcha_rewardVip(sitekey: str = sitekey_rewardVip):
         "x-rapidapi-host": "captchakiller1.p.rapidapi.com"
     }
     result = requests.get(solvev2e_url, headers=headers, params=querystring)
+    if result.status_code != 200:
+        logger.error(f"captcha_rewardVip 失败:{result}")
+        raise Exception("captcha_kill 报错了")
     logger.info(result)
-    return result["code"]
+    result_json = result.json()
+    return result_json.get("result")
 
 
 if __name__ == "__main__":

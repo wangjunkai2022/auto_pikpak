@@ -8,8 +8,7 @@ from urllib.parse import urlparse
 import uuid
 
 import requests
-from captcha.captcha_2captcha import captcha_rewardVip, get_token_register
-from captcha.captcha_slide_img import captcha
+from captcha import google_re_validation, google_rewardVip_validation, slider_validation
 import warnings
 
 # 忽略 InsecureRequestWarning 警告
@@ -226,13 +225,13 @@ class ChromePikpak():
             if "spritePuzzle.html" in recaptcha_url:
                 # 官网修改了注册验证方式。这个滑块验证现在登陆时还在用
                 while (time.time() - start_time) < expires_in * (3/4):
-                    captcha_token = captcha(recaptcha_url)
+                    captcha_token = slider_validation(recaptcha_url)
                     if captcha_token != "":
                         self.captcha_token = captcha_token
                         isOk = True
                         break
             elif "reCaptcha.html" in recaptcha_url:
-                self.captcha_token = get_token_register(recaptcha_url)
+                self.captcha_token = google_re_validation(recaptcha_url)
                 isOk = True
             if isOk:
                 pass
@@ -749,7 +748,7 @@ class ChromePikpak():
         if self.vip_active.get("bot_checked"):
             logger.debug("机器验证已经通过这里不用在次验证了")
             return
-        captcha_token = captcha_rewardVip()
+        captcha_token = google_rewardVip_validation()
         url = 'https://api-drive.mypikpak.com/vip/v1/verifyRecaptchaToken'
         payload = {
             "type": "upload_file",
