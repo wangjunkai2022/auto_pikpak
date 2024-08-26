@@ -29,7 +29,9 @@ handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
 loging_names = [
-    "main", "alist", "mail", "captch_chomd", "Rclone", "telegram", "system_service", 'Chrome_Pikpak', 'PikPakSuper',
+    "main", "alist", "mail", "Rclone", "telegram", "system_service",
+    'Chrome_Pikpak', 'PikPakSuper',
+    'captcha', '2captcha', 'captcha_chmod', 'rapidapi', 'captcha_killer', "captch_chomd",
 ]
 
 
@@ -52,13 +54,13 @@ START_手动替换存储_STR = "_手动替换存储__"
 
 def extract_account_and_password(log):
     """
-    # 匹配账号和密码
+    # 匹配账户和密码
     """
     # 使用正则表达式匹配邮箱格式
-    account_pattern = r'账号:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+    account_pattern = r'账户:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
     password_pattern = r'密码:\s*(\S+)'
 
-    # 提取账号
+    # 提取账户
     account_match = re.search(account_pattern, log)
     account = account_match.group(1) if account_match else None
 

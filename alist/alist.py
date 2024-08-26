@@ -97,7 +97,11 @@ class Alist(object):
     def __request(self, method, url, **kwargs,):
         kwargs["verify"] = False
         kwargs["headers"] = self._get_header()
-        return requests.request(method, url, **kwargs)
+        response = requests.request(method, url, **kwargs)
+        if response.json().get("code") == 401:
+            self.__update_token()
+            return self.__request(method, url, **kwargs,)
+        return response
 
     def __init__(self, user=alist_user, pd=alist_pd, domain=alist_domain) -> None:
         self.user = user
@@ -266,12 +270,13 @@ class Alist(object):
             )
         return pikpaks
 
-    def copy_storages_2_alist(self, to_alist_go: object, is_clean: bool = False) -> None:
+    def copy_storages_2_alist(self, to_alist_go: object, is_clean: bool = False, isDisible: bool = True) -> None:
         """把此所有储存库复制到另外一个Alist中
 
         Args:
             to_alist_go (Alist): 需要复制到的Alist
             is_clean (bool, optional): 是否清空以前的数据. Defaults to False.
+            isDisible (bool) 复制的存储库在新号中的状态 Defaults to True.
         """
         __to_alist_go = to_alist_go
         if is_clean:
@@ -292,13 +297,15 @@ class Alist(object):
                 continue
             _new_storage = copy.deepcopy(self_storage)
             _new_storage["id"] = None
+            _new_storage['disabled'] = isDisible
             __to_alist_go.create_storage(_new_storage)
 
 
 if __name__ == "__main__":
-    alist = Alist(domain="http://10.211.55.58:5244")
+    alist = Alist(domain="http://10.211.55.60:5244")
     # alist.saveToNowConif()
-    # storage_list_data = alist.get_storage_list()
+    storage_list_data = alist.get_storage_list()
+    print(storage_list_data)
     # import config
     # invites = config.pikpak_user
     # for data in storage_list_data.get("content"):
@@ -313,7 +320,7 @@ if __name__ == "__main__":
     # pikpaks = alist.get_storage_list()
     # logger.debug(pikpaks)
     alist.copy_storages_2_alist(
-        Alist(domain="http://10.211.55.60:5244"), is_clean=True)
+        Alist(domain="http://localhost:5244"), is_clean=True)
     # alist.saveToNowConif()
 
     # alist=Alist(domain="http://10.211.55.58:5244").copy_storages_2_alist(Alist())

@@ -312,7 +312,7 @@ class ChromePikpak():
                 f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
             raise Exception(error)
         elif error and error == 'invalid_account_or_password':
-            logger.error(f"当前账号登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
+            logger.error(f"当前账户登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
             raise Exception("密码错误")
         elif error and error == 'file_not_found':
             self._path_id_cache = {}
@@ -781,7 +781,7 @@ class ChromePikpak():
     def save_share_2_self(self, share_id: str):
         share_id = share_id.replace('https://mypikpak.com/s/', "")
         """
-        保存分文件到自己的账号
+        保存分文件到自己的账户
         """
         url = f"https://api-drive.mypikpak.com/drive/v1/share"
         params = {

@@ -56,7 +56,7 @@ class PikPakSuper(ChromePikpak):
         _pikpak = PikPakSuper(mail, pd)
         _pikpak.setHandler(handler)
         _pikpak.set_proxy(*proxy)
-        logger.info(f"开始注册\n账号:{mail}\n密码:{pd}")
+        logger.info(f"开始注册\n账户:{mail}\n密码:{pd}")
         while True:
             try:
                 _pikpak.register()
@@ -95,7 +95,7 @@ class PikPakSuper(ChromePikpak):
 
     def get_vip_day_time_left(self) -> int:
         """
-        获取当前pikpak账号的剩余vip天数
+        获取当前pikpak账户的剩余vip天数
         """
         self.login()
         vip_data = self.vip_info()
@@ -184,7 +184,7 @@ class PikPakSuper(ChromePikpak):
 
     def save_share(self, shareid: str) -> None:
         """
-        保存人家的分享到自己的账号
+        保存人家的分享到自己的账户
         """
         self.login()
         return self.save_share_2_self(shareid)

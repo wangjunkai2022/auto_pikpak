@@ -81,13 +81,13 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
         alist.Alist.__init__(self)
         self.saveToNowConif()
         for pikpak_data in self.get_all_pikpak_storage():
-            if not pikpak_data.get("disabled"):
-                pikpak_go = BasePikpakData(
-                    mail=pikpak_data.get("username"),
-                    pd=pikpak_data.get("password"),
-                    name=pikpak_data.get("name")
-                )
-                self.pikpak_go_list.append(pikpak_go)
+            # if not pikpak_data.get("disabled"):
+            pikpak_go = BasePikpakData(
+                mail=pikpak_data.get("username"),
+                pd=pikpak_data.get("password"),
+                name=pikpak_data.get("name")
+            )
+            self.pikpak_go_list.append(pikpak_go)
         self.opation_index = 0
 
     # 直接pop一个Alsit中的一个pikpak登陆
@@ -170,7 +170,7 @@ class ManagerRclonePikpak(ManagerPikPak, RCloneManager):
 
     # def save_pikpak_2(self, pikpak_go: BasePikpakData):
     #     if self.opation_pikpak_go.mail == pikpak_go.mail:
-    #         logger.info(f"保存pikpak rclone中的账号和现在的账号时同一个这里不做修改")
+    #         logger.info(f"保存pikpak rclone中的账户和现在的账户时同一个这里不做修改")
     #         return
 
     #     data = self.conifg_2_pikpak_rclone[self.opation_index]
@@ -195,20 +195,20 @@ def get_proxy():
 
 def pikpakdata_2_pikpakdata(old_pikpak: BasePikpakData, new_pikpak: BasePikpakData):
     """
-    旧账号的资源复制到新账号中
+    旧账户的资源复制到新账户中
     """
     if new_pikpak.get_vip_day_time_left() > 0:
         share = old_pikpak.start_share_self_files()
         logger.info(
-            f"分享原账号:\nemail: {old_pikpak.mail}\npd: {old_pikpak.pd}\n分享代码是: {share}")
+            f"分享原账户:\nemail: {old_pikpak.mail}\npd: {old_pikpak.pd}\n分享代码是: {share}")
         time.sleep(10)
         share_id = share.get("share_id", None)
         if not share_id:
             raise Exception("分享错误")
         new_pikpak.save_share(share_id)
-        logger.info(f"保存原账号的资源到新账号:\n{new_pikpak.mail}\n{new_pikpak.pd}")
+        logger.info(f"保存原账户的资源到新账户:\n{new_pikpak.mail}\n{new_pikpak.pd}")
     else:
-        raise Exception("新账号没有vip")
+        raise Exception("新账户没有vip")
 
 
 def change_all_pikpak():
@@ -216,7 +216,11 @@ def change_all_pikpak():
     注册新的pikpak替换原来的pikpak
     """
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
+    count_1 = 0
     for pikpak_go in alistPikpak.pikpak_go_list:
+        count_1 += 1
+        if count_1 < 5:
+            continue
         error = None
         pikpak: BasePikpakData = None
         for count in range(3):
@@ -237,7 +241,7 @@ def change_all_pikpak():
                 # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
                 alistPikpak.change_opation_2(pikpak_go)
                 alistPikpak.update_opation_pikpak_go(pikpak)
-                logger.info(f"替换原账号的alit或者rclone中")
+                logger.info(f"替换原账户的alit或者rclone中")
                 pikpak = None
                 error = None
                 break
@@ -250,7 +254,7 @@ def change_all_pikpak():
 
 
 def check_all_pikpak_vip():
-    """运行所有的pikpak账号检测
+    """运行所有的pikpak账户检测
     """
     logger.info("开始执行系统中的会员状态检测")
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
@@ -273,7 +277,7 @@ def check_all_pikpak_vip():
         # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
         alistPikpak.change_opation_2(pikpak_go)
         alistPikpak.update_opation_pikpak_go(pikpak)
-        logger.info(f"替换原账号的alit或者rclone中")
+        logger.info(f"替换原账户的alit或者rclone中")
 
     logger.info("Over")
 
@@ -285,7 +289,7 @@ def 替换Alist储存库(email, pd, name):
         alist.change_opation_storage_name_2(name)
         alist.update_opation_pikpak_go(pikpak)
     else:
-        raise Exception("传入的账号没有vip")
+        raise Exception("传入的账户没有vip")
 
 
 def 所有Alist的储存库() -> List[BasePikpakData]:
@@ -322,7 +326,7 @@ def 注册新号激活(alist_storage) -> BasePikpakData:
     # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
     ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
-    logger.info(f"替换原账号的alit或者rclone中")
+    logger.info(f"替换原账户的alit或者rclone中")
     return pikpak
 
 
