@@ -24,10 +24,12 @@ logger.addHandler(handler)
 
 class BasePikpakData(PikPakSuper):
     name = None
+    disabled = False
 
-    def __init__(self, mail: str = None, pd: str = None, name=None):
+    def __init__(self, mail: str = None, pd: str = None, name=None, disabled: bool = False):
         super().__init__(mail, pd)
         self.name = name
+        self.disabled = disabled
 
 
 class SingletonMeta(type):
@@ -85,7 +87,8 @@ class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
             pikpak_go = BasePikpakData(
                 mail=pikpak_data.get("username"),
                 pd=pikpak_data.get("password"),
-                name=pikpak_data.get("name")
+                name=pikpak_data.get("name"),
+                disabled=pikpak_data.get("disabled"),
             )
             self.pikpak_go_list.append(pikpak_go)
         self.opation_index = 0
@@ -216,10 +219,8 @@ def change_all_pikpak():
     注册新的pikpak替换原来的pikpak
     """
     alistPikpak: ManagerPikPak = ManagerAlistPikpak()
-    count_1 = 0
     for pikpak_go in alistPikpak.pikpak_go_list:
-        count_1 += 1
-        if count_1 < 5:
+        if pikpak_go.disabled:
             continue
         error = None
         pikpak: BasePikpakData = None

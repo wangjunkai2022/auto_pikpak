@@ -105,6 +105,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python captcha_killer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/captcha/captcha_killer.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python captcha_slide_img",
             "type": "debugpy",
             "request": "launch",
@@ -131,6 +142,28 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/telegram_auto.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python telegram_index",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/telegram/__init__.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python proxy_ip",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/proxy_ip/__init__.py",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
