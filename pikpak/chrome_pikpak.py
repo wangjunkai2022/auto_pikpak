@@ -323,6 +323,11 @@ class ChromePikpak():
             raise Exception("获取文件失败")
         # elif error and error == 'invalid_argument':
         #     self.refresh_access_token()
+        elif error and error == 'task_run_nums_limit':
+            description = json_data.get('error_description')
+            logger.error(f"当前运行中的线程太多\n{description}")
+            time.sleep(60)
+            return self._requests(method, url, headers, **kwargs)
         if error and error != '':
             raise Exception(
                 f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
