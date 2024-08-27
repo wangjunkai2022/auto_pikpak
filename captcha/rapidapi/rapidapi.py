@@ -89,8 +89,9 @@ class BaseRapidapi():
 
 # 定义要创建的类名集合
 class_names = {
-    "Captcha2": "captcha.rapidapi.2captcha",
-    "CaptchaKiller": "captcha.rapidapi.captcha_killer",
+    "Captcha2": "captcha.rapidapi.child.2captcha",
+    "CaptchaKiller": "captcha.rapidapi.child.captcha_killer",
+    'Capsolver': 'captcha.rapidapi.child.capsolver',
 }
 
 

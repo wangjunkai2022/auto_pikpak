@@ -544,6 +544,7 @@ class ChromePikpak():
         self.captcha_token = DEF_CAPTCHATOKEN
         self.user_id = DEF_USERID
         self.proxies = None
+        self.refresh_token = None
 
     def vip_info_v2(self):
         json_data = self.get(

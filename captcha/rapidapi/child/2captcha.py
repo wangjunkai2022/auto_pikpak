@@ -1,7 +1,7 @@
 import logging
 from captcha.rapidapi.rapidapi import BaseRapidapi
 
-logger = logging.getLogger("2captcha")
+logger = logging.getLogger("rapidapi_2captcha")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)

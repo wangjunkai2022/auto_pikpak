@@ -74,7 +74,8 @@ class ManagerPikPak(Singleton):
         for pikpak in self.pikpak_go_list:
             if pikpak.name == storage_name:
                 self.opation_index = self.pikpak_go_list.index(pikpak)
-                break
+                return
+        raise Exception(f"替换操作的pikpak:{storage_name}失败")
 
 
 class ManagerAlistPikpak(ManagerPikPak, alist.Alist):
@@ -291,6 +292,25 @@ def 替换Alist储存库(email, pd, name):
         alist.update_opation_pikpak_go(pikpak)
     else:
         raise Exception("传入的账户没有vip")
+
+
+def 刷新PikPakToken(alist_storage):
+    name = alist_storage.get('name')
+    logger.info(f"开始刷新{name}的pikpak_token")
+    alist = ManagerAlistPikpak()
+    storage_data = next(x for x in alist.get_storage_list().get(
+        'content') if x.get("mount_path")[1:] == name)
+    pikpak = next(x for x in alist.pikpak_go_list if x.name == name)
+    pikpak.login_out()
+    pikpak.login()
+    addition = json.loads(storage_data.get("addition"))
+    old_token = addition.get('refresh_token')
+    logger.debug(f"pikpak原token:{old_token}")
+    logger.debug(f"pikpak新token:{pikpak.refresh_token}")
+    addition['refresh_token'] = pikpak.refresh_token
+    storage_data["addition"] = json.dumps(addition)
+    logger.debug(storage_data)
+    alist.update_storage(storage_data)
 
 
 def 所有Alist的储存库() -> List[BasePikpakData]:
