@@ -9,7 +9,7 @@ import asyncio
 import requests
 import json
 
-from .kuaidaili import kuaidaili
+from proxy_ip.kuaidaili import kuaidaili
 
 pattern = r"\?page=[a-z0-9]+"
 
@@ -140,6 +140,7 @@ def ipTest():
 
 def pingPikpak(proxy, ok_ips):
     try:
+        start_time = time.time()
         proxy_data = proxy.split()
         url = f'https://inapp.mypikpak.com/ping'
         # transport = AsyncProxyTransport.from_url(f"{proxy_data[1]}://{proxy_data[0]}")
@@ -153,9 +154,11 @@ def pingPikpak(proxy, ok_ips):
             "https": f"{proxy_data[1]}://{proxy_data[0]}",
         }, timeout=2, verify=False)
         if response.status_code == 200:
-            print(f'{proxy} is working')
-            ok_ips.append(proxy_data)
-            return True
+            duration = time.time() - start_time
+            print(f'{proxy} is working 耗时{duration:.2f}秒')
+            if duration < 3:
+                ok_ips.append(proxy_data)
+                return True
     except:
         # print(f"{proxy} 失败")
         pass
@@ -180,8 +183,26 @@ def thread_get_all_ping_pikpak_proxy():
     for _th in _ths:
         _th.join()
 
-    print(_ok_ips)
+    _ok_ips = remove_duplicates(_ok_ips)
     return _ok_ips
+
+
+def remove_duplicates(lst):
+    if not lst:  # 检查列表是否为空
+        return []  # 如果为空，直接返回空列表
+
+    unique_list = []
+    seen = set()
+
+    for item in lst:
+        # 将列表转换为元组，以便可以将其添加到集合中
+        item_tuple = tuple(item) if isinstance(item, list) else item
+
+        if item_tuple not in seen:
+            seen.add(item_tuple)
+            unique_list.append(item)
+
+    return unique_list
 
 
 # cache_json_file = 'ips.json'
@@ -227,7 +248,8 @@ def pop_prxy_pikpak():
 
 
 if __name__ == '__main__':
-    thread_get_all_ping_pikpak_proxy()
+    pis = thread_get_all_ping_pikpak_proxy()
+    print(pis)
     # main()
     # asyncio.run(get_pikpak_proyxs())
     # ipTest()
