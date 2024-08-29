@@ -9,3 +9,4 @@ opencv_python_headless
 ultralytics
 
 2captcha-python
+Flask
