@@ -21,6 +21,8 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
+os.environ['RAPIDAPI_KEY'] = config.mail_api
 
 class BasePikpakData(PikPakSuper):
     name = None

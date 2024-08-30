@@ -1,3 +1,6 @@
 [submodule "pikpak/PikPakAPI"]
 	path = pikpak/PikPakAPI
 	url = https://github.com/wangjunkai2022/PikPakAPI.git
+[submodule "pikpak_captcha"]
+	path = pikpak_captcha
+	url = https://github.com/wangjunkai2022/pikpak_captcha.git

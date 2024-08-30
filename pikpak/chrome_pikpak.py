@@ -8,8 +8,9 @@ from urllib.parse import urlparse
 import uuid
 
 import requests
-from captcha import google_re_validation, google_rewardVip_validation, slider_validation
 import warnings
+
+from pikpak_captcha import google_re_validation, google_rewardVip_validation, slider_validation
 
 # 忽略 InsecureRequestWarning 警告
 warnings.filterwarnings(
@@ -1219,15 +1220,15 @@ class ChromePikpak():
 
 
 if __name__ == "__main__":
-    email = ""
-    password = ""
+    email = "hjykfu1183@steveix.com"
+    password = "098poi"
     pikpak_ = ChromePikpak(email, password)
     pikpak_.login()
     需要整理的文件夹 = pikpak_.path_to_id(
         "/Pack From Shared/影视/三级电影")[-1]
     next_page_token = None
     move_path = pikpak_.path_to_id(
-        "/Pack From Shared/影视/三级电影_2", True)[-1]
+        "/Pack From Shared/影视/三级电影", True)[-1]
     while True:
         file_list = pikpak_.file_list(10, 需要整理的文件夹.get(
             "id"), next_page_token=next_page_token)
@@ -1245,8 +1246,9 @@ if __name__ == "__main__":
                         2, max_folder_50G.get("id")).get('files')) <= 0:
                     pikpak_.delete_to_trash([max_folder_50G.get("id")])
             else:
-                pikpak_.file_batch_move(
-                    [max_folder_50G.get('id')], move_path.get("id"))
+                continue
+                # pikpak_.file_batch_move(
+                #     [max_folder_50G.get('id')], move_path.get("id"))
         if len(file_list.get('files')) <= 0:
             break
         time.sleep(2)
