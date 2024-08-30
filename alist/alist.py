@@ -121,6 +121,16 @@ class Alist(object):
             self.token = data_json["data"].get("token")
         logger.debug(data_json)
 
+    def update_load_all_storage(self):
+        url = f"{self._domain}/api/admin/storage/load_all"
+        payload = {
+        }
+        response = self.__request("POST", url, json=payload)
+        data_json = response.json()
+        if response.status_code == 200:
+            return data_json
+        logger.debug(data_json)
+
     def get_storage_list(self):
         url = f"{self._domain}/api/admin/storage/list"
         payload = {
@@ -149,6 +159,8 @@ class Alist(object):
         logger.debug(data_json)
         if response.status_code == 200:
             return data_json.get("data")
+        else:
+            return
 
     def update_storage(self, data: dict, isAddUpdateTime=True) -> None:
         """修改存储库
@@ -300,11 +312,53 @@ class Alist(object):
             _new_storage['disabled'] = isDisible
             __to_alist_go.create_storage(_new_storage)
 
+    def restore_configuration_file_2_self(self, is_clean: bool = False, is_disible: bool = True):
+        """
+        恢复配置文件内容到此存储库
+        """
+        try:
+            with open(self.cache_json_file, mode='r') as file:
+                json_data = json.load(file)
+        except:
+            json_data = []
+        sorted_data = sorted(json_data, key=lambda x: datetime.datetime.strptime(
+            x['time'], "%Y-%m-%d %H:%M:%S"), reverse=True)
+        contents, names = [], []
+        for data in sorted_data:
+            for content in data.get("content"):
+                if content.get("mount_path")[1:] in names:
+                    continue
+                else:
+                    names.append(content.get("mount_path")[1:])
+                    contents.append(content)
+        if is_clean:
+            for _to_storage in self.get_storage_list().get("content"):
+                self.delete_storage(_to_storage.get("id"))
+        for storage in contents:
+            storage['disabled'] = is_disible or storage['disabled']
+            data = self.create_storage(storage)
+            if data:
+                print(data)
+            else:
+                print("ppppp")
+
+    def set_captcha_url(self, url: str = "http://lcoalhost:5243/api/login", is_disible: bool = True):
+        for storage in self.get_storage_list().get("content"):
+            if storage.get("dirver") == "PikPak":
+                storage['disabled'] = is_disible
+                addition = json.loads(storage.get("addition"))
+                addition['captcha_api'] = url
+                addition['platform'] = 'android'
+                addition['refresh_token'] = ''
+                storage['addition'] = json.dumps(addition)
+                self.update_storage(storage, False)
+                # addition
+
 
 if __name__ == "__main__":
-    alist = Alist(domain="http://10.211.55.60:5244")
+    alist = Alist()
     # alist.saveToNowConif()
-    storage_list_data = alist.get_storage_list()
+    storage_list_data = alist.set_captcha_url()
     print(storage_list_data)
     # import config
     # invites = config.pikpak_user
