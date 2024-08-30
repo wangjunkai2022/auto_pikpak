@@ -342,9 +342,10 @@ class Alist(object):
             else:
                 print("ppppp")
 
-    def set_captcha_url(self, url: str = "http://lcoalhost:5243/api/login", is_disible: bool = True):
+    def set_captcha_url(self, url: str = "http://localhost:5243/api/login", is_disible: bool = True):
         for storage in self.get_storage_list().get("content"):
-            if storage.get("dirver") == "PikPak":
+            driver = storage.get("driver")
+            if driver == "PikPak":
                 storage['disabled'] = is_disible
                 addition = json.loads(storage.get("addition"))
                 addition['captcha_api'] = url
@@ -353,6 +354,7 @@ class Alist(object):
                 storage['addition'] = json.dumps(addition)
                 self.update_storage(storage, False)
                 # addition
+        self.update_load_all_storage()
 
 
 if __name__ == "__main__":
