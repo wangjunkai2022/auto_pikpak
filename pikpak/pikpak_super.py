@@ -66,7 +66,10 @@ class PikPakSuper(ChromePikpak):
                 proxy = handler.run_get_proxy()
                 _pikpak.set_proxy(*proxy)
             except Exception as e:
-                raise e
+                if str(e).startswith("网络连接错误"):
+                    proxy = handler.run_get_proxy()
+                    _pikpak.set_proxy(*proxy)
+                    _pikpak.save_self()
         _pikpak.run_test()
         return _pikpak
 

@@ -24,6 +24,7 @@ logger.addHandler(handler)
 os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
 os.environ['RAPIDAPI_KEY'] = config.mail_api
 
+
 class BasePikpakData(PikPakSuper):
     name = None
     disabled = False
@@ -327,8 +328,17 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
     base_pikpak.change_opation_storage_name_2(alist_storage.get('name'))
     pikpak_ = base_pikpak.get_opation_pikpak()
     pikpak_.set_proxy(get_proxy())
-    if pikpak_.try_get_vip():
-        return pikpak_
+    try:
+        if pikpak_.try_get_vip():
+            return pikpak_
+    except Exception as e:
+        if str(e).startswith("网络连接错误"):
+            logger.error("网络连接错误 重新获取新代理")
+            pikpak_.set_proxy(get_proxy())
+            pikpak_.save_self()
+            激活存储库vip(alist_storage)
+        else:
+            raise e
     return 注册新号激活(alist_storage)
 
 
@@ -347,7 +357,14 @@ def 注册新号激活(alist_storage) -> BasePikpakData:
     )
     pikpak: BasePikpakData = BasePikpakData.create(handler)
     time.sleep(60)
-    pikpak.try_get_vip()
+    try:
+        pikpak.try_get_vip()
+    except Exception as e:
+        if str(e).startswith("网络连接错误"):
+            logger.error("网络连接错误 重新获取新代理")
+            pikpak.set_proxy(get_proxy())
+            pikpak.save_self()
+            pikpak.try_get_vip()
     # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
     ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)

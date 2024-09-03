@@ -266,7 +266,7 @@ class ChromePikpak():
                     f"url:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 time.sleep(10)
                 if count + 1 >= 3:
-                    raise error
+                    raise Exception("网络连接错误")
                 continue
             except (
                 requests.exceptions.URLRequired,
