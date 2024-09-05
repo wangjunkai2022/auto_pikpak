@@ -1,6 +1,7 @@
 import logging
 import time
 import requests
+from pikpak.android_pikpak import AndroidPikPak
 from pikpak.chrome_pikpak import ChromePikpak, Handle
 
 logger = logging.getLogger("PikPakSuper")
@@ -46,7 +47,7 @@ class HandleSuper(Handle):
         return self.__get_proxy_callback()
 
 
-class PikPakSuper(ChromePikpak):
+class PikPakSuper(AndroidPikPak):
 
     @staticmethod
     def create(handler: HandleSuper = HandleSuper()):
@@ -122,13 +123,20 @@ class PikPakSuper(ChromePikpak):
             logger.debug('当前vip没过期 这里不获取vip')
             return True
         self.verifyRecaptchaToken()
-        self.reward_vip_upload_file()
+        try:
+            self.reward_vip_upload_file()
+        except Exception as e:
+            logger.error(str(e))
         time.sleep(5)
-        if self.try_get_vip():
+        vip_day = self.get_vip_day_time_left()
+        if vip_day > 0:
+            logger.debug('当前是vip了')
             return True
         self.reward_vip_install_web_pikpak_extension()
         time.sleep(5)
-        if self.try_get_vip():
+        vip_day = self.get_vip_day_time_left()
+        if vip_day > 0:
+            logger.debug('当前是vip了')
             return True
         return False
 
@@ -194,8 +202,10 @@ class PikPakSuper(ChromePikpak):
 
 
 if __name__ == "__main__":
-    email = ""
-    password = ""
+    email = "alsljs4853@maxric.com"
+    password = "ezZd73li8"
     pikpak_ = PikPakSuper(email, password,)
-    pikpak_.start_share_self_files()
+    pikpak_.login()
+    pikpak_.vip_info()
+    pikpak_.set_activation_code('39576161')
     # PikPakSuper.create()

@@ -327,7 +327,8 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
     base_pikpak: ManagerPikPak = ManagerAlistPikpak()
     base_pikpak.change_opation_storage_name_2(alist_storage.get('name'))
     pikpak_ = base_pikpak.get_opation_pikpak()
-    pikpak_.set_proxy(get_proxy())
+    # pikpak_.login()
+    # pikpak_.set_proxy(get_proxy())
     try:
         if pikpak_.try_get_vip():
             return pikpak_

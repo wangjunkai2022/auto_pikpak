@@ -61,6 +61,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python android_pikpak",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pikpak/android_pikpak.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:"
+            },
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python pikpak_auto_invite",
             "type": "debugpy",
             "request": "launch",
@@ -119,11 +130,12 @@
             "name": "Python captcha_slide_img",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/captcha/captcha_slide_img.py",
+            "program": "${workspaceFolder}/pikpak_captcha/captcha_slide_img.py",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
+            "justMyCode": true,
             "console": "integratedTerminal"
         },
         {
