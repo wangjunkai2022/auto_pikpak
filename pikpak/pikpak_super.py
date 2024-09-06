@@ -71,6 +71,9 @@ class PikPakSuper(AndroidPikPak):
                     proxy = handler.run_get_proxy()
                     _pikpak.set_proxy(*proxy)
                     _pikpak.save_self()
+                    continue
+                logger.error(str(e))
+
         _pikpak.run_test()
         return _pikpak
 

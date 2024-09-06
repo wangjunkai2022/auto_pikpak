@@ -60,6 +60,7 @@ class ChromePikpak():
     user_id = DEF_USERID
     refresh_token = None
     proxies = None
+    language = "zh-CN"
 
     CLIENT_ID = 'YUMx5nI8ZU8Ap8pm'
     CLIENT_VERSION = '2.0.0'
@@ -73,6 +74,8 @@ class ChromePikpak():
         "install_web_pikpak_extension": False,
         "upload_file": False
     }
+
+    _temp_captcha_time = None
 
     def __init__(self, mail: str, pd: str,):
         self.mail = mail
@@ -170,6 +173,7 @@ class ChromePikpak():
     def captcha(self, action: str = ''):
         self.old_captcha_token = self.captcha_token
         time_str = str(round(time.time() * 1000))
+        self._temp_captcha_time = time_str
         if self.authorization and self.authorization != "":
             def_bodys = {
                 "client_id": self.CLIENT_ID,
@@ -217,6 +221,7 @@ class ChromePikpak():
         body = bodys.get(action) or def_bodys
         url = 'https://user.mypikpak.com/v1/shield/captcha/init'
         json_data = self.post(url, json=body)
+        self._temp_captcha_time = None
         if json_data.get("url"):
             self.captcha_token = json_data.get("captcha_token")
             expires_in = json_data.get("expires_in")
@@ -377,7 +382,7 @@ class ChromePikpak():
         header_config = {
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': 'zh-CN',
+            'accept-language': self.language,
             'authorization': self.authorization,
             'cache-control': 'no-cache',
             'content-type': 'application/json',
@@ -399,7 +404,7 @@ class ChromePikpak():
         header_user = {
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': 'zh-CN',
+            'accept-language': self.language,
             'cache-control': 'no-cache',
             'content-type': 'application/json',
             'origin': 'https://mypikpak.com',
@@ -445,7 +450,7 @@ class ChromePikpak():
             "email": self.mail,
             "target": "ANY",
             "usage": "REGISTER",
-            "locale": "zh-CN",
+            "locale": self.language,
             "client_id": self.CLIENT_ID
         }
         json_data = self.post(url, json=json_data)
@@ -570,7 +575,7 @@ class ChromePikpak():
         }
         headers = {'accept': '*/*',
                    'accept-encoding': 'gzip, deflate, br, zstd',
-                   'accept-language': 'zh-CN',
+                   'accept-language': self.language,
                    'authorization': self.authorization,
                    'cache-control': 'no-cache',
                    'content-type': 'application/json',
@@ -605,8 +610,8 @@ class ChromePikpak():
         payload = {
             "client": "web",
             "data": {
-                "language_system": "zh-CN",
-                "language_app": "zh-CN",
+                "language_system": self.language,
+                "language_app": self.language,
                 "user_id": self.user_id,
             }
         }
@@ -631,7 +636,7 @@ class ChromePikpak():
         headers = {
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': 'zh-CN',
+            'accept-language': self.language,
             'cache-control': 'no-cache',
             'connection': 'keep-alive',
             'content-type': 'application/json',

@@ -21,8 +21,6 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
-os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
-os.environ['RAPIDAPI_KEY'] = config.mail_api
 
 
 class BasePikpakData(PikPakSuper):
@@ -396,6 +394,25 @@ def copye_list_2_rclone_config():
     rclone_manager.save_config()
 
 
+def 注册并填写邀请(邀请码: str = ""):
+    if not 邀请码 or 邀请码 == "":
+        logger.error("邀请码不正确")
+    logger.error(f"注册并邀请中{邀请码}")
+    handler = HandleSuper(
+        get_token=config.get_captcha_callback(),
+        get_mailcode=config.get_email_verification_code_callback(),
+        email_address=create_one_mail,
+        get_password=radom_password,
+        get_proxy=get_proxy,
+    )
+    pikpak: BasePikpakData = BasePikpakData.create(handler)
+    time.sleep(60)
+    pikpak.set_activation_code(邀请码)
+
+
 if __name__ == "__main__":
     set_def_callback()
-    change_all_pikpak()
+    os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
+    os.environ['RAPIDAPI_KEY'] = config.mail_api
+    # change_all_pikpak()
+    注册并填写邀请("85147854")

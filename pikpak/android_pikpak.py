@@ -26,6 +26,7 @@ download_test = "magnet:?xt=urn:btih:C875E08EAC834DD82D34D2C385BBAB598415C98A"
 
 class AndroidPikPak(ChromePikpak):
     country = "US"
+
     language = "zh-TW"
 
     CLIENT_VERSION = "1.48.3"
@@ -35,6 +36,8 @@ class AndroidPikPak(ChromePikpak):
     phone_name = "Lge"
 
     CLIENT_ID = 'YNxT9w7GMdWvEOKa'
+
+    CLIENT_SECRET = 'dbw2OtmVEeuUvIptb1Coyg'
 
     device_id2 = str(uuid.uuid4()).replace("-", "")
     # 仿制captcha_sign
@@ -95,10 +98,12 @@ class AndroidPikPak(ChromePikpak):
             if len(parts) >= 3:  # 确保有足够的部分
                 second_level_domain = parts[-3]  # 倒数第三个部分
                 # logger.debug(f'二级域名: {second_level_domain}')
-        t = time.time()
+
+        time_str = self._temp_captcha_time or str(
+            int(round(time.time() * 1000)))
         header_config = {
             "install-from": "other",
-            "language-app": "zh-CN",
+            "language-app": self.language,
             "x-user-id": self.user_id,
             "x-device-id": self.device_id,
             "country": "TW",
@@ -107,7 +112,7 @@ class AndroidPikPak(ChromePikpak):
             "sdk-int": "25",
             "x-client-version": self.CLIENT_VERSION,
             "phone-model": self.phone_model,
-            "language-system": "zh-CN",
+            "language-system": self.language,
             "version-code": '10216',
             'version-name': self.CLIENT_VERSION,
             'channel-id': 'official',
@@ -118,20 +123,20 @@ class AndroidPikPak(ChromePikpak):
             'build-sdk-int': '25',
             'app-type': 'android',
             'platform-version': "7.1.2",
-            'x-system-language': 'zh-CN',
+            'x-system-language': self.language,
             'content-type': 'application/json; charset=utf-8',
             'content-length': '283',
             'accept-encoding': 'gzip',
-            'user-agent': f'ANDROID-com.pikcloud.pikpak/1.48.3 accessmode/ devicename/{self.phone_model} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.CLIENT_ID} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.4.204101 clientversion/{self.CLIENT_VERSION} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/{self.user_id}',
+            'user-agent': f'ANDROID-com.pikcloud.pikpak/1.48.3 accessmode/ devicename/{self.phone_model} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.CLIENT_ID} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{time_str} protocolversion/200 sdkversion/2.0.4.204101 clientversion/{self.CLIENT_VERSION} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/{self.user_id}',
             'x-captcha-token': self.captcha_token or ''
 
         }
 
         header_user = {
             'accept-encoding': 'gzip, deflate, br, zstd',
-            'accept-language': 'zh-CN',
+            'accept-language': self.language,
             'content-type': 'application/json; charset=utf-8',
-            'user-agent': f'ANDROID-com.pikcloud.pikpak/1.48.3 accessmode/ devicename/{self.phone_model} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.CLIENT_ID} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{int(round(t * 1000))} protocolversion/200 sdkversion/2.0.4.204101 clientversion/{self.CLIENT_VERSION} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/{self.user_id}',
+            'user-agent': f'ANDROID-com.pikcloud.pikpak/1.48.3 accessmode/ devicename/{self.phone_model} appname/android-com.pikcloud.pikpak appid/ action_type/ clientid/{self.CLIENT_ID} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/7.1.2 datetime/{time_str} protocolversion/200 sdkversion/2.0.4.204101 clientversion/{self.CLIENT_VERSION} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/{self.user_id}',
             'x-captcha-token': self.captcha_token,
             'x-client-id': self.CLIENT_ID,
             "content-length": '1042',
@@ -145,8 +150,8 @@ class AndroidPikPak(ChromePikpak):
         }
         return headers.get(second_level_domain)
 
-
     # 设置邀请
+
     def set_activation_code(self, activation_code):
         url = f"https://api-drive.mypikpak.com/vip/v1/order/activation-code"
         payload = {
@@ -161,6 +166,57 @@ class AndroidPikPak(ChromePikpak):
             self.inviseError = json_data.get("error")
             raise Exception(self.inviseError)
         logger.debug(f"填写邀请结果返回:\n{json_data}")
+
+    # 注册
+    def register(self):
+        # self.captcha("POST:/v1/auth/verification")
+        url = 'https://user.mypikpak.com/v1/auth/verification'
+        json_data = {
+            "email": self.mail,
+            "target": "ANY",
+            "locale": self.language,
+            "client_id": self.CLIENT_ID
+        }
+        json_data = self.post(url, json=json_data)
+        logger.debug(f"verification 数据{json_data}")
+        verification_id = json_data.get("verification_id")
+        if verification_id:
+            pass
+        else:
+            raise Exception(json_data.get('error'))
+        code = self.handler.run_get_maincode(self.mail)
+        url = f"https://user.mypikpak.com/v1/auth/verification/verify"
+        payload = {
+            "client_id": self.CLIENT_ID,
+            "verification_id": verification_id,
+            "verification_code": code,
+        }
+        json_data = self.post(url, json=payload)
+        logger.debug(f"verification/verify 数据{json_data}")
+        verification_token = json_data.get('verification_token')
+        if verification_token and verification_token != "":
+            pass
+        else:
+            raise Exception(json_data.get('error'))
+
+        url = f"https://user.mypikpak.com/v1/auth/signup"
+        payload = {
+            'captcha_token': self.captcha_token,
+            "client_id": self.CLIENT_ID,
+            'client_secret': self.CLIENT_SECRET,
+            "email": self.mail,
+            'name': self.mail.split("@")[0],
+            "password": self.pd,
+            "verification_token": verification_token,
+        }
+        json_data = self.post(url, json=payload)
+        logger.debug(f"signup 数据{json_data}")
+        if json_data.get('error'):
+            raise Exception(json_data.get('error'))
+        self.user_id = json_data.get('sub')
+        self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
+        self.refresh_token = json_data.get('refresh_token')
+        self.save_self()
 
 
 if __name__ == "__main__":
