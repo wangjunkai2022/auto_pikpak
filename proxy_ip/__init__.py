@@ -4,10 +4,11 @@ import os
 import threading
 import time
 
-import requests
 import asyncio
 import requests
 import json
+import re
+from requests_html import HTMLSession
 
 from proxy_ip.kuaidaili import kuaidaili
 
@@ -19,7 +20,7 @@ def get_proxy_list():
         1: "http",
         2: "https",
         3: None,
-        4: 'socks5',
+        4: "socks5",
         # 5: 'socks5',
         # 6: None,
         # 7: "http",  # http/https
@@ -37,7 +38,7 @@ def get_proxy_list():
     if req and req.status_code == 200:
         data = json.loads(req.text)
         for ip_data in data:
-            if ip_data['addr']:
+            if ip_data["addr"]:
                 proxy_type = types[ip_data["type"]]
                 # if proxy_type == "http":
                 if proxy_type:
@@ -51,22 +52,28 @@ async def check_proxy(proxy):
         # url = 'https://google.com'
         # timeout = httpx.Timeout(connect=1, read=1, write=1, pool=None)
         proxy_data = proxy.split()
-        url = f'https://inapp.mypikpak.com/ping'
+        url = f"https://inapp.mypikpak.com/ping"
         # transport = AsyncProxyTransport.from_url(f"{proxy_data[1]}://{proxy_data[0]}")
         # async with httpx.AsyncClient(transport=transport) as client:
         #     response = await client.get(url, timeout=2)
         #     if response.status_code == 200:
         #         print(f'{proxy} is working')
         #         return proxy
-        response = requests.request("GET", url, proxies={
-            "http": f"{proxy_data[1]}://{proxy_data[0]}",
-            "https": f"{proxy_data[1]}://{proxy_data[0]}",
-        }, timeout=2, verify=False)
+        response = requests.request(
+            "GET",
+            url,
+            proxies={
+                "http": f"{proxy_data[1]}://{proxy_data[0]}",
+                "https": f"{proxy_data[1]}://{proxy_data[0]}",
+            },
+            timeout=2,
+            verify=False,
+        )
         if response.status_code == 200:
-            print(f'{proxy} is working')
+            print(f"{proxy} is working")
             return proxy
     except Exception as error:
-        print(f'error:\t{error}\t{proxy} is not working')
+        print(f"error:\t{error}\t{proxy} is not working")
         pass
     return
 
@@ -127,6 +134,7 @@ def ipTest():
     temp_file = "ip_isOk.txt"
 
     import datetime
+
     # 获取当前时间
     now_time = datetime.datetime.now()
     # 格式化时间字符串
@@ -134,32 +142,59 @@ def ipTest():
     # if not os.path.exists(temp_file):
     #     os.system(r"touch {}".format(temp_file))  # 调用系统命令行来创建文件
     input_str = f"\n\n时间:\n\t{str_time}\n{proxies}"
-    with open(temp_file, 'a') as f:  # 设置文件对象
+    with open(temp_file, "a") as f:  # 设置文件对象
         f.write(input_str)  # 将字符串写入文件中
+
+
+def pingPikPak_sleep_str(proxy_data=None):
+
+    # proxy_data = proxy.split()
+
+    session = HTMLSession()
+    session.proxies = {
+        "http": f"{proxy_data[1]}://{proxy_data[0]}",
+        "https": f"{proxy_data[1]}://{proxy_data[0]}",
+    }
+    r = session.get("https://inapp.mypikpak.com/ping", verify=False)
+    r.html.render(sleep=10)  # 首次使用，自动下载chromium
+    # print(r.html.html)
+    d = r.html.xpath("//div[@class='network-info__item'][last()-1]/div[last()]/text()")
+    # speed = int(d[0])
+    # print(speed)
+    return d[0]
 
 
 def pingPikpak(proxy, ok_ips):
     try:
         start_time = time.time()
         proxy_data = proxy.split()
-        url = f'https://inapp.mypikpak.com/ping'
+        url = f"https://inapp.mypikpak.com/ping"
         # transport = AsyncProxyTransport.from_url(f"{proxy_data[1]}://{proxy_data[0]}")
         # async with httpx.AsyncClient(transport=transport) as client:
         #     response = await client.get(url, timeout=2)
         #     if response.status_code == 200:
         #         print(f'{proxy} is working')
         #         return proxy
-        response = requests.request("GET", url, proxies={
-            "http": f"{proxy_data[1]}://{proxy_data[0]}",
-            "https": f"{proxy_data[1]}://{proxy_data[0]}",
-        }, timeout=2, verify=False)
+        response = requests.request(
+            "GET",
+            url,
+            proxies={
+                "http": f"{proxy_data[1]}://{proxy_data[0]}",
+                "https": f"{proxy_data[1]}://{proxy_data[0]}",
+            },
+            timeout=2,
+            verify=False,
+        )
         if response.status_code == 200:
             duration = time.time() - start_time
-            print(f'{proxy} is working 耗时{duration:.2f}秒')
-            if duration < 3:
+            print(f"{proxy} is working 耗时{duration:.2f}秒")
+            if duration < 5:
+                sleep_str = pingPikPak_sleep_str(proxy_data)
+                proxy_data.append(sleep_str)
                 ok_ips.append(proxy_data)
                 return True
-    except:
+    except Exception as e:
+        print(e)
         # print(f"{proxy} 失败")
         pass
     return False
@@ -206,13 +241,28 @@ def remove_duplicates(lst):
 
 
 # cache_json_file = 'ips.json'
-cache_json_file = os.path.join(os.path.abspath(
-    os.path.dirname(__file__)), "ips.json")
+cache_json_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "ips.json")
 
 # 获取一个可以代理pikpak的ip
 
 
+# 用一个代理服务器获取代理 https://github.com/wangjunkai2022/proxy_pool_new.git 后续添加到此项目中
+def pop_proxy_server():
+    response = requests.get("http://127.0.0.1:5010/pop")
+    json_data = response.json()
+    proxy_type = json_data.get("proxy_type")[0]
+    ip = json_data.get("proxy")
+    try:
+        ping_str = pingPikPak_sleep_str([ip, proxy_type])
+        if ping_str and ping_str != " -- ":
+            return ip, proxy_type
+    except Exception as e:
+        print(f"获取代理错误了。。。。{e}")
+    return pop_proxy_server()
+
+
 def pop_prxy_pikpak():
+    return pop_proxy_server()
     try:
         with open(cache_json_file, mode="r", encoding="utf-8") as file:
             json_str = file.read()
@@ -241,15 +291,19 @@ def pop_prxy_pikpak():
         "time": time.time(),
         "used_ips": _used_ips,
     }
-    with open(cache_json_file, mode='w', encoding="utf-8") as file:
+    with open(cache_json_file, mode="w", encoding="utf-8") as file:
         file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
-    return _used_ips[len(_used_ips)-1]
+    return _used_ips[len(_used_ips) - 1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pis = thread_get_all_ping_pikpak_proxy()
     print(pis)
+    # d = [" 124ms "]
+    # d = re.findall(r"\d+",d[0])
+    # speed = int(d[0])
+    # print(d)
     # main()
     # asyncio.run(get_pikpak_proyxs())
     # ipTest()
