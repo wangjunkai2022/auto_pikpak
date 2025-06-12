@@ -50,8 +50,145 @@ DEF_AUTHORIZATION = "def_authorization"
 DEF_CAPTCHATOKEN = "def_captcha_token"
 DEF_USERID = 'def_user_id'
 
+version_datas = {
+    "1.42.6": {
+        "v": "1.42.6",
+        "algorithms": [
+            {"alg": "md5", "salt": "frupTFdxwcJ5mcL3R8"},
+            {"alg": "md5", "salt": "jB496fSFfbWLhWyqV"},
+            {"alg": "md5", "salt": "xYLtzn8LT5h3KbAalCjc/Wf"},
+            {
+                "alg": "md5",
+                "salt": "PSHSbm1SlxbvkwNk4mZrJhBZ1vsHCtEdm3tsRiy1IPUnqi1FNB5a2F",
+            },
+            {"alg": "md5", "salt": "SX/WvPCRzgkLIp99gDnLaCs0jGn2+urx7vz/"},
+            {"alg": "md5", "salt": "OGdm+dgLk5EpK4O1nDB+Z4l"},
+            {
+                "alg": "md5",
+                "salt": "nwtOQpz2xFLIE3EmrDwMKe/Vlw2ubhRcnS2R23bwx9wMh+C3Sg",
+            },
+            {"alg": "md5", "salt": "FI/9X9jbnTLa61RHprndT0GkVs18Chd"},
+        ],
+    },
+    "1.47.1": {
+        "v": "1.47.1",
+        "algorithms": [
+            {"alg": "md5", "salt": "Gez0T9ijiI9WCeTsKSg3SMlx"},
+            {"alg": "md5", "salt": "zQdbalsolyb1R/"},
+            {"alg": "md5", "salt": "ftOjr52zt51JD68C3s"},
+            {"alg": "md5", "salt": "yeOBMH0JkbQdEFNNwQ0RI9T3wU/v"},
+            {"alg": "md5", "salt": "BRJrQZiTQ65WtMvwO"},
+            {"alg": "md5", "salt": "je8fqxKPdQVJiy1DM6Bc9Nb1"},
+            {"alg": "md5", "salt": "niV"},
+            {"alg": "md5", "salt": "9hFCW2R1"},
+            {"alg": "md5", "salt": "sHKHpe2i96"},
+            {"alg": "md5", "salt": "p7c5E6AcXQ/IJUuAEC9W6"},
+            {"alg": "md5", "salt": ""},
+            {"alg": "md5", "salt": "aRv9hjc9P+Pbn+u3krN6"},
+            {"alg": "md5", "salt": "BzStcgE8qVdqjEH16l4"},
+            {"alg": "md5", "salt": "SqgeZvL5j9zoHP95xWHt"},
+            {"alg": "md5", "salt": "zVof5yaJkPe3VFpadPof"},
+        ],
+    },
+    "1.48.3": {
+        "v": "1.48.3",
+        "algorithms": [
+            {"alg": "md5", "salt": "aDhgaSE3MsjROCmpmsWqP1sJdFJ"},
+            {"alg": "md5", "salt": "+oaVkqdd8MJuKT+uMr2AYKcd9tdWge3XPEPR2hcePUknd"},
+            {
+                "alg": "md5",
+                "salt": "u/sd2GgT2fTytRcKzGicHodhvIltMntA3xKw2SRv7S48OdnaQIS5mn",
+            },
+            {"alg": "md5", "salt": "2WZiae2QuqTOxBKaaqCNHCW3olu2UImelkDzBn"},
+            {"alg": "md5", "salt": "/vJ3upic39lgmrkX855Qx"},
+            {"alg": "md5", "salt": "yNc9ruCVMV7pGV7XvFeuLMOcy1"},
+            {"alg": "md5", "salt": "4FPq8mT3JQ1jzcVxMVfwFftLQm33M7i"},
+            {"alg": "md5", "salt": "xozoy5e3Ea"},
+        ],
+    },
+    "1.49.3": {
+        "v": "1.49.3",
+        "algorithms": [
+            {"alg": "md5", "salt": "7xOq4Z8s"},
+            {"alg": "md5", "salt": "QE9/9+IQco"},
+            {"alg": "md5", "salt": "WdX5J9CPLZp"},
+            {"alg": "md5", "salt": "NmQ5qFAXqH3w984cYhMeC5TJR8j"},
+            {"alg": "md5", "salt": "cc44M+l7GDhav"},
+            {"alg": "md5", "salt": "KxGjo/wHB+Yx8Lf7kMP+/m9I+"},
+            {"alg": "md5", "salt": "wla81BUVSmDkctHDpUT"},
+            {"alg": "md5", "salt": "c6wMr1sm1WxiR3i8LDAm3W"},
+            {"alg": "md5", "salt": "hRLrEQCFNYi0PFPV"},
+            {"alg": "md5", "salt": "o1J41zIraDtJPNuhBu7Ifb/q3"},
+            {"alg": "md5", "salt": "U"},
+            {"alg": "md5", "salt": "RrbZvV0CTu3gaZJ56PVKki4IeP"},
+            {"alg": "md5", "salt": "NNuRbLckJqUp1Do0YlrKCUP"},
+            {"alg": "md5", "salt": "UUwnBbipMTvInA0U0E9"},
+            {"alg": "md5", "salt": "VzGc"},
+        ],
+    },
+    "1.51.2": {
+        "v": "1.51.2",
+        "algorithms": [
+            {"alg": "md5", "salt": "vPjelkvqcWoCsQO1CnkVod8j2GbcE0yEHEwJ3PKSKW"},
+            {"alg": "md5", "salt": "Rw5aO9MHuhY"},
+            {"alg": "md5", "salt": "Gk111qdZkPw/xgj"},
+            {
+                "alg": "md5",
+                "salt": "/aaQ4/f8HNpyzPOtIF3rG/UEENiRRvpIXku3WDWZHuaIq+0EOF",
+            },
+            {"alg": "md5", "salt": "6p1gxZhV0CNuKV2QO5vpibkR8IJeFURvqNIKXWOIyv1A"},
+            {"alg": "md5", "salt": "gWR"},
+            {"alg": "md5", "salt": "iPD"},
+            {"alg": "md5", "salt": "ASEm+P75YfKzQRW6eRDNNTd"},
+            {
+                "alg": "md5",
+                "salt": "2fauuwVCxLCpL/FQ/iJ5NpOPb7gRZs0EWJwe/2YNPQr3ore+ZiIri6s/tYayG",
+            },
+        ],
+    },
+    "1.54.2": {
+        "v": "1.54.2",
+        "algorithms": [
+            {"alg": "md5", "salt": "eLulfSfMIFzbrkbujRQImOfTAdXOldCbQyBt"},
+            {"alg": "md5", "salt": "SCp6awVyAXqF9B5XDS0PLhTNnG"},
+            {"alg": "md5", "salt": "SoMuLvah96nDA+3XaymLvgAeqlK"},
+            {"alg": "md5", "salt": "1by"},
+            {"alg": "md5", "salt": "vGTFciT"},
+            {"alg": "md5", "salt": "M8yk3XpNcRnEgO7aj0WIMfaP2nRSBL"},
+            {"alg": "md5", "salt": "7F0jNttS8GbQGbG6kZn8LZfu4VPyu"},
+            {"alg": "md5", "salt": "mmaxD2VQJbS4RBoH8c9pXY/1BnQSROHF"},
+            {"alg": "md5", "salt": "jcvVdOUSqH6o9ttWyBczBOjWmKO"},
+            {"alg": "md5", "salt": "lA6A1rzs35p6VJP9"},
+            {"alg": "md5", "salt": "LgSn"},
+            {"alg": "md5", "salt": "TVJPjTISu+77"},
+        ],
+    },
+    # 此是 现在浏览器使用的
+    "2.0.0": {
+        "v": "2.0.0",
+        "algorithms": [
+            {"alg": "md5", "salt": "C9qPpZLN8ucRTaTiUMWYS9cQvWOE"},
+            {"alg": "md5", "salt": "+r6CQVxjzJV6LCV"},
+            {"alg": "md5", "salt": "F"},
+            {"alg": "md5", "salt": "pFJRC"},
+            {"alg": "md5", "salt": "9WXYIDGrwTCz2OiVlgZa90qpECPD6olt"},
+            {"alg": "md5", "salt": "/750aCr4lm/Sly/c"},
+            {"alg": "md5", "salt": "RB+DT/gZCrbV"},
+            {"alg": "md5", "salt": ""},
+            {"alg": "md5", "salt": "CyLsf7hdkIRxRm215hl"},
+            {"alg": "md5", "salt": "7xHvLi2tOYP0Y92b"},
+            {"alg": "md5", "salt": "ZGTXXxu8E/MIWaEDB+Sm/"},
+            {"alg": "md5", "salt": "1UI3"},
+            {"alg": "md5", "salt": "E7fP5Pfijd+7K+t6Tg/NhuLq0eEUVChpJSkrKxpO"},
+            {"alg": "md5", "salt": "ihtqpG6FMt65+Xk+tWUH2"},
+            {"alg": "md5", "salt": "NhXXU9rg4XXdzo7u5o"},
+        ],
+    },
+}
 
 class ChromePikpak():
+    # 自动登录
+    is_auto_login = False
     mail = ""
     pd = ""
     device_id = None
@@ -64,6 +201,8 @@ class ChromePikpak():
 
     CLIENT_ID = 'YUMx5nI8ZU8Ap8pm'
     CLIENT_VERSION = '2.0.0'
+
+    PACKAGE_NAME = ""
 
     handler: Handle = Handle()
     old_captcha_token = None
@@ -116,12 +255,12 @@ class ChromePikpak():
             json_data = {}
         data = json_data.get(self.mail)
         if data:
-            self.captcha_token = data['captcha_token']
-            self.authorization = data['authorization']
-            self.user_id = data['user_id']
-            self.proxies = data['proxies']
-            self.device_id = data['device_id']
-            self.pd = data['password']
+            self.captcha_token = data.get('captcha_token')
+            self.authorization = data.get('authorization')
+            self.user_id = data.get('user_id')
+            self.proxies = data.get('proxies')
+            self.device_id = data.get('device_id')
+            self.pd = data.get('password')
             self.refresh_token = data.get('refresh_token')
 
     def set_proxy(self, proxy_ip, type="http"):
@@ -136,28 +275,13 @@ class ChromePikpak():
         }
 
     # 仿制captcha_sign
-    def __get_sign(self, time_str):
-        begin_str = self.CLIENT_ID + \
-            f"{self.CLIENT_VERSION}mypikpak.com" + \
-            self.device_id + time_str
-        salts = [
-            {'alg': "md5", 'salt': "C9qPpZLN8ucRTaTiUMWYS9cQvWOE"},
-            {'alg': "md5", 'salt': "+r6CQVxjzJV6LCV"},
-            {'alg': "md5", 'salt': "F"},
-            {'alg': "md5", 'salt': "pFJRC"},
-            {'alg': "md5", 'salt': "9WXYIDGrwTCz2OiVlgZa90qpECPD6olt"},
-            {'alg': "md5", 'salt': "/750aCr4lm/Sly/c"},
-            {'alg': "md5", 'salt': "RB+DT/gZCrbV"},
-            {'alg': "md5", 'salt': ""},
-            {'alg': "md5", 'salt': "CyLsf7hdkIRxRm215hl"},
-            {'alg': "md5", 'salt': "7xHvLi2tOYP0Y92b"},
-            {'alg': "md5", 'salt': "ZGTXXxu8E/MIWaEDB+Sm/"},
-            {'alg': "md5", 'salt': "1UI3"},
-            {'alg': "md5", 'salt': "E7fP5Pfijd+7K+t6Tg/NhuLq0eEUVChpJSkrKxpO"},
-            {'alg': "md5", 'salt': "ihtqpG6FMt65+Xk+tWUH2"},
-            {'alg': "md5", 'salt': "NhXXU9rg4XXdzo7u5o"}
-        ]
-
+    def get_sign(self, time_str):
+        begin_str = f"{self.CLIENT_ID}{self.CLIENT_VERSION}{self.PACKAGE_NAME}{self.device_id}{time_str}"
+        salts = version_datas.get(self.CLIENT_VERSION).get("algorithms")
+        if not salts:
+            self.CLIENT_VERSION = "1.42.6"
+            salts = version_datas["1.42.6"]["algorithms"]
+            return self.get_sign(time_str)
         hex_str = begin_str
         for index in range(len(salts)):
             optJSONObject = salts[index]
@@ -166,8 +290,7 @@ class ChromePikpak():
                 optString2 = optJSONObject.get("salt", "")
                 if optString == "md5":
                     # 使用md5算法对字符串进行加密
-                    hex_str = hashlib.md5(
-                        (hex_str + optString2).encode()).hexdigest()
+                    hex_str = hashlib.md5((hex_str + optString2).encode()).hexdigest()
         return hex_str
 
     def captcha(self, action: str = ''):
@@ -181,9 +304,9 @@ class ChromePikpak():
                 "device_id": self.device_id,
                 "captcha_token": self.captcha_token,
                 "meta": {
-                    "captcha_sign": f"1.{self.__get_sign(time_str)}",
+                    "captcha_sign": f"1.{self.get_sign(time_str)}",
                     "client_version": self.CLIENT_VERSION,
-                    "package_name": "mypikpak.com",
+                    "package_name": self.PACKAGE_NAME,
                     "user_id": self.user_id,
                     "timestamp": time_str
 
@@ -195,7 +318,11 @@ class ChromePikpak():
                 "action": action,
                 "device_id": self.device_id,
                 "meta": {
-                    "email": self.mail
+                    "email": self.mail,
+                    "captcha_sign": f"1.{self.get_sign(time_str)}",
+                    "client_version": self.CLIENT_VERSION,
+                    "package_name": self.PACKAGE_NAME,
+                    "timestamp": time_str
                 }
             }
         bodys = {
@@ -204,7 +331,11 @@ class ChromePikpak():
                 "action": 'POST:/v1/auth/signin',
                 "device_id": self.device_id,
                 "meta": {
-                    "email": self.mail
+                    "captcha_sign": f"1.{self.get_sign(time_str)}",
+                    "client_version": self.CLIENT_VERSION,
+                    "package_name": self.PACKAGE_NAME,
+                    "email": self.mail,
+                    "timestamp": time_str
                 }
             },
             'POST:/v1/auth/verification': {
@@ -213,7 +344,11 @@ class ChromePikpak():
                 "device_id": self.device_id,
                 "captcha_token": self.captcha_token,
                 "meta": {
+                    "captcha_sign": f"1.{self.get_sign(time_str)}",
+                    "client_version": self.CLIENT_VERSION,
+                    "package_name": self.PACKAGE_NAME,
                     "email": self.mail,
+                    "timestamp": time_str
                 }
             }
 
@@ -282,7 +417,6 @@ class ChromePikpak():
                     f"请求报错:\n{req_err}\nurl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 raise error
             break
-
         json_data = response.json()
         error = json_data.get("error")
         if error and (error == "captcha_invalid" or error == "captcha_required"):
@@ -300,17 +434,21 @@ class ChromePikpak():
             time.sleep(5)
             return self._requests(method, url, headers, **kwargs)
         elif error and error == 'unauthenticated':
-            old_capctah = self.captcha_token
-            old_authorization = self.authorization
-            self.authorization = DEF_AUTHORIZATION
-            self.save_self()
-            self.login()
-            self._change_request_values(
-                old_capctah, self.captcha_token, headers, **kwargs)
-            self._change_request_values(
-                old_authorization, self.authorization, headers, **kwargs)
-            time.sleep(5)
-            return self._requests(method, url, headers, **kwargs)
+            if self.is_auto_login:
+                old_capctah = self.captcha_token
+                old_authorization = self.authorization
+                self.authorization = DEF_AUTHORIZATION
+                self.save_self()
+                self.login()
+                self._change_request_values(
+                    old_capctah, self.captcha_token, headers, **kwargs)
+                self._change_request_values(
+                    old_authorization, self.authorization, headers, **kwargs)
+                time.sleep(5)
+                return self._requests(method, url, headers, **kwargs)
+            else:
+                logger.error(f"报错了{error}")
+                raise Exception(error)
         elif error and error == 'aborted':
             logger.error(
                 f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
@@ -399,6 +537,7 @@ class ChromePikpak():
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
             'x-captcha-token': self.captcha_token,
             'x-device-id': self.device_id,
+            'x-system-language': self.language,
         }
 
         header_user = {
@@ -431,6 +570,7 @@ class ChromePikpak():
             'x-protocol-version': '301',
             'x-provider-name': 'NONE',
             'x-sdk-version': '8.0.3',
+            'x-system-language': self.language,
 
             'authorization': self.authorization,
         }
@@ -657,6 +797,24 @@ class ChromePikpak():
         json_data = self.get(url, headers=headers)
         logger.debug(f"libsinfo:{json_data}")
 
+    def test_config_v1_drive(self):
+        try:
+            url = "https://config.mypikpak.com/config/v1/drive"
+            json_data = self.post(
+                url,
+                json={
+                    "client": "web",
+                    "data": {
+                        "language_system": self.language,
+                        "language_app": self.language,
+                        "user_id": self.user_id,
+                    },
+                },
+            )
+            logger.debug(f"user_settings_bookmark:{json_data}")
+        except Exception as e:
+            logger.error(f"/config/v1/drive error :{e} ")
+
     def user_settings_bookmark(self):
         url = 'https://api-drive.mypikpak.com/user/v1/settings'
         json_data = self.get(url, params={
@@ -665,7 +823,7 @@ class ChromePikpak():
         logger.debug(f"user_settings_bookmark:{json_data}")
 
     def about(self):
-        url = 'https://api-drive.mypikpak.com/drive/v1/about?'
+        url = 'https://api-drive.mypikpak.com/drive/v1/about'
         json_data = self.get(url)
         logger.debug(f"about:{json_data}")
 
@@ -682,12 +840,16 @@ class ChromePikpak():
         }
         json_data = self.get(url, params=params)
         logger.debug(f"vip_checkInvite:{json_data}")
+        return json_data
 
     def vip_info(self):
-        url = 'https://api-drive.mypikpak.com/vip/v1/vip/info'
-        json_data = self.get(url)
-        logger.debug(f"vip_info:{json_data}")
-        return json_data
+        try:
+            url = 'https://api-drive.mypikpak.com/vip/v1/vip/info'
+            json_data = self.get(url)
+            logger.debug(f"vip_info:{json_data}")
+            return json_data
+        except Exception as e:
+            logger.error(f"vip/v1/vip/info error: {e}")
 
     def vip_inviteList(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/inviteList?limit=500'
@@ -716,6 +878,7 @@ class ChromePikpak():
         logger.debug(f"inviteInfo:{json_data}")
 
     def task_free_vip(self):
+        return
         # url = 'https://api-drive.mypikpak.com/vip/v1/task/status?scene=free_vip'
         # json_data = self.get(url)
         # logger.debug(f"free_vip:{json_data}")
@@ -724,14 +887,18 @@ class ChromePikpak():
         })
 
     def task_upload_file(self):
+        return
         self.task_status({
             'scene': 'upload_file'
         })
 
     def task_status(self, params: dict = {}):
-        url = 'https://api-drive.mypikpak.com/vip/v1/task/status'
-        json_data = self.get(url, params=params)
-        logger.debug(f"task_status{params} :{json_data}")
+        try:
+            url = 'https://api-drive.mypikpak.com/vip/v1/task/status'
+            json_data = self.get(url, params=params)
+            logger.debug(f"task_status{params} :{json_data}")
+        except Exception as e:
+            logger.error(f"task_status{params} ::::::error :{e}")
 
     def task_reference_resource(self):
         url = 'https://api-drive.mypikpak.com/drive/v1/tasks'
@@ -756,6 +923,7 @@ class ChromePikpak():
 
     # 任务人机验证
     def verifyRecaptchaToken(self):
+        return
         self.check_task_status()
         if self.vip_active.get("bot_checked"):
             logger.debug("机器验证已经通过这里不用在次验证了")
@@ -782,11 +950,13 @@ class ChromePikpak():
 
     # 领取下载活动会员
     def reward_vip_upload_file(self):
+        return
         if self.vip_active.get("bot_checked") and self.vip_active.get('upload_file'):
             self._reward_vip('upload_file')
 
     # 领取安装扩展活动会员
     def reward_vip_install_web_pikpak_extension(self):
+        return
         if self.vip_active.get("bot_checked") and self.vip_active.get('install_web_pikpak_extension'):
             self._reward_vip('install_web_pikpak_extension')
 
@@ -821,10 +991,15 @@ class ChromePikpak():
             },
         }
 
-        json_data = self.post(
-            url, json=payload)
+        json_data = self.post(url, json=payload)
         logger.info(f"保存分享文件{json_data}")
         return json_data
+
+    # 填写邀请码
+    def set_activation_code(self,invite_code):
+        str = f"使用Android版"
+        logger.error(str)
+        return {"error": str}
 
     # #######################文件操作 这里复制pikpakapi的内容###########
     # 如果 继承方式实现 需要重新写sync token哪些也不好公用 就直接复制关键请求就好了

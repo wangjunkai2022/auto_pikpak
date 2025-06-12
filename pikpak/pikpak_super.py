@@ -31,7 +31,14 @@ class HandleSuper(Handle):
     __get_password_callback = None
     __get_proxy_callback = None
 
-    def __init__(self, get_token=None, get_mailcode=None, email_address=None, get_password=None, get_proxy=None) -> None:
+    def __init__(
+        self,
+        get_token=None,
+        get_mailcode=None,
+        email_address=None,
+        get_password=None,
+        get_proxy=None,
+    ) -> None:
         super().__init__(get_token, get_mailcode)
         self.__get_email_address_callback = email_address or self.__def_email_address
         self.__get_password_callback = get_password or self.__def_password
@@ -51,9 +58,9 @@ class PikPakSuper(AndroidPikPak):
 
     @staticmethod
     def create(handler: HandleSuper = HandleSuper()):
+        proxy = handler.run_get_proxy()
         mail = handler.run_get_mail_address()
         pd = handler.run_get_password()
-        proxy = handler.run_get_proxy()
         _pikpak = PikPakSuper(mail, pd)
         _pikpak.setHandler(handler)
         _pikpak.set_proxy(*proxy)
@@ -74,7 +81,7 @@ class PikPakSuper(AndroidPikPak):
                     continue
                 logger.error(str(e))
 
-        _pikpak.run_test()
+        # _pikpak.run_test()
         return _pikpak
 
     def run_test(self):
@@ -86,10 +93,12 @@ class PikPakSuper(AndroidPikPak):
         self.configs()
         self.lbsInfo()
         self.user_settings_bookmark()
+        self.invite()
+        self.vip_info()
         self.about()
         self.inviteCode()
         self.vip_checkInvite()
-        self.vip_info()
+        self.test_config_v1_drive()
         self.vip_inviteList()
         self.upgradeToPro()
         self.inviteInfo()
@@ -108,22 +117,25 @@ class PikPakSuper(AndroidPikPak):
         vip_data = self.vip_info()
         def_day_num = -9999
         try:
-            def_day_num = vip_data.get('data').get("vipItem")[
-                -1].get("surplus_day", def_day_num)
+            def_day_num = (
+                vip_data.get("data").get("vipItem")[-1].get("surplus_day", def_day_num)
+            )
         except Exception as e:
             logger.debug(f"获取vip剩余天数错误{e}")
             # def_day_num = -9999
         return def_day_num
+
     # 获取自己的邀请码
 
     def try_get_vip(self):
         """
         尝试获取vip
         """
+        return
         self.login()
         vip_day = self.get_vip_day_time_left()
         if vip_day > 0:
-            logger.debug('当前vip没过期 这里不获取vip')
+            logger.debug("当前vip没过期 这里不获取vip")
             return True
         self.verifyRecaptchaToken()
         try:
@@ -133,13 +145,13 @@ class PikPakSuper(AndroidPikPak):
         time.sleep(5)
         vip_day = self.get_vip_day_time_left()
         if vip_day > 0:
-            logger.debug('当前是vip了')
+            logger.debug("当前是vip了")
             return True
         self.reward_vip_install_web_pikpak_extension()
         time.sleep(5)
         vip_day = self.get_vip_day_time_left()
         if vip_day > 0:
-            logger.debug('当前是vip了')
+            logger.debug("当前是vip了")
             return True
         return False
 
@@ -173,7 +185,10 @@ class PikPakSuper(AndroidPikPak):
                 # 需要分享的文件夹id
                 fils_id = []
                 for file in json_data.get("files"):
-                    if file.get("name") == 'My Pack' or file.get("name") == 'Pack From Shared':
+                    if (
+                        file.get("name") == "My Pack"
+                        or file.get("name") == "Pack From Shared"
+                    ):
                         pass
                     else:
                         fils_id.append(file.get("id"))
@@ -207,8 +222,11 @@ class PikPakSuper(AndroidPikPak):
 if __name__ == "__main__":
     email = "alsljs4853@maxric.com"
     password = "ezZd73li8"
-    pikpak_ = PikPakSuper(email, password,)
+    pikpak_ = PikPakSuper(
+        email,
+        password,
+    )
     pikpak_.login()
     pikpak_.vip_info()
-    pikpak_.set_activation_code('39576161')
+    pikpak_.set_activation_code("39576161")
     # PikPakSuper.create()
