@@ -8,7 +8,7 @@ from typing import List
 import requests
 import config.config as config
 import alist.alist as alist
-from mail.mail import create_one_mail, get_new_mail_code
+from mail import create_one_mail, get_new_mail_code
 import time
 import logging
 from pikpak.pikpak_super import HandleSuper, PikPakSuper
@@ -20,7 +20,6 @@ logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
-
 
 
 class BasePikpakData(PikPakSuper):
@@ -406,13 +405,33 @@ def 注册并填写邀请(邀请码: str = ""):
         get_proxy=get_proxy,
     )
     pikpak: BasePikpakData = BasePikpakData.create(handler)
-    time.sleep(60)
-    pikpak.set_activation_code(邀请码)
+    time.sleep(10)
+    PikPakMail填写邀请码(pikpak.mail, 邀请码)
 
+def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
+    pikpak: BasePikpakData = BasePikpakData(mail)
+    pikpak.is_auto_login = True
+    try:
+        pikpak.run_test()
+    except Exception as e:
+        if str(e).startswith("网络连接错误") and auto_proxy:
+            proxy = get_proxy()
+            pikpak.set_proxy(*proxy)
+            pikpak.save_self()
+            return 运行某个Pikpak模拟人操作(mail, auto_proxy)
+        raise e
+    return pikpak
+
+def PikPakMail填写邀请码(mail, 邀请码):
+    pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, False)
+    pikpak.set_activation_code(邀请码)
 
 if __name__ == "__main__":
     set_def_callback()
     os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
     os.environ['RAPIDAPI_KEY'] = config.mail_api
+    os.environ["SHANYOUXIANG_KEY"] = config.shanyouxiang_api
     # change_all_pikpak()
-    注册并填写邀请("85147854")
+    注册并填写邀请("92196679")
+    # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
+    # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
