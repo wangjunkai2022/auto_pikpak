@@ -1,9 +1,12 @@
-# 免费邮箱API
+# 免费邮箱API 注册地址：https://rapidapi.com/hub
 mail:
-  api: API
+  api: 密钥
 
 twocaptcha:
-  api: API
+  api: 密钥
+
+shanyouxiang:
+  api: 密钥
 
 # 默认的密码
 def_password: 098poi
@@ -16,9 +19,9 @@ requests:
   retry: 3
 
 alist:
-  enable: 0
-  domain: "http://localhost:5244"
-  # domain: "http:// 10.211.55.2:5244"
+  enable: 1
+  # domain: "http://localhost:5244"
+  domain: "http://10.211.55.60:5244"
   username: admin
   password: "''''"
 
@@ -26,7 +29,9 @@ rclone:
   mount_root: /mnt/pikpak
 
 telegram:
-  api: API
+  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
+
+
 
 # 替换模式 为 all 全部替换。。 randam 一个新好替换下一个不是vip的账户。。 none 全部都是邀请不进行替换
 invate_change_model: randam

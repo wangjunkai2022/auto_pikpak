@@ -7,6 +7,8 @@ twocapctha_api = get_config('twocaptcha').get("api")
 
 change_model = get_config("invate_change_model") or "none"
 
+shanyouxiang_api = get_config("shanyouxiang").get("api") or ""
+
 requests = get_config("requests")
 requests_timeout = requests.get("out_time")
 requests_retry = requests.get("retry", 0)
