@@ -303,7 +303,7 @@ def is_today_one(timestamp):
   dt_obj = datetime.datetime.fromtimestamp(timestamp)
   today_date = datetime.datetime.now().date()
   day = dt_obj.date() - today_date
-  return day.days == -1
+  return day.days >= -1
 
 def 替换Alist储存库(email, pd, name):
     pikpak = BasePikpakData(email, pd, name)
@@ -456,7 +456,7 @@ def PiaPak保活():
             threading.Thread(target=运行某个Pikpak模拟人操作,args=(mail, True)).start()
 
 def test():
-    for index in range(10):
+    for index in range(2):
         threading.Thread(target=get_proxy).start()
 
 def main():
@@ -464,11 +464,14 @@ def main():
     # 注册并填写邀请("92196679")
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
-    threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
+    # threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
+    threading.Thread(target=test).start()
     pass
 
-schedule.every().day.at("08:30").do(PiaPak保活)
+schedule.every().day.at("08:00").do(PiaPak保活)
 schedule.every(1).second.do(main_th_proxy)
+# 3小时执行一次看看
+schedule.every(1).hour.do(PiaPak保活) 
 if __name__ == "__main__":
     set_def_callback()
     os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
