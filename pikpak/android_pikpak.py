@@ -5,12 +5,9 @@ from urllib.parse import urlparse
 from pikpak.captcha_js2py import get_d, img_jj
 from pikpak.chrome_pikpak import ChromePikpak, DEF_AUTHORIZATION
 from proxy_ip import pop_prxy_pikpak
-import enum
-import hashlib
 import uuid
 import time
 
-import requests
 from config.config import get_captcha_callback
 from typing import Any, Dict, List, Optional
 from pikpak_captcha import google_re_validation, google_rewardVip_validation, slider_validation
@@ -390,7 +387,7 @@ class AndroidPikPak(ChromePikpak):
         }
 
         json_data = self.post(url, json=json)
-        logger.debug(f"report:\n{json_data}")
+        logger.debug(f"{self.mail}----\nreport:\n{json_data}")
 
     def authorize(self):
         url = "https://user.mypikpak.com/v1/user/authorize"
@@ -402,7 +399,7 @@ class AndroidPikPak(ChromePikpak):
             "state": "ignored",
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"report:\n{json_data}")
+        logger.debug(f"{self.mail}----\nreport:\n{json_data}")
 
     def introspect(self):
         url = "https://user.mypikpak.com/v1/auth/token/introspect"
@@ -410,7 +407,7 @@ class AndroidPikPak(ChromePikpak):
             "token": self.captcha_token[len("Bearer "):],
         }
         json_data = self.get(url, params=params)
-        logger.debug(f"introspect:\n{json_data}")
+        logger.debug(f"{self.mail}----\nintrospect:\n{json_data}")
 
     def revoke(self):
         url ="https://user.mypikpak.com/v1/auth/revoke"
@@ -444,7 +441,7 @@ class AndroidPikPak(ChromePikpak):
             "accept-encoding": "gzip, deflate",
         }
         json_data = self.post(url, json=json, handler=handler)
-        logger.debug(f"revoke:\n{json_data}")
+        logger.debug(f"{self.mail}----\nrevoke:\n{json_data}")
 
     def auth_token(self):
         url = "https://user.mypikpak.com/v1/auth/token"
@@ -454,7 +451,7 @@ class AndroidPikPak(ChromePikpak):
             "client_id": self.CLIENT_ID,
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"auth_token:\n{json_data}")
+        logger.debug(f"{self.mail}----\nauth_token:\n{json_data}")
 
     def set_activation_code(self, activation_code):
         url = f"https://api-drive.mypikpak.com/vip/v1/order/activation-code"
@@ -469,7 +466,7 @@ class AndroidPikPak(ChromePikpak):
         else:
             self.inviseError = json_data.get("error")
             raise Exception(self.inviseError)
-        logger.debug(f"填写邀请结果返回:\n{json_data}")
+        logger.debug(f"{self.mail}----\n填写邀请结果返回:\n{json_data}")
 
     # 注册
     def register(self):
@@ -487,7 +484,7 @@ class AndroidPikPak(ChromePikpak):
             "client_id": self.CLIENT_ID,
         }
         json_data = self.post(url, json=json_data, params=params)
-        logger.debug(f"verification 数据{json_data}")
+        logger.debug(f"{self.mail}----\nverification 数据{json_data}")
         verification_id = json_data.get("verification_id")
         if verification_id:
             pass
@@ -501,7 +498,7 @@ class AndroidPikPak(ChromePikpak):
             "verification_code": code,
         }
         json_data = self.post(url, json=payload, params=params)
-        logger.debug(f"verification/verify 数据{json_data}")
+        logger.debug(f"{self.mail}----\nverification/verify 数据{json_data}")
         verification_token = json_data.get("verification_token")
         if verification_token and verification_token != "":
             pass
@@ -519,7 +516,7 @@ class AndroidPikPak(ChromePikpak):
             "verification_token": verification_token,
         }
         json_data = self.post(url, json=payload, params=params)
-        logger.debug(f"signup 数据{json_data}")
+        logger.debug(f"{self.mail}----\nsignup 数据{json_data}")
         if json_data.get("error"):
             raise Exception(json_data.get("error"))
         self.user_id = json_data.get("sub")
@@ -548,7 +545,7 @@ class AndroidPikPak(ChromePikpak):
         }
         json_data = self.post(url, json=body, params=query)
         if not json_data.get('error'):
-            logger.debug(f"登陆成功{json_data}")
+            logger.debug(f"{self.mail}----\n登陆成功{json_data}")
             self.user_id = json_data.get("sub")
             self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
             self.refresh_token = json_data.get('refresh_token')
@@ -566,7 +563,7 @@ class AndroidPikPak(ChromePikpak):
     def me(self):
         url = "https://user.mypikpak.com/v1/user/me"
         json_data = self.get(url)
-        logger.debug(f"自己的数据{json_data}")
+        logger.debug(f"{self.mail}----\n自己的数据{json_data}")
 
     def configs(self):
         url = "https://config.mypikpak.com/config/v1/globalConfig"
@@ -586,39 +583,39 @@ class AndroidPikPak(ChromePikpak):
             "client": "android",
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"globalConfig 返回值:{json_data}")
+        logger.debug(f"{self.mail}----\nglobalConfig 返回值:{json_data}")
 
         url = "https://access.mypikpak.com/access_controller/v1/area_accessible"
         json_data = self.get(url)
-        logger.debug(f"area_accessible 返回值:{json_data}")
+        logger.debug(f"{self.mail}----\narea_accessible 返回值:{json_data}")
 
         url = 'https://api-drive.mypikpak.com/operating/v1/content'
         json_data = self.post(url)
-        logger.debug(f"operating_content::{json_data}")
+        logger.debug(f"{self.mail}----\noperating_content::{json_data}")
 
         url = "https://access.mypikpak.com/drive/v1/privilege/area_shareable"
         json_data = self.get(url)
-        logger.debug(f"area_shareable 返回值:{json_data}")
+        logger.debug(f"{self.mail}----\narea_shareable 返回值:{json_data}")
 
         url = "https://api-drive.mypikpak.com/user/v1/settings?items=enablePrivacyMode"
         json_data = self.get(url)
-        logger.debug(f"area_shareable 返回值:{json_data}")
+        logger.debug(f"{self.mail}----\narea_shareable 返回值:{json_data}")
 
         url = "https://api-drive.mypikpak.com/vip/v1/allSubscriptionStatus"
         json_data = self.get(url)
-        logger.debug(f"allSubscriptionStatus:{json_data}")
+        logger.debug(f"{self.mail}----\nallSubscriptionStatus:{json_data}")
 
         url = "https://access.mypikpak.com/drive/v1/privilege/area_shareable"
         json_data = self.get(url)
-        logger.debug(f"area_shareable:{json_data}")
+        logger.debug(f"{self.mail}----\narea_shareable:{json_data}")
 
         url = "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission"
         json_data = self.get(url)
-        logger.debug(f"permission:{json_data}")
+        logger.debug(f"{self.mail}----\npermission:{json_data}")
 
         url = "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review"
         json_data = self.get(url)
-        logger.debug(f"permission/review:{json_data}")
+        logger.debug(f"{self.mail}----\npermission/review:{json_data}")
 
         self.connectivity_probe_results()
         self.urlsOnInstall()
@@ -632,7 +629,7 @@ class AndroidPikPak(ChromePikpak):
     def connectivity_probe_results(self):
         url = "https://api-drive.mypikpak.com/connectivity_probe/v1/targets"
         json_data = self.get(url)
-        logger.debug(f"connectivity_probe_targets:get::::{json_data}")
+        logger.debug(f"{self.mail}----\nconnectivity_probe_targets:get::::{json_data}")
 
         succeed = []
         fail= []
@@ -654,7 +651,7 @@ class AndroidPikPak(ChromePikpak):
         }
         url = "https://api-drive.mypikpak.com/connectivity_probe/v1/results"
         json_data = self.post(url, json=json)
-        logger.debug(f"connectivity_probe_results:{json_data}")
+        logger.debug(f"{self.mail}----\nconnectivity_probe_results:{json_data}")
 
     def urlsOnInstall(self):
         url = "https://config.mypikpak.com/config/v1/urlsOnInstall"
@@ -679,7 +676,7 @@ class AndroidPikPak(ChromePikpak):
             }
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"urlsOnInstall:{json_data}")
+        logger.debug(f"{self.mail}----\nurlsOnInstall:{json_data}")
 
     def invite(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/invite'
@@ -707,7 +704,7 @@ class AndroidPikPak(ChromePikpak):
         }
 
         json_data = self.post(url,json=json)
-        logger.debug(f"invite:{json_data}")
+        logger.debug(f"{self.mail}----\ninvite:{json_data}")
 
     def task_reference_resource(self):
         url = 'https://api-drive.mypikpak.com/drive/v1/tasks'
@@ -721,7 +718,7 @@ class AndroidPikPak(ChromePikpak):
             "limit": 500,
         }
         json_data = self.get(url, params=params)
-        logger.debug(f"task_reference_resource:{json_data}")
+        logger.debug(f"{self.mail}----\ntask_reference_resource:{json_data}")
 
     def checkClientVersion(self):
         url = "https://config.mypikpak.com/config/v1/checkClientVersion"
@@ -747,7 +744,7 @@ class AndroidPikPak(ChromePikpak):
             "client": "android",
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"checkClientVersion:{json_data}")
+        logger.debug(f"{self.mail}----\ncheckClientVersion:{json_data}")
 
     def lbsInfo(self):
         pass
@@ -762,7 +759,7 @@ class AndroidPikPak(ChromePikpak):
         url = 'https://api-drive.mypikpak.com/drive/v1/about'
         json_data = self.get(url)
 
-        logger.debug(f"about:{json_data}")
+        logger.debug(f"{self.mail}----\nabout:{json_data}")
 
     # def run_test(self):
     #     """

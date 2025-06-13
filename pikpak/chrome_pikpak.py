@@ -407,7 +407,7 @@ class ChromePikpak():
                                             proxies=self.proxies, verify=False, timeout=60, **kwargs)
 
             except requests.exceptions.HTTPError as http_err:
-                logger.debug(f"Http请求异常: {http_err}")
+                logger.debug(f"{self.mail}----\nHttp请求异常: {http_err}")
                 break
             except (
                 requests.exceptions.ConnectionError,
@@ -498,14 +498,14 @@ class ChromePikpak():
         return self._requests("post", url, headers, **kwargs)
 
     def _change_request_values(self, old_value, new_value, headers: dict = None, **kwargs):
-        logger.debug(f"原来的 headers :\n{headers}")
+        logger.debug(f"{self.mail}----\n原来的 headers :\n{headers}")
         for key, value in headers.items():
             if value == old_value:
                 headers[key] = new_value
 
-        logger.debug(f"打印修改后的 headers :\n{headers}")
+        logger.debug(f"{self.mail}----\n打印修改后的 headers :\n{headers}")
 
-        logger.debug(f"原来的 kwargs :\n{kwargs}")
+        logger.debug(f"{self.mail}----\n原来的 kwargs :\n{kwargs}")
         # 遍历 kwargs 中的所有项
         for key, value in kwargs.items():
             # 检查值是否为字典
@@ -608,7 +608,7 @@ class ChromePikpak():
             "client_id": self.CLIENT_ID
         }
         json_data = self.post(url, json=json_data)
-        logger.debug(f"verification 数据{json_data}")
+        logger.debug(f"{self.mail}----\nverification 数据{json_data}")
         verification_id = json_data.get("verification_id")
         if verification_id:
             pass
@@ -622,7 +622,7 @@ class ChromePikpak():
             "verification_code": code,
         }
         json_data = self.post(url, json=payload)
-        logger.debug(f"verification/verify 数据{json_data}")
+        logger.debug(f"{self.mail}----\nverification/verify 数据{json_data}")
         verification_token = json_data.get('verification_token')
         if verification_token and verification_token != "":
             pass
@@ -638,7 +638,7 @@ class ChromePikpak():
             "client_id": self.CLIENT_ID
         }
         json_data = self.post(url, json=payload)
-        logger.debug(f"signup 数据{json_data}")
+        logger.debug(f"{self.mail}----\nsignup 数据{json_data}")
         if json_data.get('error'):
             raise Exception(json_data.get('error'))
         self.user_id = json_data.get('sub')
@@ -680,7 +680,7 @@ class ChromePikpak():
         }
         json_data = self.post(url, json=body)
         if not json_data.get('error'):
-            logger.debug(f"登陆成功{json_data}")
+            logger.debug(f"{self.mail}----\n登陆成功{json_data}")
             self.user_id = json_data.get("sub")
             self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
             self.refresh_token = json_data.get('refresh_token')
@@ -715,7 +715,7 @@ class ChromePikpak():
     def vip_info_v2(self):
         json_data = self.get(
             url=f"https://api-drive.mypikpak.com/drive/v1/privilege/vip",)
-        logger.debug(f"vip_info_v2:{json_data}")
+        logger.debug(f"{self.mail}----\nvip_info_v2:{json_data}")
         return json_data
 
     def me(self):
@@ -759,7 +759,7 @@ class ChromePikpak():
                    'x-provider-name': 'NONE',
                    'x-sdk-version': '8.0.3', }
         json_data = self.get(url, params=payload)
-        logger.debug(f"自己的数据{json_data}")
+        logger.debug(f"{self.mail}----\n自己的数据{json_data}")
 
     def configs(self):
         payload = {
@@ -772,19 +772,19 @@ class ChromePikpak():
         }
         url = 'https://config.mypikpak.com/config/v1/basic'
         json_data = self.post(url, json=payload)
-        logger.debug(f"config_basic{json_data}")
+        logger.debug(f"{self.mail}----\nconfig_basic{json_data}")
 
         url = 'https://api-drive.mypikpak.com/operating/v1/content'
         json_data = self.post(url, json=payload)
-        logger.debug(f"operating_content::{json_data}")
+        logger.debug(f"{self.mail}----\noperating_content::{json_data}")
 
         url = 'https://config.mypikpak.com/config/v1/drive'
         json_data = self.post(url, json=payload)
-        logger.debug(f"config_drive:{json_data}")
+        logger.debug(f"{self.mail}----\nconfig_drive:{json_data}")
 
         url = 'https://config.mypikpak.com/config/v1/activity_operation'
         json_data = self.post(url, json=payload)
-        logger.debug(f"config_activity_operation:{json_data}")
+        logger.debug(f"{self.mail}----\nconfig_activity_operation:{json_data}")
 
     def lbsInfo(self):
         url = 'https://access.mypikpak.com/access_controller/v1/lbsInfo'
@@ -810,7 +810,7 @@ class ChromePikpak():
             'x-device-id': self.device_id,
         }
         json_data = self.get(url, headers=headers)
-        logger.debug(f"libsinfo:{json_data}")
+        logger.debug(f"{self.mail}----\nlibsinfo:{json_data}")
 
     def test_config_v1_drive(self):
         try:
@@ -826,7 +826,7 @@ class ChromePikpak():
                     },
                 },
             )
-            logger.debug(f"user_settings_bookmark:{json_data}")
+            logger.debug(f"{self.mail}----\nuser_settings_bookmark:{json_data}")
         except Exception as e:
             logger.error(f"/config/v1/drive error :{e} ")
 
@@ -835,17 +835,17 @@ class ChromePikpak():
         json_data = self.get(url, params={
             "items": 'bookmark',
         })
-        logger.debug(f"user_settings_bookmark:{json_data}")
+        logger.debug(f"{self.mail}----\nuser_settings_bookmark:{json_data}")
 
     def about(self):
         url = 'https://api-drive.mypikpak.com/drive/v1/about'
         json_data = self.get(url)
-        logger.debug(f"about:{json_data}")
+        logger.debug(f"{self.mail}----\nabout:{json_data}")
 
     def inviteCode(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/inviteCode'
         json_data = self.get(url)
-        logger.debug(f"inviteCode:{json_data}")
+        logger.debug(f"{self.mail}----\ninviteCode:{json_data}")
         return json_data
 
     def vip_checkInvite(self):
@@ -854,14 +854,14 @@ class ChromePikpak():
             'userid': self.user_id
         }
         json_data = self.get(url, params=params)
-        logger.debug(f"vip_checkInvite:{json_data}")
+        logger.debug(f"{self.mail}----\nvip_checkInvite:{json_data}")
         return json_data
 
     def vip_info(self):
         try:
             url = 'https://api-drive.mypikpak.com/vip/v1/vip/info'
             json_data = self.get(url)
-            logger.debug(f"vip_info:{json_data}")
+            logger.debug(f"{self.mail}----\nvip_info:{json_data}")
             return json_data
         except Exception as e:
             logger.error(f"vip/v1/vip/info error: {e}")
@@ -869,13 +869,13 @@ class ChromePikpak():
     def vip_inviteList(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/inviteList?limit=500'
         json_data = self.get(url)
-        logger.debug(f"vip_inviteList:{json_data}")
+        logger.debug(f"{self.mail}----\nvip_inviteList:{json_data}")
 
     # 活动检测
     def check_task_status(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/task/status:batchGet?scene=upload_file&scene=install_web_pikpak_extension'
         json_data = self.get(url)
-        logger.debug(f"task_status:{json_data}")
+        logger.debug(f"{self.mail}----\ntask_status:{json_data}")
         data = json_data.get('data')
         if data:
             for key, value in data.items():
@@ -885,18 +885,18 @@ class ChromePikpak():
     def upgradeToPro(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/upgradeToPro'
         json_data = self.get(url)
-        logger.debug(f"upgradeToPro:{json_data}")
+        logger.debug(f"{self.mail}----\nupgradeToPro:{json_data}")
 
     def inviteInfo(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/inviteInfo'
         json_data = self.get(url)
-        logger.debug(f"inviteInfo:{json_data}")
+        logger.debug(f"{self.mail}----\ninviteInfo:{json_data}")
 
     def task_free_vip(self):
         return
         # url = 'https://api-drive.mypikpak.com/vip/v1/task/status?scene=free_vip'
         # json_data = self.get(url)
-        # logger.debug(f"free_vip:{json_data}")
+        # logger.debug(f"{self.mail}----\nfree_vip:{json_data}")
         self.task_status({
             'scene': 'free_vip'
         })
@@ -911,7 +911,7 @@ class ChromePikpak():
         try:
             url = 'https://api-drive.mypikpak.com/vip/v1/task/status'
             json_data = self.get(url, params=params)
-            logger.debug(f"task_status{params} :{json_data}")
+            logger.debug(f"{self.mail}----\ntask_status{params} :{json_data}")
         except Exception as e:
             logger.error(f"task_status{params} ::::::error :{e}")
 
@@ -927,14 +927,14 @@ class ChromePikpak():
         }
         json_data = self.get(url, params=params)
 
-        logger.debug(f"task_reference_resource:{json_data}")
+        logger.debug(f"{self.mail}----\ntask_reference_resource:{json_data}")
 
     def invite(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/invite'
         json_data = self.post(url, json={
             "from": "web"
         })
-        logger.debug(f"invite:{json_data}")
+        logger.debug(f"{self.mail}----\ninvite:{json_data}")
 
     # 任务人机验证
     def verifyRecaptchaToken(self):
@@ -950,7 +950,7 @@ class ChromePikpak():
             "captcha_token": captcha_token,
         }
         json_data = self.post(url, json=payload)
-        logger.debug(f"verifyRecaptchaToken:{json_data}")
+        logger.debug(f"{self.mail}----\nverifyRecaptchaToken:{json_data}")
 
     def _reward_vip(self, type: str = ''):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/rewardVip'
@@ -958,7 +958,7 @@ class ChromePikpak():
             "type": type
         }
         json_data = self.post(url, json=payload)
-        logger.debug(f"rewardVip {type}:{json_data}")
+        logger.debug(f"{self.mail}----\nrewardVip {type}:{json_data}")
         self.task_status({
             'scene': type
         })
@@ -992,7 +992,7 @@ class ChromePikpak():
 
         json_data = self.get(
             url, params=params)
-        logger.debug(f"drive/v1/share:{json_data}")
+        logger.debug(f"{self.mail}----\ndrive/v1/share:{json_data}")
 
         url = f"https://api-drive.mypikpak.com/drive/v1/share/restore"
         payload = {
@@ -1007,7 +1007,7 @@ class ChromePikpak():
         }
 
         json_data = self.post(url, json=payload)
-        logger.info(f"保存分享文件{json_data}")
+        logger.info(f"{self.mail}----\n保存分享文件{json_data}")
         return json_data
 
     # 填写邀请码

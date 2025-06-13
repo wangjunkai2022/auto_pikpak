@@ -433,6 +433,9 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             pikpak.set_proxy(*proxy)
             pikpak.save_self()
         pikpak.run_test()
+        vip_day = pikpak.get_vip_day_time_left()
+        if vip_day > 0:
+            logger.log(f"注意：：：：：帐号{mail}现在是vip哦")
     except Exception as e:
         if str(e).startswith("网络连接错误") and auto_proxy:
             proxy = get_proxy()
@@ -465,7 +468,8 @@ def main():
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
     # threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
-    threading.Thread(target=test).start()
+    # threading.Thread(target=test).start()
+    threading.Thread(target=PiaPak保活).start()
     pass
 
 schedule.every().day.at("08:00").do(PiaPak保活)
