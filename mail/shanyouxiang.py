@@ -154,7 +154,7 @@ def get_one_mail(key: str = "这里输入闪邮箱的邮箱密钥"):
     logger.debug(f"查询系统剩余接口数据：{json_data}")
     num_count = requests.get(f"{base_url}/yue?card={key}").json().get("num")
     logger.debug(f"卡剩余可用邮箱数量:{num_count}")
-    mail_type = "hotmail"
+    mail_type = ""
     if num_count and num_count > 0:
         if json_data.get("hotmail") > 0:
             mail_type = "hotmail"
