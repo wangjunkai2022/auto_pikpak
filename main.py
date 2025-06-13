@@ -415,7 +415,7 @@ def 注册并填写邀请(邀请码: str = ""):
     return pikpak
 
 def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
-    logging.info(f"运行:{mail} Pikpak模拟人操作")
+    logger.info(f"运行:{mail} Pikpak模拟人操作")
     pikpak: BasePikpakData = BasePikpakData(mail)
     pikpak.is_auto_login = True
     try:
@@ -432,7 +432,7 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             pikpak.save_self()
             return 运行某个Pikpak模拟人操作(mail, auto_proxy)
         raise e
-    logging.info(f"运行:{mail} Pikpak模拟人操作  完成---------")
+    logger.info(f"运行:{mail} Pikpak模拟人操作  完成---------")
     return pikpak
 
 def PikPakMail填写邀请码(mail, 邀请码):
@@ -456,7 +456,7 @@ def main():
     # 注册并填写邀请("92196679")
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
-    threading.Thread(target=test).start()
+    threading.Thread(target=PiaPak保活).start()
     pass
 
 schedule.every().day.at("08:30").do(PiaPak保活)
