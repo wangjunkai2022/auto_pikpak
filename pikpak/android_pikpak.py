@@ -2,7 +2,6 @@ import logging
 import os
 import random
 from urllib.parse import urlparse
-from pikpak.PikPakAPI.pikpakapi.enums import DownloadStatus
 from pikpak.captcha_js2py import get_d, img_jj
 from pikpak.chrome_pikpak import ChromePikpak, DEF_AUTHORIZATION
 from proxy_ip import pop_prxy_pikpak
@@ -13,7 +12,6 @@ import time
 
 import requests
 from config.config import get_captcha_callback
-from pikpak.PikPakAPI.pikpakapi import PikPakApi
 from typing import Any, Dict, List, Optional
 from pikpak_captcha import google_re_validation, google_rewardVip_validation, slider_validation
 

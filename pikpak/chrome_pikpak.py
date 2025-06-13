@@ -202,7 +202,10 @@ class ChromePikpak():
     CLIENT_ID = 'YUMx5nI8ZU8Ap8pm'
     CLIENT_VERSION = '2.0.0'
 
-    PACKAGE_NAME = ""
+    PACKAGE_NAME = "mypikpak.com"
+
+    # 此账号创建时间
+    create_self_time = None
 
     handler: Handle = Handle()
     old_captcha_token = None
@@ -227,32 +230,23 @@ class ChromePikpak():
     cache_json_file = os.path.abspath(__file__)[:-3] + "user" + ".json"
 
     def save_self(self):
-        try:
-            with open(self.cache_json_file, mode="r", encoding="utf-8") as file:
-                json_str = file.read()
-                json_data = json.loads(json_str)
-        except:
-            json_data = {}
-
+        json_data = self.read_all_json_data()
         json_data[self.mail] = {
             "captcha_token": self.captcha_token,
-            'authorization': self.authorization,
-            'user_id': self.user_id,
-            'proxies': self.proxies,
-            'device_id': self.device_id,
-            'password': self.pd,
-            'refresh_token': self.refresh_token
+            "authorization": self.authorization,
+            "user_id": self.user_id,
+            "proxies": self.proxies,
+            "device_id": self.device_id,
+            "password": self.pd,
+            "refresh_token": self.refresh_token,
+            "create_time": self.create_self_time,
+            "mail": self.mail,
         }
         with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
     def read_self(self):
-        try:
-            with open(self.cache_json_file, mode="r", encoding="utf-8") as file:
-                json_str = file.read()
-                json_data = json.loads(json_str)
-        except:
-            json_data = {}
+        json_data = self.read_all_json_data()
         data = json_data.get(self.mail)
         if data:
             self.captcha_token = data.get('captcha_token')
@@ -262,6 +256,17 @@ class ChromePikpak():
             self.device_id = data.get('device_id')
             self.pd = data.get('password')
             self.refresh_token = data.get('refresh_token')
+            self.create_self_time = data.get('create_time')
+
+    # 读取本地json保存的所有帐号信息
+    def read_all_json_data(self) -> dict:
+        try:
+            with open(self.cache_json_file, mode="r", encoding="utf-8") as file:
+                json_str = file.read()
+                json_data = json.loads(json_str)
+        except:
+            json_data = {}
+        return json_data
 
     def set_proxy(self, proxy_ip, type="http"):
         # if not proxy.startswith("http://"):
@@ -278,10 +283,10 @@ class ChromePikpak():
     def get_sign(self, time_str):
         begin_str = f"{self.CLIENT_ID}{self.CLIENT_VERSION}{self.PACKAGE_NAME}{self.device_id}{time_str}"
         salts = version_datas.get(self.CLIENT_VERSION).get("algorithms")
-        if not salts:
-            self.CLIENT_VERSION = "1.42.6"
-            salts = version_datas["1.42.6"]["algorithms"]
-            return self.get_sign(time_str)
+        # if not salts:
+        #     self.CLIENT_VERSION = "1.42.6"
+        #     salts = version_datas["1.42.6"]["algorithms"]
+        #     return self.get_sign(time_str)
         hex_str = begin_str
         for index in range(len(salts)):
             optJSONObject = salts[index]
@@ -630,6 +635,7 @@ class ChromePikpak():
         self.user_id = json_data.get('sub')
         self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
         self.refresh_token = json_data.get('refresh_token')
+        self.create_self_time = time.time()
         self.save_self()
 
     def refresh_access_token(self):

@@ -1,19 +1,61 @@
 #!/usr/bin/python3
 import datetime
 import os
+import queue
 import threading
 import time
-
+import pyppeteer
 import asyncio
 import requests
 import json
 import re
-from requests_html import HTMLSession
+from requests_html import HTMLSession,AsyncHTMLSession
 
 from proxy_ip.kuaidaili import kuaidaili
 
 pattern = r"\?page=[a-z0-9]+"
 
+
+main_th_queue = queue.Queue()
+# proxy_th_queue = queue.Queue()
+
+temp_datas = {}
+response_list = {}
+def main_th_proxy():
+    for key in list(response_list):
+        data = response_list.get(key)
+        if not data:
+            continue
+        response = data.get("response")
+        try:
+            response.html.render(sleep=10, keep_page=True)  # 首次使用，自动下载chromium
+        except Exception as e:
+            print(f"e.......{e}")
+        data["is_render"] = False
+
+
+def pingPikPak_start(proxy_data=None):
+    proxy_ip = proxy_data[0]
+
+    session = HTMLSession()
+    session.proxies = {
+        "http": f"{proxy_data[1]}://{proxy_data[0]}",
+        "https": f"{proxy_data[1]}://{proxy_data[0]}",
+    }
+    response = session.get(
+        "https://inapp.mypikpak.com/ping", verify=False, timeout=30
+    )
+    response_list[proxy_ip] = {
+        "response":response,
+        "is_render" : True
+    }
+    while response_list.get(proxy_ip).get('is_render'):
+        time.sleep(1)
+    response_list.pop(proxy_ip)
+    ms_str = response.html.xpath(
+                "//div[@class='network-info__item'][last()-1]/div[last()]/text()"
+            )
+    return ms_str
 
 def get_proxy_list():
     types = {
@@ -253,7 +295,7 @@ def pop_proxy_server():
     proxy_type = json_data.get("proxy_type")[0]
     ip = json_data.get("proxy")
     try:
-        ping_str = pingPikPak_sleep_str([ip, proxy_type])
+        ping_str = pingPikPak_start([ip, proxy_type])
         if ping_str and ping_str != " -- ":
             return ip, proxy_type
     except Exception as e:

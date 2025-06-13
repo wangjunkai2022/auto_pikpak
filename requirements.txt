@@ -10,3 +10,4 @@ ultralytics
 
 2captcha-python
 Flask
+schedule

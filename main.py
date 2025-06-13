@@ -1,9 +1,13 @@
 import datetime
 import json
 import os
+import queue
 import random
 import string
+import threading
 from typing import List
+
+import schedule
 
 import requests
 import config.config as config
@@ -15,6 +19,7 @@ from pikpak.pikpak_super import HandleSuper, PikPakSuper
 from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 from tools import set_def_callback
+from proxy_ip import main_th_proxy
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
@@ -284,6 +289,21 @@ def check_all_pikpak_vip():
 
     logger.info("Over")
 
+def is_today_one(timestamp):
+  """
+  判断时间与现在是否跨1天
+
+  Args:
+    timestamp: 时间戳 (秒).
+
+  Returns:
+    True 如果时间戳是，False 如果不是。
+  """
+
+  dt_obj = datetime.datetime.fromtimestamp(timestamp)
+  today_date = datetime.datetime.now().date()
+  day = dt_obj.date() - today_date
+  return day.days == -1
 
 def 替换Alist储存库(email, pd, name):
     pikpak = BasePikpakData(email, pd, name)
@@ -341,29 +361,14 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
 
 
 def 注册新号激活(alist_storage) -> BasePikpakData:
-    logger.info(f"正在整理的存储\n {alist_storage.get('name')}")
-    # if isTryGetVip pikpak_go.try_get_vip():
-    #     vip_day = pikpak_go.get_vip_day_time_left()
-    #     logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
-    #     return
-    handler = HandleSuper(
-        get_token=config.get_captcha_callback(),
-        get_mailcode=config.get_email_verification_code_callback(),
-        email_address=create_one_mail,
-        get_password=radom_password,
-        get_proxy=get_proxy,
-    )
-    pikpak: BasePikpakData = BasePikpakData.create(handler)
-    time.sleep(60)
-    try:
-        pikpak.try_get_vip()
-    except Exception as e:
-        if str(e).startswith("网络连接错误"):
-            logger.error("网络连接错误 重新获取新代理")
-            pikpak.set_proxy(get_proxy())
-            pikpak.save_self()
-            pikpak.try_get_vip()
-    # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
+    mail = alist_storage.get('name')
+    logger.info(f"正在整理的存储\n {mail}")
+
+    pikpak: BasePikpakData = BasePikpakData(mail)
+    pikpak.login()
+    invite_code = pikpak.get_self_invite_code()
+    pikpak = 注册并填写邀请(invite_code)
+    vip_day = pikpak.get_vip_day_time_left()
     ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账户的alit或者rclone中")
@@ -407,11 +412,18 @@ def 注册并填写邀请(邀请码: str = ""):
     pikpak: BasePikpakData = BasePikpakData.create(handler)
     time.sleep(10)
     PikPakMail填写邀请码(pikpak.mail, 邀请码)
+    return pikpak
 
 def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
+    logging.info(f"运行:{mail} Pikpak模拟人操作")
     pikpak: BasePikpakData = BasePikpakData(mail)
     pikpak.is_auto_login = True
     try:
+        pikpak.read_self()
+        if not pikpak.proxies or not pikpak.proxies.get("http") or pikpak.proxies.get("http") == "":
+            proxy = get_proxy()
+            pikpak.set_proxy(*proxy)
+            pikpak.save_self()
         pikpak.run_test()
     except Exception as e:
         if str(e).startswith("网络连接错误") and auto_proxy:
@@ -420,18 +432,46 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             pikpak.save_self()
             return 运行某个Pikpak模拟人操作(mail, auto_proxy)
         raise e
+    logging.info(f"运行:{mail} Pikpak模拟人操作  完成---------")
     return pikpak
 
 def PikPakMail填写邀请码(mail, 邀请码):
     pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, False)
     pikpak.set_activation_code(邀请码)
 
+def PiaPak保活():
+    logger.info(f"开始运行所有帐号模拟人为操作")
+    json_datas = BasePikpakData("").read_all_json_data()
+    for mail in json_datas.keys():
+        temp_json = json_datas.get(mail)
+        if temp_json.get("create_time") and is_today_one(temp_json.get("create_time")):
+            threading.Thread(target=运行某个Pikpak模拟人操作,args=(mail, True)).start()
+
+def test():
+    for index in range(10):
+        threading.Thread(target=get_proxy).start()
+
+def main():
+    # change_all_pikpak()
+    # 注册并填写邀请("92196679")
+    # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
+    # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
+    threading.Thread(target=test).start()
+    pass
+
+schedule.every().day.at("08:30").do(PiaPak保活)
+schedule.every(1).second.do(main_th_proxy)
 if __name__ == "__main__":
     set_def_callback()
     os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
     os.environ['RAPIDAPI_KEY'] = config.mail_api
     os.environ["SHANYOUXIANG_KEY"] = config.shanyouxiang_api
-    # change_all_pikpak()
-    注册并填写邀请("92196679")
-    # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
-    # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
+    # 其他程序代码可以放在这里
+    # 主线程会持续运行，不会被调度器阻塞
+    threading.Thread(target=main).start()
+
+while True:
+    # print("Main thread is running...")
+    # schedule.run_pending()
+    schedule.run_pending()
+    time.sleep(1)
