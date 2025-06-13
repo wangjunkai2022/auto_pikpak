@@ -527,6 +527,7 @@ class AndroidPikPak(ChromePikpak):
             f"{json_data.get('token_type')} {json_data.get('access_token')}"
         )
         self.refresh_token = json_data.get("refresh_token")
+        self.create_self_time = time.time()
         self.save_self()
 
     def login(self):
