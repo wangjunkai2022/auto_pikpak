@@ -87,7 +87,7 @@ def _get_pikpak_codes(email_user, email_password):
                                 break
 
         mail.logout()
-        print(mails)
+        logger.debug(f"当前获取到的pikpak的邮箱的信息：{mails}")
         list.sort(mails, key=lambda x: x.get("timestamp"), reverse=True)
         return mails
     except imaplib.IMAP4.error as e:
