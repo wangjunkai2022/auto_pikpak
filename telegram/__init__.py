@@ -2,7 +2,7 @@ import json
 import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活, 激活存储库vip
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活AlistStorage, 激活存储库vip
 import enum
 import io
 import time
@@ -490,7 +490,7 @@ class Telegram():
                 self.bot.send_message(call.message.chat.id,
                                       f"正在注册新号中 请等待 邀请的号是\n{pikpak_name}\n密码:{pikpak_pd}")
                 try:
-                    new_pikpak = 注册新号激活(pikpak)
+                    new_pikpak = 注册新号激活AlistStorage(pikpak)
                     self.bot.send_message(call.message.chat.id,
                                           f"注册新号成功\n{new_pikpak.mail}")
                 except Exception as e:

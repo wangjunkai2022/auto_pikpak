@@ -27,6 +27,201 @@ logger.addHandler(handler)
 
 download_test = "magnet:?xt=urn:btih:C875E08EAC834DD82D34D2C385BBAB598415C98A"
 
+PHONE_LIST= [
+    {
+        "name":"Lge",
+        "model":"Lgm-v300k",
+        "ANDROID_SDK":"25",
+        "ANDROID_VERSION":"7.1.2",
+    },
+    {
+        "name":"OnePlus",
+        "model":"HD1910",
+        "ANDROID_SDK":"30",
+        "ANDROID_VERSION":"11.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"HD1913",
+        "ANDROID_SDK":"31",
+        "ANDROID_VERSION":"12.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"HD1911",
+        "ANDROID_SDK":"27",
+        "ANDROID_VERSION":"8.1.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"GM1915",
+        "ANDROID_SDK":"28",
+        "ANDROID_VERSION":"9.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2447",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2451",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2653",
+        "ANDROID_SDK":"31",
+        "ANDROID_VERSION":"12.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2655",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"PKX110",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2653",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"OnePlus",
+        "model":"CPH2609",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V1937",
+        "ANDROID_SDK":"28",
+        "ANDROID_VERSION":"9.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2126",
+        "ANDROID_SDK":"29",
+        "ANDROID_VERSION":"10.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2202",
+        "ANDROID_SDK":"28",
+        "ANDROID_VERSION":"9.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2158",
+        "ANDROID_SDK":"28",
+        "ANDROID_VERSION":"9.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2231",
+        "ANDROID_SDK":"31",
+        "ANDROID_VERSION":"12.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2318",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2339",
+        "ANDROID_SDK":"31",
+        "ANDROID_VERSION":"12.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2314",
+        "ANDROID_SDK":"28",
+        "ANDROID_VERSION":"9.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2349",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V2348",
+        "ANDROID_SDK":"31",
+        "ANDROID_VERSION":"12.0.0",
+    },
+    {
+        "name":"vivo",
+        "model":"V1937",
+        "ANDROID_SDK":"27",
+        "ANDROID_VERSION":"8.1.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2206123SC",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2206122SC",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2203121C",
+        "ANDROID_SDK":"33",
+        "ANDROID_VERSION":"13.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"22071212AG",
+        "ANDROID_SDK":"34",
+        "ANDROID_VERSION":"14.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"22081212UG",
+        "ANDROID_SDK":"34",
+        "ANDROID_VERSION":"14.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2211133G",
+        "ANDROID_SDK":"35",
+        "ANDROID_VERSION":"15.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2210132C",
+        "ANDROID_SDK":"34",
+        "ANDROID_VERSION":"14.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2210129SG",
+        "ANDROID_SDK":"34",
+        "ANDROID_VERSION":"14.0.0",
+    },
+    {
+        "name":"Xiaomi",
+        "model":"2306EPN60G",
+        "ANDROID_SDK":"34",
+        "ANDROID_VERSION":"14.0.0",
+    },
+]
+
 class AndroidPikPak(ChromePikpak):
     country = "US"
 
@@ -57,6 +252,56 @@ class AndroidPikPak(ChromePikpak):
     # 仿制captcha_sign
 
     cache_json_file = os.path.abspath(__file__)[:-3] + "user" + ".json"
+
+    android_device_index = 0
+
+    def __init__(
+        self,
+        mail: str,
+        pd: str,
+    ):
+        super().__init__(mail, pd)
+        self.android_device_index = random.randint(0, len(PHONE_LIST) - 1)
+        self.__update_android_device_info()
+
+    def __update_android_device_info(self):
+        self.phone_name = PHONE_LIST[self.android_device_index].get("name")
+        self.phone_model = PHONE_LIST[self.android_device_index].get("model")
+        self.ANDROID_VERSION = PHONE_LIST[self.android_device_index].get(
+            "ANDROID_VERSION"
+        )
+        self.ANDROID_SDK = PHONE_LIST[self.android_device_index].get("ANDROID_SDK")
+
+    def save_json(self):
+        json_data = self.read_all_json_data()
+        json_data[self.mail] = {
+            "captcha_token": self.captcha_token,
+            "authorization": self.authorization,
+            "user_id": self.user_id,
+            "proxies": self.proxies,
+            "device_id": self.device_id,
+            "password": self.pd,
+            "refresh_token": self.refresh_token,
+            "create_time": self.create_self_time,
+            "mail": self.mail,
+            "android_device_index": self.android_device_index,
+        }
+        return json_data
+
+    # 应用存入的json数据
+    def apply_json(self, json_data: dict):
+        data = json_data.get(self.mail)
+        if data:
+            self.captcha_token = data.get("captcha_token")
+            self.authorization = data.get("authorization")
+            self.user_id = data.get("user_id")
+            self.proxies = data.get("proxies")
+            self.device_id = data.get("device_id")
+            self.pd = data.get("password")
+            self.refresh_token = data.get("refresh_token")
+            self.create_self_time = data.get("create_time")
+            self.android_device_index = data.get("android_device_index", 0)
+        self.__update_android_device_info()
 
     def headers(self, url: str):
         # 解析 URL

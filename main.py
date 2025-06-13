@@ -357,21 +357,29 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
             激活存储库vip(alist_storage)
         else:
             raise e
-    return 注册新号激活(alist_storage)
+    return 注册新号激活AlistStorage(alist_storage)
 
 
-def 注册新号激活(alist_storage) -> BasePikpakData:
+def 注册新号激活AlistStorage(alist_storage) -> BasePikpakData:
     mail = alist_storage.get('name')
-    logger.info(f"正在整理的存储\n {mail}")
 
-    pikpak: BasePikpakData = BasePikpakData(mail)
-    pikpak.login()
-    invite_code = pikpak.get_self_invite_code()
-    pikpak = 注册并填写邀请(invite_code)
-    vip_day = pikpak.get_vip_day_time_left()
+    logger.info(f"正在整理的存储\n {mail}")
+    pikpak = 注册新号激活_Pikpsk(mail)
     ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
     ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
     logger.info(f"替换原账户的alit或者rclone中")
+    return pikpak
+
+
+def 注册新号激活_Pikpsk(mail: str = ""):
+    logger.info(f"给帐号 {mail} 注册新号并填写他的邀请码")
+    pikpak: BasePikpakData = BasePikpakData(mail)
+    pikpak.login()
+    invite_code = pikpak.get_self_invite_code()
+    logger.info(f"帐号 {mail} 邀请码是{invite_code}")
+    pikpak = 注册并填写邀请(invite_code)
+    vip_day = pikpak.get_vip_day_time_left()
+    logger.info(f"新帐号 {pikpak.mail} Vip 信息是：{vip_day}")
     return pikpak
 
 
@@ -456,7 +464,7 @@ def main():
     # 注册并填写邀请("92196679")
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
-    threading.Thread(target=PiaPak保活).start()
+    threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
     pass
 
 schedule.every().day.at("08:30").do(PiaPak保活)

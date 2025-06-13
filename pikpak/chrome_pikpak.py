@@ -229,7 +229,8 @@ class ChromePikpak():
 
     cache_json_file = os.path.abspath(__file__)[:-3] + "user" + ".json"
 
-    def save_self(self):
+    # 需要存入的json数据
+    def save_json(self):
         json_data = self.read_all_json_data()
         json_data[self.mail] = {
             "captcha_token": self.captcha_token,
@@ -242,21 +243,29 @@ class ChromePikpak():
             "create_time": self.create_self_time,
             "mail": self.mail,
         }
-        with open(self.cache_json_file, mode='w', encoding="utf-8") as file:
+        return json_data
+
+    # 应用存入的json数据
+    def apply_json(self, json_data: dict):
+        data = json_data.get(self.mail)
+        if data:
+            self.captcha_token = data.get("captcha_token")
+            self.authorization = data.get("authorization")
+            self.user_id = data.get("user_id")
+            self.proxies = data.get("proxies")
+            self.device_id = data.get("device_id")
+            self.pd = data.get("password")
+            self.refresh_token = data.get("refresh_token")
+            self.create_self_time = data.get("create_time")
+
+    def save_self(self):
+        json_data = self.save_json()
+        with open(self.cache_json_file, mode="w", encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
     def read_self(self):
         json_data = self.read_all_json_data()
-        data = json_data.get(self.mail)
-        if data:
-            self.captcha_token = data.get('captcha_token')
-            self.authorization = data.get('authorization')
-            self.user_id = data.get('user_id')
-            self.proxies = data.get('proxies')
-            self.device_id = data.get('device_id')
-            self.pd = data.get('password')
-            self.refresh_token = data.get('refresh_token')
-            self.create_self_time = data.get('create_time')
+        self.apply_json(json_data)
 
     # 读取本地json保存的所有帐号信息
     def read_all_json_data(self) -> dict:
