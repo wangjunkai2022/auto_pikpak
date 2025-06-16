@@ -398,6 +398,7 @@ class ChromePikpak():
             if error:
                 raise Exception(error)
             self.captcha_token = json_data.get("captcha_token")
+        self.save_self()
 
     def _requests(self, method: str, url: str, headers=None, **kwargs):
         headers = headers or self.headers(url)
@@ -711,6 +712,7 @@ class ChromePikpak():
         self.user_id = DEF_USERID
         self.proxies = None
         self.refresh_token = None
+        self.save_self()
 
     def vip_info_v2(self):
         json_data = self.get(
