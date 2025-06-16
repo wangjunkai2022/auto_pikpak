@@ -1,4 +1,4 @@
-from mail.mail import get_new_mail_code
+from mail import get_new_mail_code
 
 from config import config
 

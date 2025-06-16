@@ -9,7 +9,7 @@ import asyncio
 import requests
 import json
 import re
-from requests_html import HTMLSession,AsyncHTMLSession
+# from requests_html import HTMLSession,AsyncHTMLSession
 
 from proxy_ip.kuaidaili import kuaidaili
 
@@ -287,6 +287,22 @@ cache_json_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "ips.
 
 # 获取一个可以代理pikpak的ip
 
+def ping_pikpak_test(ip, proxy_type):
+    proxy = f"{proxy_type}://{ip}"
+    proxies = {
+        "http": proxy,
+        "https": proxy,
+    }
+    timeout = 20
+    url = "https://user.mypikpak.com/v1/shield/captcha/init"
+    response = requests.post(url, proxies=proxies,timeout=timeout)
+    url = "https://user.mypikpak.com/v1/auth/verification"
+    response = requests.post(url, proxies=proxies,timeout=timeout)
+    url = "https://user.mypikpak.com/v1/auth/verification/verify"
+    response = requests.post(url, proxies=proxies,timeout=timeout)
+    url = "https://user.mypikpak.com/v1/auth/signup"
+    response = requests.post(url, proxies=proxies,timeout=timeout)
+    return True
 
 # 用一个代理服务器获取代理 https://github.com/wangjunkai2022/proxy_pool_new.git 后续添加到此项目中
 def pop_proxy_server():
@@ -295,15 +311,23 @@ def pop_proxy_server():
     proxy_type = json_data.get("proxy_type")[0]
     ip = json_data.get("proxy")
     try:
-        ping_str = pingPikPak_start([ip, proxy_type])
-        if ping_str and ping_str != " -- ":
-            return ip, proxy_type
+        print(f"开始测试代理是否可以用:{ip} proxy_type:{proxy_type}")
+        ping_pikpak_test(ip, proxy_type)
+        # ping_str = pingPikPak_start([ip, proxy_type])
+        # if ping_str and ping_str != " -- ":
+        #     return ip, proxy_type
+        return ip, proxy_type
     except Exception as e:
-        print(f"获取代理错误了。。。。{e}")
+        print(f"测试{ip}代理到的代理测试链接错误了。。。。{e}")
     return pop_proxy_server()
 
 
 def pop_prxy_pikpak():
+    # response = requests.get("http://127.0.0.1:5010/pop")
+    # json_data = response.json()
+    # proxy_type = json_data.get("proxy_type")[0]
+    # ip = json_data.get("proxy")
+    # return ip, proxy_type
     return pop_proxy_server()
     try:
         with open(cache_json_file, mode="r", encoding="utf-8") as file:
