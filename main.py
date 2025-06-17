@@ -33,7 +33,15 @@ class BasePikpakData(PikPakSuper):
         super().__init__(mail, pd)
         self.name = name
         self.disabled = disabled
-
+        self.setHandler(
+            HandleSuper(
+                get_token=config.get_captcha_callback(),
+                get_mailcode=config.get_email_verification_code_callback(),
+                email_address=create_one_mail,
+                get_password=radom_password,
+                get_proxy=get_proxy,
+            )
+        )
 
 class SingletonMeta(type):
     """自定义元类，用于创建单例类"""
@@ -347,6 +355,8 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
     try:
         if pikpak_.try_get_vip():
             return pikpak_
+        if pikpak_.get_vip_day_time_left() > 0:
+            return pikpak_
     except Exception as e:
         if str(e).startswith("网络连接错误"):
             logger.error("网络连接错误 重新获取新代理")
@@ -355,17 +365,45 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
             激活存储库vip(alist_storage)
         else:
             raise e
+    vip_user = 获取一个所有PK_VIP帐号()
+    for mail in vip_user:
+        if mialIs2Alist(mail):
+            logger.debug(f"{mail}已在 Alist中 \t 跳过")
+        else:
+            pikpak = BasePikpakData(mail)
+            if pikpak.get_vip_day_time_left() > 0:
+                ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
+                logger.info(f"已经找到有vip切未使用{pikpak.mail} 现在已经把这个帐号{pikpak.mail}修改为此alist存储")
+                return
+
     return 注册新号激活AlistStorage(alist_storage)
 
 
+# 邮箱是否已经添加到alist中
+def mialIs2Alist(mail: str = ""):
+    base_pikpak: ManagerPikPak = ManagerAlistPikpak()
+    for pikpak in base_pikpak.get_all_pikpak_storage():
+        username = pikpak.get("username")
+        name = pikpak.get("name")
+        if mail == username:
+            logger.debug(f"{mail}已在 Alist:{name}中")
+            return True
+    return False
+
+
 def 注册新号激活AlistStorage(alist_storage) -> BasePikpakData:
-    mail = alist_storage.get('name')
+    mail = alist_storage.get('username')
 
     logger.info(f"正在整理的存储\n {mail}")
     pikpak = 注册新号激活_Pikpsk(mail)
-    ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
-    ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
-    logger.info(f"替换原账户的alit或者rclone中")
+    if pikpak.get_vip_day_time_left() > 0:
+        ManagerAlistPikpak().change_opation_storage_name_2(alist_storage.get('name'))
+        ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
+        logger.info(f"替换原账户的alit或者rclone中")
+    else:
+        logger.info(f"注册新号成功{pikpak.mail}")
+        logger.info(f"注册的新号还不是vip pikpak改了邀请获得vip的机制 需要保活2天")
+
     return pikpak
 
 
@@ -448,6 +486,16 @@ def PikPakMail填写邀请码(mail, 邀请码):
     pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, False)
     pikpak.set_activation_code(邀请码)
 
+def 获取一个所有PK_VIP帐号():
+    vipUser = []
+    json_datas = BasePikpakData("").read_all_json_data()
+    for mail in json_datas.keys():
+        logger.debug(f"当前正在获取帐号{mail}的vip天数")
+        tmp_pikpak = BasePikpakData(mail)
+        if tmp_pikpak.get_vip_day_time_left() > 0:
+            vipUser.append(tmp_pikpak.mail)
+    return vipUser
+
 def PiaPak保活():
     logger.info(f"开始运行所有帐号模拟人为操作")
     json_datas = BasePikpakData("").read_all_json_data()
@@ -471,18 +519,22 @@ def main():
     # threading.Thread(target=运行某个Pikpak模拟人操作,args=("fldgevng827@hotmail.com",)).start()
     pass
 
+def schedule_run():
+    while True:
+        # print("Main thread is running...")
+        # schedule.run_pending()
+        schedule.run_pending()
+        time.sleep(1)
+
 schedule.every().day.at("08:30").do(PiaPak保活)
 schedule.every(1).second.do(main_th_proxy)
 # 3小时执行一次看看
-schedule.every(1).hour.do(PiaPak保活) 
+# schedule.every(1).hour.do(PiaPak保活) 
 if __name__ == "__main__":
     set_def_callback()
     # 其他程序代码可以放在这里
     # 主线程会持续运行，不会被调度器阻塞
     threading.Thread(target=main).start()
-
-while True:
-    # print("Main thread is running...")
-    # schedule.run_pending()
-    schedule.run_pending()
-    time.sleep(1)
+    schedule_run()
+else:
+    threading.Thread(target=schedule_run).start()

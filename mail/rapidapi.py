@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 import requests
 import hashlib
@@ -11,11 +12,15 @@ logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
+from dotenv import load_dotenv
+# 加载.env文件中的环境变量
+load_dotenv()
 
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 def _get_domains():
     url = "https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/"
     headers = {
-        "X-RapidAPI-Key": config.mail_api,
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
         "X-RapidAPI-Host": "privatix-temp-mail-v1.p.rapidapi.com"
     }
 
@@ -96,7 +101,7 @@ def get_mails(mail):
     md5_hash = md5.hexdigest()
     url = f"https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/{md5_hash}/"
     headers = {
-        "X-RapidAPI-Key": config.mail_api,
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
         "X-RapidAPI-Host": "privatix-temp-mail-v1.p.rapidapi.com"
     }
 
@@ -138,7 +143,7 @@ def get_new_mail_code(mail):
 def get_one_message(mail):
     url = "https://privatix-temp-mail-v1.p.rapidapi.com/request/one_mail/id/%7B{mail}%7D/"
     headers = {
-        "X-RapidAPI-Key": config.mail_api,
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
         "X-RapidAPI-Host": "privatix-temp-mail-v1.p.rapidapi.com"
     }
 

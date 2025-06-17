@@ -22,29 +22,38 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
-
+net_Retry_times = 3
 class Handle():
-    def __def_getTonek(self, url: str = ""):
+    def def_getTonek(self, url: str = ""):
         token_input = input(f"验证url: {url} \n请输入获取到的token并按回车结束\n")
         return token_input
 
-    def __def_get_mailcode(self, mail: str = ''):
+    def def_get_mailcode(self, mail: str = ''):
         code = input(f'输入 {mail} 邮箱中收到的验证码:\n')
         return code
 
-    __get_token_callback = None
-    __get_mailcode_callback = None
+    def def_proxy(self) -> str:
+        proxy_input = input(f"请输入代理地址\n")
+        return proxy_input
+    
+    get_token_callback = None
+    get_mailcode_callback = None
+    get_proxy_callback = None
 
-    def __init__(self, get_token=None, get_mailcode=None) -> None:
-        self.__get_token_callback = get_token or self.__def_getTonek
-        self.__get_mailcode_callback = get_mailcode or self.__def_get_mailcode
+
+    def __init__(self, get_token=None, get_mailcode=None, get_proxy=None,) -> None:
+        self.get_token_callback = get_token or self.def_getTonek
+        self.get_mailcode_callback = get_mailcode or self.def_get_mailcode
+        self.get_proxy_callback = get_proxy or self.def_proxy
 
     def run_get_token(self, url):
-        return self.__get_token_callback(url)
+        return self.get_token_callback(url)
 
     def run_get_maincode(self, mail):
-        return self.__get_mailcode_callback(mail)
+        return self.get_mailcode_callback(mail)
 
+    def run_get_proxy(self):
+        return self.get_proxy_callback()
 
 DEF_AUTHORIZATION = "def_authorization"
 DEF_CAPTCHATOKEN = "def_captcha_token"
@@ -259,6 +268,7 @@ class ChromePikpak():
             self.create_self_time = data.get("create_time")
 
     def save_self(self):
+        logger.debug(f"开始保存{self.mail}的信息")
         json_data = self.save_json()
         with open(self.cache_json_file, mode="w", encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
@@ -378,6 +388,7 @@ class ChromePikpak():
             recaptcha_url: str = json_data.get("url")
             isOk = False
             if "spritePuzzle.html" in recaptcha_url:
+                logger.info(f"{self.mail}\t开始了 spritePuzzle.html 的验证")
                 # 官网修改了注册验证方式。这个滑块验证现在登陆时还在用
                 while (time.time() - start_time) < expires_in * (3/4):
                     captcha_token = slider_validation(recaptcha_url, self.proxies)
@@ -386,6 +397,7 @@ class ChromePikpak():
                         isOk = True
                         break
             elif "reCaptcha.html" in recaptcha_url:
+                logger.info(f"{self.mail}\t开始了 reCaptcha.html 的验证")
                 self.captcha_token = google_re_validation(recaptcha_url)
                 isOk = True
             if isOk:
@@ -402,41 +414,35 @@ class ChromePikpak():
 
     def _requests(self, method: str, url: str, headers=None, **kwargs):
         headers = headers or self.headers(url)
-        for count in range(3):
+        for count in range(net_Retry_times):
             try:
-                response = requests.request(method, url, headers=headers,
-                                            proxies=self.proxies, verify=False, timeout=60, **kwargs)
+                response = requests.request(method, url, headers=headers, proxies=self.proxies, verify=False, timeout=60, **kwargs)
 
             except requests.exceptions.HTTPError as http_err:
                 logger.debug(f"{self.mail}----\nHttp请求异常: {http_err}")
                 break
-            except (
-                requests.exceptions.ConnectionError,
-                    requests.exceptions.Timeout,
-                    requests.exceptions.TooManyRedirects,
-                    requests.exceptions.ProxyError,
-            ) as error:
-                logger.error(f"请求报错:\n{error}\n{count + 1}/3")
-                logger.error(
-                    f"url:{url}\nheaders:{headers}\nkwargs:{kwargs}")
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ProxyError,) as error:
+                logger.error(f"{self.mail} 请求报错:\n{error}\n{count + 1}/3")
+                logger.error(f"{self.mail} \turl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 time.sleep(10)
-                if count + 1 >= 3:
-                    raise Exception("网络连接错误")
+                if count + 1 >= net_Retry_times:
+                    if self.handler.get_proxy_callback and self.handler.get_proxy_callback != Handle.def_proxy:
+                        logger.error(f"{self.mail}无法访问{url}--当前代理是:{self.proxies} 现在重新获取代理")
+                        proxy = self.handler.run_get_proxy()
+                        self.set_proxy(*proxy)
+                        self.save_self()
+                        return self._requests(method, url, headers, **kwargs)
+                    else:
+                        raise Exception(f"{self.mail}网络连接错误")
                 continue
-            except (
-                requests.exceptions.URLRequired,
-                    requests.exceptions.InvalidURL,
-                    requests.exceptions.SSLError,
-            ) as req_err:
-                logger.error(
-                    f"请求报错:\n{req_err}\nurl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
+            except (requests.exceptions.URLRequired, requests.exceptions.InvalidURL, requests.exceptions.SSLError,) as req_err:
+                logger.error(f"{self.mail}请求报错:\n{req_err}\nurl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 raise error
             break
         json_data = response.json()
         error = json_data.get("error")
         if error and (error == "captcha_invalid" or error == "captcha_required"):
-            logger.debug(
-                f"capctha验证不通过再次验证\nurl:{url}\nresponse:{response}\nerror:{error}")
+            logger.debug(f"{self.mail}capctha验证不通过再次验证\nurl:{url}\nresponse:{response}\nerror:{error}")
             # 使用 urlparse 解析 URL
             parsed_url = urlparse(url)
             # 获取域名和路径
@@ -462,7 +468,8 @@ class ChromePikpak():
                 time.sleep(5)
                 return self._requests(method, url, headers, **kwargs)
             else:
-                logger.error(f"报错了{error}")
+                logger.error(f"{self.mail}报错了{error} 这里退出登录")
+                self.login_out()
                 raise Exception(error)
         elif error and error == 'aborted':
             logger.error(
@@ -476,7 +483,7 @@ class ChromePikpak():
         elif error and error == 'file_not_found':
             self._path_id_cache = {}
             file_params = kwargs.get("params")
-            logger.error(f"获取文件失败:{file_params}")
+            logger.error(f"{self.mail}获取文件失败:{file_params}")
             logger.error(
                 f"当前状态状态:\ndevice_id:{self.device_id}\nproxies:{self.proxies}\nauthorization:{self.authorization}\ncaptcha_token:{self.captcha_token}")
             raise Exception("获取文件失败")
@@ -484,12 +491,12 @@ class ChromePikpak():
         #     self.refresh_access_token()
         elif error and error == 'task_run_nums_limit':
             description = json_data.get('error_description')
-            logger.error(f"当前运行中的线程太多\n{description}")
+            logger.error(f"{self.mail}当前运行中的线程太多\n{description}")
             time.sleep(60)
             return self._requests(method, url, headers, **kwargs)
         if error and error != '':
             raise Exception(
-                f"请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
+                f"{self.mail}请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
         return json_data
 
     def get(self, url, headers=None, **kwargs):
@@ -860,13 +867,10 @@ class ChromePikpak():
         return json_data
 
     def vip_info(self):
-        try:
-            url = 'https://api-drive.mypikpak.com/vip/v1/vip/info'
-            json_data = self.get(url)
-            logger.debug(f"{self.mail}----\nvip_info:{json_data}")
-            return json_data
-        except Exception as e:
-            logger.error(f"vip/v1/vip/info error: {e}")
+        url = 'https://api-drive.mypikpak.com/vip/v1/vip/info'
+        json_data = self.get(url)
+        logger.debug(f"{self.mail}----\nvip_info:{json_data}")
+        return json_data
 
     def vip_inviteList(self):
         url = 'https://api-drive.mypikpak.com/vip/v1/activity/inviteList?limit=500'

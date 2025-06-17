@@ -12,24 +12,19 @@ logger.addHandler(handler)
 
 
 class HandleSuper(Handle):
-    def __def_email_address(self) -> str:
+    def def_email_address(self) -> str:
         """
         默认获取一个邮箱的回调
         """
         mail_input = input(f"请输入邮箱\n")
         return mail_input
 
-    def __def_password(self) -> str:
+    def def_password(self) -> str:
         pd_input = input(f"请输入密码\n")
         return pd_input
 
-    def __def_proxy(self) -> str:
-        proxy_input = input(f"请输入代理地址\n")
-        return proxy_input
-
-    __get_email_address_callback = None
-    __get_password_callback = None
-    __get_proxy_callback = None
+    get_email_address_callback = None
+    get_password_callback = None
 
     def __init__(
         self,
@@ -39,23 +34,18 @@ class HandleSuper(Handle):
         get_password=None,
         get_proxy=None,
     ) -> None:
-        super().__init__(get_token, get_mailcode)
-        self.__get_email_address_callback = email_address or self.__def_email_address
-        self.__get_password_callback = get_password or self.__def_password
-        self.__get_proxy_callback = get_proxy or self.__def_proxy
+        super().__init__(get_token, get_mailcode, get_proxy)
+        self.get_email_address_callback = email_address or self.def_email_address
+        self.get_password_callback = get_password or self.def_password
 
     def run_get_mail_address(self) -> str:
-        return self.__get_email_address_callback()
+        return self.get_email_address_callback()
 
     def run_get_password(self) -> str:
-        return self.__get_password_callback()
-
-    def run_get_proxy(self) -> str:
-        return self.__get_proxy_callback()
+        return self.get_password_callback()
 
 
 class PikPakSuper(AndroidPikPak):
-
     @staticmethod
     def create(handler: HandleSuper = HandleSuper()):
         proxy = handler.run_get_proxy()
@@ -113,16 +103,16 @@ class PikPakSuper(AndroidPikPak):
         """
         获取当前pikpak账户的剩余vip天数
         """
-        self.login()
-        vip_data = self.vip_info()
+        
         def_day_num = -9999
         try:
+            self.login()
+            vip_data = self.vip_info()
             def_day_num = (
                 vip_data.get("data").get("vipItem")[-1].get("surplus_day", def_day_num)
             )
         except Exception as e:
             logger.debug(f"获取vip剩余天数错误{e}")
-            # def_day_num = -9999
         return def_day_num
 
     # 获取自己的邀请码
@@ -131,7 +121,7 @@ class PikPakSuper(AndroidPikPak):
         """
         尝试获取vip
         """
-        return
+        return False
         self.login()
         vip_day = self.get_vip_day_time_left()
         if vip_day > 0:

@@ -1,12 +1,18 @@
 # 免费邮箱API 注册地址：https://rapidapi.com/hub
-mail:
-  api: 密钥
+# mail:
+#   api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
 
-twocaptcha:
-  api: 密钥
+# twocaptcha:
+#   api: 7f43a85477b4b3ea96af20422a690487
 
-shanyouxiang:
-  api: 密钥
+# shanyouxiang:
+#   api: RUN78CED5IAHQB5BV3XB36TKIVGSP03I9XZMX6JUVUZIGC6I
+
+
+# telegram:
+#   api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
+
+# 这里的api都改为.env
 
 # 默认的密码
 def_password: 098poi
@@ -20,16 +26,14 @@ requests:
 
 alist:
   enable: 1
-  # domain: "http://localhost:5244"
-  domain: "http://10.211.55.60:5244"
+  domain: "http://localhost:5244"
+  # domain: "http://10.211.55.60:5244"
   username: admin
   password: "''''"
 
 rclone:
   mount_root: /mnt/pikpak
 
-telegram:
-  api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
 
 
 

@@ -294,13 +294,13 @@ def ping_pikpak_test(ip, proxy_type):
     }
     timeout = 20
     url = "https://user.mypikpak.com/v1/shield/captcha/init"
-    response = requests.post(url, proxies=proxies,timeout=timeout)
+    response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
     url = "https://user.mypikpak.com/v1/auth/verification"
-    response = requests.post(url, proxies=proxies,timeout=timeout)
+    response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
     url = "https://user.mypikpak.com/v1/auth/verification/verify"
-    response = requests.post(url, proxies=proxies,timeout=timeout)
+    response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
     url = "https://user.mypikpak.com/v1/auth/signup"
-    response = requests.post(url, proxies=proxies,timeout=timeout)
+    response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
     return True
 
 # 用一个代理服务器获取代理 https://github.com/wangjunkai2022/proxy_pool_new.git 后续添加到此项目中
