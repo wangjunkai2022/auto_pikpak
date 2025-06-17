@@ -55,9 +55,9 @@ class Handle():
     def run_get_proxy(self):
         return self.get_proxy_callback()
 
-DEF_AUTHORIZATION = "def_authorization"
-DEF_CAPTCHATOKEN = "def_captcha_token"
-DEF_USERID = 'def_user_id'
+DEF_AUTHORIZATION = ""
+DEF_CAPTCHATOKEN = ""
+DEF_USERID = ''
 
 version_datas = {
     "1.42.6": {
@@ -439,7 +439,18 @@ class ChromePikpak():
                 logger.error(f"{self.mail}请求报错:\n{req_err}\nurl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 raise error
             break
-        json_data = response.json()
+        try:
+            json_data = response.json()
+        except Exception as e:
+            logger.error(f"{self.mail} \t当前url:{url}请求结果不对 无法转json response:{response.text} \n一般这种情况是代理不对。。。。。。。")
+            if self.handler.get_proxy_callback and self.handler.get_proxy_callback != Handle.def_proxy:
+                logger.error(f"{self.mail}无法访问{url}--当前代理是:{self.proxies} 现在重新获取代理")
+                proxy = self.handler.run_get_proxy()
+                self.set_proxy(*proxy)
+                self.save_self()
+                return self._requests(method, url, headers, **kwargs)
+            else:
+                raise e
         error = json_data.get("error")
         if error and (error == "captcha_invalid" or error == "captcha_required"):
             logger.debug(f"{self.mail}capctha验证不通过再次验证\nurl:{url}\nresponse:{response}\nerror:{error}")
@@ -472,11 +483,10 @@ class ChromePikpak():
                 self.login_out()
                 raise Exception(error)
         elif error and error == 'aborted':
-            logger.error(
-                f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
-            logger.error(
-                f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
-            raise Exception(error)
+            logger.error(f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
+            logger.error(f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
+            logger.error(f"{self.mail}ban:error:{error}")
+            raise Exception(f"{self.mail}当前帐号被封了")
         elif error and error == 'invalid_account_or_password':
             logger.error(f"当前账户登陆密码错误\nemail:{self.mail}\npd:{self.pd}")
             raise Exception("密码错误")
