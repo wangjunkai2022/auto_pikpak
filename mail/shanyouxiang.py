@@ -1,13 +1,15 @@
 from datetime import datetime
 import imaplib
 import email
-from email.header import decode_header
 import json
 import logging
 import os
 import re
 from time import sleep
 import requests
+from dotenv import load_dotenv
+# 加载.env文件中的环境变量
+load_dotenv()
 
 logger = logging.getLogger("mail_shanyouxiang")
 logger.setLevel(logging.DEBUG)

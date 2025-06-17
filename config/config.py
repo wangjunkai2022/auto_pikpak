@@ -1,14 +1,10 @@
 from config.read_config import get_config
 
-mail = get_config('mail')
-mail_api = mail.get("api")
-
-twocapctha_api = get_config('twocaptcha').get("api")
+# mail_api = get_config('mail').get("api")
+# twocapctha_api = get_config('twocaptcha').get("api")
+# shanyouxiang_api = get_config("shanyouxiang").get("api") or ""
 
 change_model = get_config("invate_change_model") or "none"
-
-shanyouxiang_api = get_config("shanyouxiang").get("api") or ""
-
 requests = get_config("requests")
 requests_timeout = requests.get("out_time")
 requests_retry = requests.get("retry", 0)
@@ -20,8 +16,6 @@ alist_pd = alist.get("password")
 alist_enable = alist.get("enable", 0) == 1
 
 def_password = get_config("def_password")
-
-telegram_api = get_config("telegram").get("api", "")
 
 rclone = get_config("rclone")
 rclone_mount = rclone.get("mount_root")

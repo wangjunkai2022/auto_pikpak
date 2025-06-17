@@ -4,7 +4,6 @@ import os
 import queue
 import threading
 import time
-import pyppeteer
 import asyncio
 import requests
 import json

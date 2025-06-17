@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+# 加载.env文件中的环境变量
+load_dotenv()
+
 from .rapidapi import (
     create_one_mail as rapidapi_get_mail,
     get_new_mail_code as rapidapi_get_new_mail_code,

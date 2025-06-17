@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import queue
 import random
 import string
 import threading
@@ -9,7 +8,6 @@ from typing import List
 
 import schedule
 
-import requests
 import config.config as config
 import alist.alist as alist
 from mail import create_one_mail, get_new_mail_code
@@ -467,9 +465,9 @@ def main():
     # 注册并填写邀请("92196679")
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
-    threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
+    # threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
     # threading.Thread(target=test).start()
-    # threading.Thread(target=PiaPak保活).start()
+    threading.Thread(target=PiaPak保活).start()
     # threading.Thread(target=运行某个Pikpak模拟人操作,args=("fldgevng827@hotmail.com",)).start()
     pass
 
@@ -479,9 +477,6 @@ schedule.every(1).second.do(main_th_proxy)
 schedule.every(1).hour.do(PiaPak保活) 
 if __name__ == "__main__":
     set_def_callback()
-    os.environ['TWOCAPTCHA_KEY'] = config.twocapctha_api
-    os.environ['RAPIDAPI_KEY'] = config.mail_api
-    os.environ["SHANYOUXIANG_KEY"] = config.shanyouxiang_api
     # 其他程序代码可以放在这里
     # 主线程会持续运行，不会被调度器阻塞
     threading.Thread(target=main).start()

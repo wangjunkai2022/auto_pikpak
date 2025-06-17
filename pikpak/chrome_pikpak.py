@@ -380,7 +380,7 @@ class ChromePikpak():
             if "spritePuzzle.html" in recaptcha_url:
                 # 官网修改了注册验证方式。这个滑块验证现在登陆时还在用
                 while (time.time() - start_time) < expires_in * (3/4):
-                    captcha_token = slider_validation(recaptcha_url)
+                    captcha_token = slider_validation(recaptcha_url, self.proxies)
                     if captcha_token != "":
                         self.captcha_token = captcha_token
                         isOk = True

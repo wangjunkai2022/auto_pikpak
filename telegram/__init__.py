@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
@@ -12,6 +13,11 @@ from telebot.types import Message, ReplyKeyboardMarkup, KeyboardButton, Chat, In
 import config.config
 import logging
 
+from dotenv import load_dotenv
+# 加载.env文件中的环境变量
+load_dotenv()
+
+TELEGRAM_KEY=os.getenv("TELEGRAM_KEY")
 
 # 配置日志
 logging.basicConfig(
@@ -73,7 +79,7 @@ def extract_account_and_password(log):
 
 
 class Telegram():
-    bot: TeleBot = TeleBot(config.config.telegram_api)
+    bot: TeleBot = TeleBot(TELEGRAM_KEY)
     runing_chat: Chat = None
     run_temp_datas = None
     start_chat = None

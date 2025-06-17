@@ -1,5 +1,4 @@
 PyYAML
-selenium
 pyTelegramBotAPI
 pyrclone
 httpx
@@ -11,3 +10,4 @@ ultralytics
 2captcha-python
 Flask
 schedule
+dotenv

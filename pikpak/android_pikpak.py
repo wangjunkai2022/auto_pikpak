@@ -10,7 +10,6 @@ import time
 
 from config.config import get_captcha_callback
 from typing import Any, Dict, List, Optional
-from pikpak_captcha import google_re_validation, google_rewardVip_validation, slider_validation
 
 from tools import set_def_callback
 
