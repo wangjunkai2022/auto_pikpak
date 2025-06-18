@@ -513,7 +513,7 @@ def PiaPak保活():
             threading.Thread(target=运行某个Pikpak模拟人操作,args=(mail, True)).start()
 
 def test():
-    for index in range(2):
+    for index in range(1):
         threading.Thread(target=get_proxy).start()
 
 def main():
@@ -522,9 +522,9 @@ def main():
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
     # threading.Thread(target=注册新号激活_Pikpsk,args=("fldgevng827@hotmail.com",)).start()
-    # threading.Thread(target=test).start()
+    threading.Thread(target=test).start()
     # threading.Thread(target=PiaPak保活).start()
-    threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
+    # threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
     pass
 
 def schedule_run():

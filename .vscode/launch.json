@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "name": "Python main",
+            "name": "Py main",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
@@ -17,7 +17,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python alist",
+            "name": "Py alist",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/alist/alist.py",
@@ -28,7 +28,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python pikpak",
+            "name": "Py pikpak",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak/__init__.py",
@@ -39,7 +39,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python pikpak_super",
+            "name": "Py pikpak_super",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak/pikpak_super.py",
@@ -50,7 +50,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python chrome_pikpak",
+            "name": "Py chrome_pikpak",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak/chrome_pikpak.py",
@@ -61,7 +61,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python android_pikpak",
+            "name": "Py android_pikpak",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak/android_pikpak.py",
@@ -72,7 +72,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python pikpak_auto_invite",
+            "name": "Py pikpak_auto_invite",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak/auto_invite.py",
@@ -83,7 +83,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python chmod_captcha",
+            "name": "Py chmod_captcha",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/chmod_captcha.py",
@@ -94,7 +94,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python save_ai_img_captcha",
+            "name": "Py save_ai_img_captcha",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/save_ai_img_captcha.py",
@@ -105,7 +105,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python captcha_2captcha",
+            "name": "Py captcha_2captcha",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/captcha_2captcha.py",
@@ -116,7 +116,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python captcha_killer",
+            "name": "Py captcha_killer",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/captcha_killer.py",
@@ -127,7 +127,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python captcha_slide_img",
+            "name": "Py captcha_slide_img",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/pikpak_captcha/captcha_slide_img.py",
@@ -139,7 +139,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python yolov8_train",
+            "name": "Py yolov8_train",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/captcha/ai/yolov8_train.py",
@@ -150,7 +150,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python telegram",
+            "name": "Py telegram",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/telegram_auto.py",
@@ -161,7 +161,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python telegram_index",
+            "name": "Py telegram_index",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/telegram/__init__.py",
@@ -172,7 +172,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python proxy_ip",
+            "name": "Py proxy_ip",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/proxy_ip/__init__.py",

@@ -38,6 +38,7 @@ loging_names = [
     "main", "alist", "mail", "Rclone", "telegram", "system_service",
     'Chrome_Pikpak', 'PikPakSuper', "Android_pikpak",
     'captcha', '2captcha', 'captcha_chmod', 'rapidapi', 'captcha_killer', "captch_chomd",
+    "proxy__index__",
 ]
 
 

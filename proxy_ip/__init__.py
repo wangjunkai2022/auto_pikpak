@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import datetime
+import logging
 import os
 import queue
 import threading
@@ -9,7 +10,11 @@ import requests
 import json
 import re
 # from requests_html import HTMLSession,AsyncHTMLSession
-
+logger = logging.getLogger("proxy__index__")
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 from proxy_ip.kuaidaili import kuaidaili
 
 pattern = r"\?page=[a-z0-9]+"
@@ -293,14 +298,27 @@ def ping_pikpak_test(ip, proxy_type):
         "https": proxy,
     }
     timeout = 20
+    
     url = "https://user.mypikpak.com/v1/shield/captcha/init"
     response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
+    json = response.json()
+    logger.debug(f"{url}-----{json}")
+
     url = "https://user.mypikpak.com/v1/auth/verification"
     response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
+    json = response.json()
+    logger.debug(f"{url}-----{json}")
+
     url = "https://user.mypikpak.com/v1/auth/verification/verify"
     response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
+    json = response.json()
+    logger.debug(f"{url}-----{json}")
+
     url = "https://user.mypikpak.com/v1/auth/signup"
     response = requests.post(url, proxies=proxies, timeout=timeout, verify=False)
+    json = response.json()
+    logger.debug(f"{url}-----{json}")
+
     return True
 
 # 用一个代理服务器获取代理 https://github.com/wangjunkai2022/proxy_pool_new.git 后续添加到此项目中
