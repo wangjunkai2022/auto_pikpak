@@ -262,24 +262,28 @@ class Alist(object):
         storage_list_data = self.get_storage_list()
         pikpaks: List[dict] = []
         for data in storage_list_data.get("content"):
-            addition = json.loads(data.get("addition"))
-            username = addition.get("username")
-            password = addition.get("password")
-            remark_str = data.get("remark")
-            disabled = data.get("disabled")
-            if remark_str == "":
-                remark_str = '{}'
-            remark_json = json.loads(remark_str,)
-            update_time = remark_json.get("update_time", None)
-            pikpaks.append(
-                {
-                    "username": username,
-                    "password": password,
-                    "name": data.get("mount_path")[1:],
-                    'update_time': update_time,
-                    'disabled': disabled
-                }
-            )
+            driver = data.get("driver")
+            if driver == "PikPak":
+                addition = json.loads(data.get("addition"))
+                username = addition.get("username")
+                password = addition.get("password")
+                remark_str = data.get("remark")
+                disabled = data.get("disabled")
+                if remark_str == "":
+                    remark_str = '{}'
+                remark_json = json.loads(remark_str,)
+                update_time = remark_json.get("update_time", None)
+                pikpaks.append(
+                    {
+                        "username": username,
+                        "password": password,
+                        "name": data.get("mount_path")[1:],
+                        'update_time': update_time,
+                        'disabled': disabled,
+                        'alist_data': data,
+                        'addition': addition,
+                    }
+                )
         return pikpaks
 
     def copy_storages_2_alist(self, to_alist_go: object, is_clean: bool = False, isDisible: bool = True) -> None:
@@ -341,6 +345,23 @@ class Alist(object):
                 print(data)
             else:
                 print("ppppp")
+    
+    def update_storagePK_refresh_token(self, id:str, token:str):
+        """
+        更新 指定alist pikapk 的存储的 refresh_token
+        Args:
+            id (str): 需要更新的库的id
+            token (str): 新 refresh_token
+        """
+        storage_list_data = self.get_storage_list()
+        for storage in storage_list_data.get("content"):
+            driver = storage.get("driver")
+            if driver == "PikPak" and storage.get("id") == id:
+                addition = json.loads(storage.get("addition"))
+                addition["refresh_token"] = token
+                storage['addition'] = json.dumps(addition)
+                return self.update_storage(storage, False)
+
 
     def set_captcha_url(self, url: str = "http://localhost:5243/api/login", is_disible: bool = True):
         for storage in self.get_storage_list().get("content"):
@@ -356,6 +377,15 @@ class Alist(object):
                 # addition
         self.update_load_all_storage()
 
+    # 邮箱是否已经添加到alist中
+    def mialIs2Alist(self, mail: str = ""):
+        for alist2pkipak in self.get_all_pikpak_storage():
+            username = alist2pkipak.get("username")
+            name = alist2pkipak.get("name")
+            if mail == username:
+                logger.debug(f"{mail}已在 Alist:{name}中")
+                return True, alist2pkipak
+        return False, None
 
 if __name__ == "__main__":
     alist = Alist()

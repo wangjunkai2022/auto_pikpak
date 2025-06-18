@@ -228,6 +228,9 @@ class ChromePikpak():
 
     _temp_captcha_time = None
 
+    # 当前属性是否是读取的配置文件
+    read_conf = False
+
     def __init__(self, mail: str, pd: str,):
         self.mail = mail
         self.pd = pd
@@ -270,12 +273,23 @@ class ChromePikpak():
     def save_self(self):
         logger.debug(f"开始保存{self.mail}的信息")
         json_data = self.save_json()
+        if self.read_conf:
+            old_json_data = self.read_all_json_data()
+            for key in old_json_data.keys():
+                if old_json_data[key] != json_data[key]:
+                    self.read_conf = False
+                    break
         with open(self.cache_json_file, mode="w", encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
+
+        
+            
 
     def read_self(self):
         json_data = self.read_all_json_data()
         self.apply_json(json_data)
+        if self.captcha_token and self.captcha_token != "" and self.authorization and self.authorization != "" and self.refresh_token and self.refresh_token != "":
+            self.read_conf = True
 
     # 读取本地json保存的所有帐号信息
     def read_all_json_data(self) -> dict:
@@ -465,23 +479,6 @@ class ChromePikpak():
                 old_capctah, self.captcha_token, headers, **kwargs)
             time.sleep(5)
             return self._requests(method, url, headers, **kwargs)
-        elif error and error == 'unauthenticated':
-            if self.is_auto_login:
-                old_capctah = self.captcha_token
-                old_authorization = self.authorization
-                self.authorization = DEF_AUTHORIZATION
-                self.save_self()
-                self.login()
-                self._change_request_values(
-                    old_capctah, self.captcha_token, headers, **kwargs)
-                self._change_request_values(
-                    old_authorization, self.authorization, headers, **kwargs)
-                time.sleep(5)
-                return self._requests(method, url, headers, **kwargs)
-            else:
-                logger.error(f"{self.mail}报错了{error} 这里退出登录")
-                self.login_out()
-                raise Exception(error)
         elif error and error == 'aborted':
             logger.error(f"\n{self.mail}\n此号短时间登陆太多被系统ban了\ndevice_id:{self.device_id}\nproxy:{self.proxies}")
             logger.error(f"报错:\nurl:{self}\nheaders:{headers}\nkwargs{kwargs}")
@@ -504,9 +501,19 @@ class ChromePikpak():
             logger.error(f"{self.mail}当前运行中的线程太多\n{description}")
             time.sleep(60)
             return self._requests(method, url, headers, **kwargs)
+        elif error and error == 'unauthenticated':
+            logger.error(f"{self.mail} json_data:{json_data}")
+            logger.error(f"{self.mail} token重新获取 refresh_token：{self.refresh_token}")
+            authorization = self.authorization
+            refresh_token = self.refresh_token
+            self.refresh_access_token()
+            self._change_request_values(authorization, self.authorization, headers, **kwargs)
+            self._change_request_values(refresh_token, self.refresh_token, headers, **kwargs)
+            return self._requests(method, url, headers, **kwargs)
+
         if error and error != '':
-            raise Exception(
-                f"{self.mail}请求{url}报错：\n{str(error)}\ncode:{response.status_code}\njson_data:{json_data}")
+            logger.error(f"error:{error}")
+            raise Exception(f"{self.mail}请求{url}报错：\n {error}\n code:{response.status_code} \n json_data: {json_data}")
         return json_data
 
     def get(self, url, headers=None, **kwargs):
@@ -516,14 +523,14 @@ class ChromePikpak():
         return self._requests("post", url, headers, **kwargs)
 
     def _change_request_values(self, old_value, new_value, headers: dict = None, **kwargs):
-        logger.debug(f"{self.mail}----\n原来的 headers :\n{headers}")
+        logger.debug(f"{self.mail}----\n 原来的 headers :\n {headers}")
         for key, value in headers.items():
             if value == old_value:
                 headers[key] = new_value
 
-        logger.debug(f"{self.mail}----\n打印修改后的 headers :\n{headers}")
+        logger.debug(f"{self.mail}----\n 打印修改后的 headers :\n {headers}")
 
-        logger.debug(f"{self.mail}----\n原来的 kwargs :\n{kwargs}")
+        logger.debug(f"{self.mail}----\n 原来的 kwargs :\n {kwargs}")
         # 遍历 kwargs 中的所有项
         for key, value in kwargs.items():
             # 检查值是否为字典
@@ -535,7 +542,7 @@ class ChromePikpak():
                         value[k] = new_value  # 修改为新的值
 
         # 打印修改后的 kwargs，用于验证
-        logger.debug(f'打印修改后的 kwargs，用于验证:\n{kwargs}')
+        logger.debug(f'打印修改后的 kwargs，用于验证:\n {kwargs}')
 
     def headers(self, url: str):
         # 解析 URL
@@ -674,12 +681,16 @@ class ChromePikpak():
             self.login()
             return
         refresh_url = f"https://user.mypikpak.com/v1/auth/token"
+        tmp_Client_Id = "YUMx5nI8ZU8Ap8pm"
+        headers = self.headers(refresh_url)
+        headers['x-client-id'] = tmp_Client_Id
+        headers["x-captcha-token"]= ""
         refresh_data = {
-            "client_id": self.CLIENT_ID,
+            "client_id": tmp_Client_Id,
             "refresh_token": self.refresh_token,
             "grant_type": "refresh_token",
         }
-        json_data = self.post(refresh_url, refresh_data)
+        json_data = self.post(refresh_url, headers=headers, json=refresh_data)
         self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
         self.refresh_token = json_data["refresh_token"]
         self.user_id = json_data["sub"]
@@ -712,6 +723,7 @@ class ChromePikpak():
                 return
             logger.error(f"登陆失败{json_data}")
             raise Exception(error_str)
+        
 
     def login_out(self):
         try:

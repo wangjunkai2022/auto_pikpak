@@ -470,7 +470,6 @@ class AndroidPikPak(ChromePikpak):
     # 注册
     def register(self):
         # self.captcha("POST:/v1/auth/verification")
-        url = "https://user.mypikpak.com/v1/auth/verification?client_id=YNxT9w7GMdWvEOKa"
         url = "https://user.mypikpak.com/v1/auth/verification"
         json_data = {
             "email": self.mail,
@@ -531,6 +530,8 @@ class AndroidPikPak(ChromePikpak):
         if self.authorization and self.authorization != "" and self.authorization != DEF_AUTHORIZATION:
             logger.debug("已经登陆了")
             return
+        if self.refresh_token and self.refresh_token != "":
+            self.refresh_access_token()
         url = f"https://user.mypikpak.com/v1/auth/signin"
         body = {
             "username": self.mail,
@@ -615,6 +616,14 @@ class AndroidPikPak(ChromePikpak):
         url = "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review"
         json_data = self.get(url)
         logger.debug(f"{self.mail}----\npermission/review:{json_data}")
+
+        url = "https://api-drive.mypikpak.com/vip/v1/pay/settings"
+        json_data = self.get(url)
+        logger.debug(f"{self.mail}----\n pay/settings:{json_data}")
+
+        url = "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity"
+        json_data = self.get(url)
+        logger.debug(f"{self.mail}----\n privilege/area_connectivity:{json_data}")
 
         self.connectivity_probe_results()
         self.urlsOnInstall()
@@ -759,6 +768,39 @@ class AndroidPikPak(ChromePikpak):
         json_data = self.get(url)
 
         logger.debug(f"{self.mail}----\nabout:{json_data}")
+
+    def refresh_access_token(self):
+        """
+        Refresh access token
+        """
+        if not self.refresh_token or self.refresh_token == '':
+            logger.debug("refresh_token没有 直接走登陆")
+            self.login()
+            return
+        url = f"https://user.mypikpak.com/v1/auth/token"
+        json = {
+            "client_id": self.CLIENT_ID,
+            "client_secret": self.CLIENT_SECRET,
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token,
+        }
+        query = {
+            "client_id": self.CLIENT_ID,
+        }
+        time_str = str(int(round(time.time() * 1000)))
+        headers = {
+            "user-agent": f"ANDROID-com.pikcloud.pikpak/{self.CLIENT_VERSION} accessmode/ devicename/{self.phone_name}_{self.phone_model} appname/android-{self.PACKAGE_NAME} appid/ action_type/ clientid/{self.CLIENT_ID} deviceid/{self.device_id} refresh_token/ grant_type/ devicemodel/{self.phone_model} networktype/WIFI accesstype/ sessionid/ osversion/{self.ANDROID_VERSION} datetime/{time_str} protocolversion/200 sdkversion/{self.SDK_VERSION} clientversion/{self.CLIENT_VERSION} providername/NONE clientip/ session_origin/ devicesign/div101.{self.device_id}{self.device_id2} platformversion/10 usrno/{self.user_id}",
+            "x-device-id": self.device_id,
+            "accept-language": self.language,
+            "content-type": "application/json; charset=utf-8",
+            # "content-length": "184",
+            # "accept-encoding": "gzip",
+        }
+        json_data = self.post(url, headers=headers, json=json, params=query)
+        self.authorization = f"{json_data.get('token_type')} {json_data.get('access_token')}"
+        self.refresh_token = json_data["refresh_token"]
+        self.user_id = json_data["sub"]
+        self.save_self()
 
     # def run_test(self):
     #     """

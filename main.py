@@ -367,7 +367,7 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
             raise e
     vip_user = 获取一个所有PK_VIP帐号()
     for mail in vip_user:
-        if mialIs2Alist(mail):
+        if base_pikpak.mialIs2Alist(mail):
             logger.debug(f"{mail}已在 Alist中 \t 跳过")
         else:
             pikpak = BasePikpakData(mail)
@@ -377,18 +377,6 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
                 return
 
     return 注册新号激活AlistStorage(alist_storage)
-
-
-# 邮箱是否已经添加到alist中
-def mialIs2Alist(mail: str = ""):
-    base_pikpak: ManagerPikPak = ManagerAlistPikpak()
-    for pikpak in base_pikpak.get_all_pikpak_storage():
-        username = pikpak.get("username")
-        name = pikpak.get("name")
-        if mail == username:
-            logger.debug(f"{mail}已在 Alist:{name}中")
-            return True
-    return False
 
 
 def 注册新号激活AlistStorage(alist_storage) -> BasePikpakData:
@@ -461,6 +449,21 @@ def 注册并填写邀请(邀请码: str = ""):
 def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
     logger.info(f"运行:{mail} Pikpak模拟人操作")
     pikpak: BasePikpakData = BasePikpakData(mail)
+    is_add2alist, alist_pikapk = ManagerAlistPikpak().mialIs2Alist(mail)
+    # alist_status = False
+    if is_add2alist and not alist_pikapk.get("disabled") and alist_pikapk.get("alist_data").get("status") == "work":
+        logger.debug(f"{mail}此帐号已经在alist挂载并且已经启用")
+        pikpak.read_self()
+        logger.debug(f"{mail}开始禁用此存储库")
+        refresh_token = alist_pikapk.get("addition").get("refresh_token")
+        if pikpak.refresh_token != refresh_token:
+            pikpak.refresh_token = refresh_token
+            pikpak.save_self()
+            # alist_status = True
+            # ManagerAlistPikpak().disable_storage(alist_pikapk.get("alist_data").get("id"))
+
+
+
     pikpak.is_auto_login = True
     try:
         pikpak.read_self()
@@ -480,6 +483,11 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             return 运行某个Pikpak模拟人操作(mail, auto_proxy)
         raise e
     logger.info(f"运行:{mail} Pikpak模拟人操作  完成---------")
+    if is_add2alist and refresh_token != pikpak.refresh_token:
+        logger.debug(f"{mail}此帐号已经在alist挂载并且已经启用 现在设置新的refresh_token到alist")
+        ManagerAlistPikpak().update_storagePK_refresh_token(alist_pikapk.get("alist_data").get("id"), pikpak.refresh_token)
+    # if alist_status:
+    #     ManagerAlistPikpak().enable_storage(alist_pikapk.get("alist_data").get("id"))
     return pikpak
 
 def PikPakMail填写邀请码(mail, 邀请码):
@@ -513,10 +521,10 @@ def main():
     # 注册并填写邀请("92196679")
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
-    # threading.Thread(target=注册新号激活_Pikpsk,args=("gibtukcmnm2687@hotmail.com",)).start()
+    # threading.Thread(target=注册新号激活_Pikpsk,args=("fldgevng827@hotmail.com",)).start()
     # threading.Thread(target=test).start()
-    threading.Thread(target=PiaPak保活).start()
-    # threading.Thread(target=运行某个Pikpak模拟人操作,args=("fldgevng827@hotmail.com",)).start()
+    # threading.Thread(target=PiaPak保活).start()
+    threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
     pass
 
 def schedule_run():

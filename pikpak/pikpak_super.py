@@ -97,6 +97,16 @@ class PikPakSuper(AndroidPikPak):
         self.check_task_status()
         self.invite()
 
+        try:
+            file_list = self.file_list(parent_id="*")
+            logger.debug(f"文件列表:{file_list}")
+            events = self.events(size=50)
+            logger.debug(f"最近添加文件:{events}")
+            file_id = events.get("events")[0].get("file_id")
+            down_url = self.get_download_url(file_id)
+            logger.debug(f"down_url:{down_url}")
+        except Exception as e:
+            logger.error(f"文件模拟错误 error:{e}")
     # 快捷操作
 
     def get_vip_day_time_left(self) -> int:
