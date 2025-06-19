@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 import requests
 from pikpak.android_pikpak import AndroidPikPak
@@ -80,23 +81,31 @@ class PikPakSuper(AndroidPikPak):
         """
         self.login()
         self.me()
-        self.configs()
-        self.lbsInfo()
-        self.user_settings_bookmark()
-        self.invite()
-        self.vip_info()
-        self.about()
-        self.inviteCode()
-        self.vip_checkInvite()
-        self.test_config_v1_drive()
-        self.vip_inviteList()
-        self.upgradeToPro()
-        self.inviteInfo()
-        self.task_free_vip()
-        self.task_reference_resource()
-        self.check_task_status()
-        self.invite()
+        
+        callbacks = [
+            self.me,
+            self.configs,
+            self.lbsInfo,
+            self.user_settings_bookmark,
+            self.invite,
+            self.vip_info,
+            self.about,
+            self.inviteCode,
+            self.vip_checkInvite,
+            self.test_config_v1_drive,
+            self.vip_inviteList,
+            self.upgradeToPro,
+            self.inviteInfo,
+            self.task_free_vip,
+            self.task_reference_resource,
+            self.check_task_status,
+            self.invite,
+        ]
+        random.shuffle(callbacks)
+        for callback in callbacks:
+            callback()
 
+        
         logger.debug(f"文件操作模拟")
         try:
             file_list = self.file_list(parent_id="*")

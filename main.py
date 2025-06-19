@@ -18,6 +18,9 @@ from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
 from tools import set_def_callback
 from proxy_ip import main_th_proxy
+logger_schedule = logging.getLogger("schedule")
+logger_schedule.setLevel(logging.INFO)
+
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
@@ -322,22 +325,7 @@ def 替换Alist储存库(email, pd, name):
 
 
 def 刷新PikPakToken(alist_storage):
-    name = alist_storage.get('name')
-    logger.info(f"开始刷新{name}的pikpak_token")
-    alist = ManagerAlistPikpak()
-    storage_data = next(x for x in alist.get_storage_list().get(
-        'content') if x.get("mount_path")[1:] == name)
-    pikpak = next(x for x in alist.pikpak_go_list if x.name == name)
-    pikpak.login_out()
-    pikpak.login()
-    addition = json.loads(storage_data.get("addition"))
-    old_token = addition.get('refresh_token')
-    logger.debug(f"pikpak原token:{old_token}")
-    logger.debug(f"pikpak新token:{pikpak.refresh_token}")
-    addition['refresh_token'] = pikpak.refresh_token
-    storage_data["addition"] = json.dumps(addition)
-    logger.debug(storage_data)
-    alist.update_storage(storage_data)
+    return 运行某个Pikpak模拟人操作(alist_storage.get("username"))
 
 
 def 所有Alist的储存库() -> List[BasePikpakData]:
@@ -462,8 +450,6 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             # alist_status = True
             # ManagerAlistPikpak().disable_storage(alist_pikapk.get("alist_data").get("id"))
 
-
-
     pikpak.is_auto_login = True
     try:
         pikpak.read_self()
@@ -474,7 +460,7 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
         pikpak.run_test()
         vip_day = pikpak.get_vip_day_time_left()
         if vip_day > 0:
-            logger.log(f"注意：：：：：帐号{mail}现在是vip哦")
+            logger.info(f"注意：：：：：帐号{mail}现在是vip哦")
     except Exception as e:
         if str(e).startswith("网络连接错误") and auto_proxy:
             proxy = get_proxy()
@@ -482,7 +468,8 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             pikpak.save_self()
             return 运行某个Pikpak模拟人操作(mail, auto_proxy)
         raise e
-    logger.info(f"运行:{mail} Pikpak模拟人操作  完成---------")
+    now_time_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logger.info(f"运行:{mail} Pikpak模拟人操作  完成---------\n 时间:{now_time_str}")
     if is_add2alist and refresh_token != pikpak.refresh_token:
         logger.debug(f"{mail}此帐号已经在alist挂载并且已经启用 现在设置新的refresh_token到alist")
         ManagerAlistPikpak().update_storagePK_refresh_token(alist_pikapk.get("alist_data").get("id"), pikpak.refresh_token)
@@ -522,22 +509,22 @@ def main():
     # PikPakMail填写邀请码("gibtukcmnm2687@hotmail.com","33450720")
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
     # threading.Thread(target=注册新号激活_Pikpsk,args=("fldgevng827@hotmail.com",)).start()
-    threading.Thread(target=test).start()
-    # threading.Thread(target=PiaPak保活).start()
+    # threading.Thread(target=test).start()
+    threading.Thread(target=PiaPak保活).start()
     # threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
     pass
 
 def schedule_run():
     while True:
-        # print("Main thread is running...")
-        # schedule.run_pending()
+        # logger.info("Main thread is running...")
         schedule.run_pending()
         time.sleep(1)
 
 schedule.every().day.at("08:30").do(PiaPak保活)
+# schedule.every().day.at("20:27").do(PiaPak保活)
 schedule.every(1).second.do(main_th_proxy)
 # 3小时执行一次看看
-# schedule.every(1).hour.do(PiaPak保活) 
+# schedule.every().hour.at("15:00").do(PiaPak保活) 
 if __name__ == "__main__":
     set_def_callback()
     # 其他程序代码可以放在这里

@@ -583,56 +583,39 @@ class AndroidPikPak(ChromePikpak):
             "client": "android",
         }
         json_data = self.post(url, json=json)
-        logger.debug(f"{self.mail}----\nglobalConfig 返回值:{json_data}")
+        logger.debug(f"{self.mail}----\n globalConfig 返回值:{json_data}")
 
-        url = "https://access.mypikpak.com/access_controller/v1/area_accessible"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\narea_accessible 返回值:{json_data}")
-
-        url = 'https://api-drive.mypikpak.com/operating/v1/content'
+        url = "https://api-drive.mypikpak.com/operating/v1/content"
         json_data = self.post(url)
-        logger.debug(f"{self.mail}----\noperating_content::{json_data}")
+        logger.debug(f"{self.mail}----\n operating/v1/content 返回值:{json_data}")
+        
+        urls = [
+            "https://access.mypikpak.com/access_controller/v1/area_accessible",
+            "https://access.mypikpak.com/drive/v1/privilege/area_shareable",
+            "https://api-drive.mypikpak.com/user/v1/settings?items=enablePrivacyMode",
+            "https://api-drive.mypikpak.com/vip/v1/allSubscriptionStatus",
+            "https://access.mypikpak.com/drive/v1/privilege/area_shareable",
+            "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission",
+            "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review",
+            "https://api-drive.mypikpak.com/vip/v1/pay/settings",
+            "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity",
+        ]
+        random.shuffle(urls)
+        for url in urls:
+            json_data = self.get(url)
+            logger.debug(f"{self.mail}----\n url:{url} \n 返回值:{json_data}")
 
-        url = "https://access.mypikpak.com/drive/v1/privilege/area_shareable"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\narea_shareable 返回值:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/user/v1/settings?items=enablePrivacyMode"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\narea_shareable 返回值:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/vip/v1/allSubscriptionStatus"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\nallSubscriptionStatus:{json_data}")
-
-        url = "https://access.mypikpak.com/drive/v1/privilege/area_shareable"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\narea_shareable:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\npermission:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\npermission/review:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/vip/v1/pay/settings"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\n pay/settings:{json_data}")
-
-        url = "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity"
-        json_data = self.get(url)
-        logger.debug(f"{self.mail}----\n privilege/area_connectivity:{json_data}")
-
-        self.connectivity_probe_results()
-        self.urlsOnInstall()
-        self.checkClientVersion()
-        self.report()
-        self.authorize()
-        self.introspect()
-        # self.revoke()
-        # self.auth_token()
+        callbacks = [
+            self.connectivity_probe_results,
+            self.urlsOnInstall,
+            self.checkClientVersion,
+            self.report,
+            self.authorize,
+            self.introspect,
+        ]
+        random.shuffle(callbacks)
+        for callback in callbacks:
+            callback()
 
     def connectivity_probe_results(self):
         url = "https://api-drive.mypikpak.com/connectivity_probe/v1/targets"
