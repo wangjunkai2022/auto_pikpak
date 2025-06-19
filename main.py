@@ -353,7 +353,7 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
             激活存储库vip(alist_storage)
         else:
             raise e
-    vip_user = 获取一个所有PK_VIP帐号()
+    vip_user = 获取所有PK_VIP帐号()
     for mail in vip_user:
         if base_pikpak.mialIs2Alist(mail):
             logger.debug(f"{mail}已在 Alist中 \t 跳过")
@@ -481,7 +481,11 @@ def PikPakMail填写邀请码(mail, 邀请码):
     pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, False)
     pikpak.set_activation_code(邀请码)
 
-def 获取一个所有PK_VIP帐号():
+def 获取所有PK帐号():
+    json_datas = BasePikpakData("").read_all_json_data()
+    return json_datas
+
+def 获取所有PK_VIP帐号():
     vipUser = []
     json_datas = BasePikpakData("").read_all_json_data()
     for mail in json_datas.keys():
@@ -510,8 +514,10 @@ def main():
     # 运行某个Pikpak模拟人操作("atnzlp9830@tgvis.com")
     # threading.Thread(target=注册新号激活_Pikpsk,args=("fldgevng827@hotmail.com",)).start()
     # threading.Thread(target=test).start()
-    threading.Thread(target=PiaPak保活).start()
-    # threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
+    # threading.Thread(target=PiaPak保活).start()
+    threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
+    # threading.Thread(target=获取所有PK_VIP帐号).start()
+
     pass
 
 def schedule_run():

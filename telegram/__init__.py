@@ -3,7 +3,7 @@ import os
 import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作
 import enum
 import io
 import time
@@ -53,6 +53,7 @@ class 模式选项(enum.Enum):
     查看存储库的信息 = "查看存储库的信息"
     设置打印等级 = "设置打印等级"
     PK保活 = "PK保活"
+    选择PK执行模拟人操作 = "选择PK执行模拟人操作"
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
     重启系统服务 = "重启系统服务"
@@ -381,6 +382,29 @@ class Telegram():
         if str_end in strs:
             strs = strs[0:strs.find(str_end)]
         return strs
+    
+    def _选择PK执行模拟人操作(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        try:
+            self.run_temp_datas = 获取所有PK帐号()
+        except Exception as e:
+            self.run_temp_datas = None
+            self.send_error(e)
+
+        if self.run_temp_datas and len(self.run_temp_datas) > 0:
+            markup = InlineKeyboardMarkup(row_width=2)
+            for pikpak in self.run_temp_datas.keys():
+                btn = InlineKeyboardButton(f"{pikpak}", callback_data=pikpak,)
+                markup.add(btn)
+
+            self.bot.send_message(message.chat.id, 模式选项.选择PK执行模拟人操作.name, reply_markup=markup)
+        else:
+            self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
+            self._task_over()
+
 
     def _选择替换(self, message: Message):
         if self.runing_chat:
@@ -588,6 +612,11 @@ class Telegram():
                     storage["addition"] = {}
                 self.bot.send_message(call.message.chat.id,
                                       f"选中的存储库的详细信息如下:\n{json.dumps(storage,ensure_ascii=False, indent=4)}")
+                self._task_over()
+            elif call.message.text == 模式选项.选择PK执行模拟人操作.name:
+                pikpak_mail = call.data
+                storage = self.run_temp_datas[pikpak_mail]
+                运行某个Pikpak模拟人操作(pikpak_mail)
                 self._task_over()
 
     def 输入新Pikpak账户和密码(self, message: Message):

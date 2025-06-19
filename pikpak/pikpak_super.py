@@ -81,8 +81,26 @@ class PikPakSuper(AndroidPikPak):
         """
         self.login()
         self.me()
-        
+
         callbacks = [
+            self.me,
+            self.configs,
+            self.lbsInfo,
+            self.user_settings_bookmark,
+            self.invite,
+            self.vip_info,
+            self.about,
+            self.inviteCode,
+            self.vip_checkInvite,
+            self.test_config_v1_drive,
+            self.vip_inviteList,
+            self.upgradeToPro,
+            self.inviteInfo,
+            self.task_free_vip,
+            self.task_reference_resource,
+            self.check_task_status,
+            self.invite,
+
             self.me,
             self.configs,
             self.lbsInfo,

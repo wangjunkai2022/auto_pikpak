@@ -588,16 +588,27 @@ class AndroidPikPak(ChromePikpak):
         url = "https://api-drive.mypikpak.com/operating/v1/content"
         json_data = self.post(url)
         logger.debug(f"{self.mail}----\n operating/v1/content 返回值:{json_data}")
-        
+
         urls = [
             "https://access.mypikpak.com/access_controller/v1/area_accessible",
+            "https://access.mypikpak.com/access_controller/v1/area_accessible",
+            "https://access.mypikpak.com/access_controller/v1/area_accessible",
+            "https://access.mypikpak.com/drive/v1/privilege/area_shareable",
             "https://access.mypikpak.com/drive/v1/privilege/area_shareable",
             "https://api-drive.mypikpak.com/user/v1/settings?items=enablePrivacyMode",
+            "https://api-drive.mypikpak.com/user/v1/settings?items=enablePrivacyMode",
             "https://api-drive.mypikpak.com/vip/v1/allSubscriptionStatus",
-            "https://access.mypikpak.com/drive/v1/privilege/area_shareable",
+            "https://api-drive.mypikpak.com/vip/v1/allSubscriptionStatus",
+            "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission",
+            "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission",
             "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission",
             "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review",
+            "https://api-drive.mypikpak.com/vip/v1/activity/invite/permission/review",
             "https://api-drive.mypikpak.com/vip/v1/pay/settings",
+            "https://api-drive.mypikpak.com/vip/v1/pay/settings",
+            "https://api-drive.mypikpak.com/vip/v1/pay/settings",
+            "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity",
+            "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity",
             "https://api-drive.mypikpak.com/drive/v1/privilege/area_connectivity",
         ]
         random.shuffle(urls)
@@ -612,6 +623,27 @@ class AndroidPikPak(ChromePikpak):
             self.report,
             self.authorize,
             self.introspect,
+            self.me,
+            self.vip_info,
+            self.logReportSwitch,
+
+            self.connectivity_probe_results,
+            self.urlsOnInstall,
+            self.checkClientVersion,
+            self.report,
+            self.authorize,
+            self.introspect,
+            self.me,
+            self.vip_info,
+
+            self.connectivity_probe_results,
+            self.urlsOnInstall,
+            self.checkClientVersion,
+            self.report,
+            self.authorize,
+            self.introspect,
+            self.me,
+            self.vip_info,
         ]
         random.shuffle(callbacks)
         for callback in callbacks:
@@ -785,6 +817,31 @@ class AndroidPikPak(ChromePikpak):
         self.user_id = json_data["sub"]
         self.save_self()
 
+    def logReportSwitch(self):
+        url = "https://config.mypikpak.com/config/v1/logReportSwitch"
+        json = {
+            "data": {
+                "sdk_int": self.ANDROID_SDK,
+                "uuid": self.device_id,
+                "userType": "1",
+                "userid": self.user_id,
+                "userSub": "",
+                "language_system": self.language,
+                "build_version_release": self.ANDROID_VERSION,
+                "phoneModel": self.phone_model,
+                "build_manufacturer": self.phone_name,
+                "build_sdk_int": self.ANDROID_SDK,
+                "channel": "official",
+                "versionCode": self.VERSION_CODE,
+                "versionName": self.CLIENT_VERSION,
+                "country": self.country,
+                "language": self.language,
+            }
+        }
+        json_data = self.post(url,json=json)
+        logger.debug(f"{self.mail}----\n logReportSwitch:{json_data}")
+
+
     # def run_test(self):
     #     """
     #     随机运行 模拟人为操作
@@ -798,6 +855,67 @@ class AndroidPikPak(ChromePikpak):
     #     self.file_list(parent_id='*',size=500,)
     #     self.checkClientVersion()
     #     self.about()
+
+    def installations(self):
+        url = "https://firebaseinstallations.googleapis.com/v1/projects/cloud-dev-team-314113/installations"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Content-Encoding": "gzip",
+            "Cache-Control": "no-cache",
+            "X-Android-Package": "com.pikcloud.pikpak",
+            "x-firebase-client": "H4sIAAAAAAAAAKtWykhNLCpJSk0sKVayio7VUSpLLSrOzM9TslIyUqoFAFyivEQfAAAA",
+            "X-Android-Cert": "D1AC8FFE217B5E0F57F3A3CF8A5AEFBBD5F34A23",
+            "x-goog-api-key": "AIzaSyBgEcsTcNqf5FCCc5IgxGETr_aF3PwKtjY",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 7.1.2; SM-G9880 Build/PPR1.190810.011)",
+            "Host": "firebaseinstallations.googleapis.com",
+            "Connection": "Keep-Alive",
+            "Accept-Encoding": "gzip",
+            "Content-Length": "140",
+        }
+        params = {
+            "fid": "czC_ORUkS1e6rbC2kiOlDy",
+            "appId": "1:1016306462377:android:ade1992b01065d6d5fc3b8",
+            "authVersion": "FIS_v2",
+            "sdkVersion": "a:17.2.0",
+        }
+
+        json_data = self.post(url, headers=headers, params=params)
+
+        url = "https://android.apis.google.com/c2dm/register3"
+        headers = {
+            "content-length": "832",
+            "content-type": "application/x-www-form-urlencoded",
+            "authorization": "AidLogin 3959706640881192963:5090764924128071634",
+            "app": "com.pikcloud.pikpak",
+            "gcm_ver": "252234007",
+            "app_ver": "10241",
+            "user-agent": "com.google.android.gms/252234007 (Linux; U; Android 7.1.2; zh_CN; SM-G9880; Build/PPR1.190810.011; Cronet/138.0.7156.0)",
+            "accept-encoding": "gzip, deflate, br",
+            "priority": "u=1, i",
+        }
+        params = {
+            "X-subtype": "745476177629",
+            "X-X-subscription": "745476177629",
+            "sender": "745476177629",
+            "X-X-subtype": "745476177629",
+            "X-app_ver": "252234007",
+            "X-osv": "25",
+            "X-cliv": "iid-252234000",
+            "X-gmsv": "252234007",
+            "X-appid": "csUjJrnSWbc",
+            "X-scope": "DIRECTBOOT",
+            "X-subscription": "745476177629",
+            "X-app_ver_name": "25.22.34%20(040700-%7B%7Bcl%7D%7D)",
+            "app": "com.google.android.gms",
+            "device": "3959706640881192963",
+            "app_ver": "252234007",
+            "info": "wyksvArr0SURoOhBO1boBVzFy-XfdRk",
+            "gcm_ver": "252234007",
+            "plat": "0",
+            "cert": "38918a453d07199354f8b19af05ec6562ced5788",
+            "target_ver": "36",
+        }
 
 
 if __name__ == "__main__":
