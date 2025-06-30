@@ -269,33 +269,17 @@ class AndroidPikPak(ChromePikpak):
         self.ANDROID_SDK = PHONE_LIST[self.android_device_index].get("ANDROID_SDK")
 
     def save_json(self):
-        json_data = self.read_all_json_data()
-        json_data[self.mail] = {
-            "captcha_token": self.captcha_token,
-            "authorization": self.authorization,
-            "user_id": self.user_id,
-            "proxies": self.proxies,
-            "device_id": self.device_id,
-            "password": self.pd,
-            "refresh_token": self.refresh_token,
-            "create_time": self.create_self_time,
-            "mail": self.mail,
+        json_data = super().save_json()
+        json_data[self.mail].update({
             "android_device_index": self.android_device_index,
-        }
+        })
         return json_data
 
     # 应用存入的json数据
     def apply_json(self, json_data: dict):
+        super().apply_json(json_data)
         data = json_data.get(self.mail)
         if data:
-            self.captcha_token = data.get("captcha_token")
-            self.authorization = data.get("authorization")
-            self.user_id = data.get("user_id")
-            self.proxies = data.get("proxies")
-            self.device_id = data.get("device_id")
-            self.pd = data.get("password")
-            self.refresh_token = data.get("refresh_token")
-            self.create_self_time = data.get("create_time")
             self.android_device_index = data.get("android_device_index", 0)
         self.__update_android_device_info()
 
@@ -312,7 +296,10 @@ class AndroidPikPak(ChromePikpak):
                 second_level_domain = parts[-3]  # 倒数第三个部分
                 # logger.debug(f'二级域名: {second_level_domain}')
 
-        time_str = self._temp_captcha_time or str(int(round(time.time() * 1000)))
+        if "v1/shield/captcha/init" in url:
+            time_str = self.captcha_time
+        else:
+            time_str = str(int(round(time.time() * 1000)))
         header_config = {
             "install-from": self.INSTALL_FROM,
             "language-app": self.language,
@@ -403,15 +390,16 @@ class AndroidPikPak(ChromePikpak):
     def introspect(self):
         url = "https://user.mypikpak.com/v1/auth/token/introspect"
         params = {
-            "token": self.captcha_token[len("Bearer "):],
+            "token": self.authorization[len("Bearer "):],
         }
         json_data = self.get(url, params=params)
-        logger.debug(f"{self.mail}----\nintrospect:\n{json_data}")
+        logger.debug(f"{self.mail}----\n introspect:\n{json_data}")
 
     def revoke(self):
+        pass
         url ="https://user.mypikpak.com/v1/auth/revoke"
         json = {
-            "token": self.captcha_token[len("Bearer ") :],
+            "token": self.authorization[len("Bearer ") :],
         }
         handler = {
             "content-length": "2",

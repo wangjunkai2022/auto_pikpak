@@ -226,7 +226,7 @@ class ChromePikpak():
         "upload_file": False
     }
 
-    _temp_captcha_time = None
+    captcha_time = None
 
     # 当前属性是否是读取的配置文件
     read_conf = False
@@ -244,16 +244,18 @@ class ChromePikpak():
     # 需要存入的json数据
     def save_json(self):
         json_data = self.read_all_json_data()
+        old_data = json_data.get(self.mail)
         json_data[self.mail] = {
-            "captcha_token": self.captcha_token,
-            "authorization": self.authorization,
-            "user_id": self.user_id,
+            "captcha_token": self.captcha_token or (old_data and old_data.get("captcha_token", "")),
+            "authorization": self.authorization or (old_data and old_data.get("authorization")),
+            "user_id": self.user_id or (old_data and old_data.get("user_id")),
             "proxies": self.proxies,
-            "device_id": self.device_id,
-            "password": self.pd,
-            "refresh_token": self.refresh_token,
+            "device_id": self.device_id or (old_data and old_data.get("device_id")),
+            "password": self.pd or (old_data and old_data.get("password")),
+            "refresh_token": self.refresh_token or (old_data and old_data.get("refresh_token")),
             "create_time": self.create_self_time,
-            "mail": self.mail,
+            "mail": self.mail or (old_data and old_data.get("mail")),
+            "captcha_time" : self.captcha_time,
         }
         return json_data
 
@@ -261,14 +263,15 @@ class ChromePikpak():
     def apply_json(self, json_data: dict):
         data = json_data.get(self.mail)
         if data:
-            self.captcha_token = data.get("captcha_token")
-            self.authorization = data.get("authorization")
-            self.user_id = data.get("user_id")
+            self.captcha_token = data.get("captcha_token") or self.captcha_token
+            self.authorization = data.get("authorization") or self.authorization
+            self.user_id = data.get("user_id") or self.user_id
             self.proxies = data.get("proxies")
-            self.device_id = data.get("device_id")
-            self.pd = data.get("password")
-            self.refresh_token = data.get("refresh_token")
+            self.device_id = data.get("device_id") or self.device_id
+            self.pd = data.get("password") or self.pd
+            self.refresh_token = data.get("refresh_token") or self.refresh_token
             self.create_self_time = data.get("create_time")
+            self.captcha_time = data.get("captcha_time")
 
     def save_self(self):
         logger.debug(f"开始保存{self.mail}的信息")
@@ -282,15 +285,29 @@ class ChromePikpak():
         with open(self.cache_json_file, mode="w", encoding="utf-8") as file:
             file.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
-        
-            
-
     def read_self(self):
         json_data = self.read_all_json_data()
         self.apply_json(json_data)
         if self.captcha_token and self.captcha_token != "" and self.authorization and self.authorization != "" and self.refresh_token and self.refresh_token != "":
             self.read_conf = True
 
+    def red_self_to_纸鸢保活工具_data(self):
+        name = self.mail.split("@")[0]
+        tmp_data = {
+            "version": self.CLIENT_VERSION,
+            "device_id": self.device_id,
+            "email": self.mail,
+            "captcha_token": self.captcha_token,
+            "access_token": self.authorization[len("Bearer "):],
+            "refresh_token": self.refresh_token,
+            "user_id": self.user_id,
+            "timestamp": self.captcha_time,
+            "password": self.pd,
+            "name": name,
+        }
+        logger.debug(f"red_self_to_纸鸢保活工具_data : {tmp_data}")
+        return tmp_data
+    
     # 读取本地json保存的所有帐号信息
     def read_all_json_data(self) -> dict:
         try:
@@ -334,7 +351,7 @@ class ChromePikpak():
     def captcha(self, action: str = ''):
         self.old_captcha_token = self.captcha_token
         time_str = str(round(time.time() * 1000))
-        self._temp_captcha_time = time_str
+        self.captcha_time = time_str
         if self.authorization and self.authorization != "":
             def_bodys = {
                 "client_id": self.CLIENT_ID,
@@ -394,7 +411,7 @@ class ChromePikpak():
         body = bodys.get(action) or def_bodys
         url = 'https://user.mypikpak.com/v1/shield/captcha/init'
         json_data = self.post(url, json=body)
-        self._temp_captcha_time = None
+        # self.captcha_time = None
         if json_data.get("url"):
             self.captcha_token = json_data.get("captcha_token")
             expires_in = json_data.get("expires_in")
@@ -414,11 +431,16 @@ class ChromePikpak():
                 logger.info(f"{self.mail}\t开始了 reCaptcha.html 的验证")
                 self.captcha_token = google_re_validation(recaptcha_url)
                 isOk = True
+            elif "txCaptcha.html" in recaptcha_url: # 这个验证还没完成自动验证 现在注释了
+            #     logger.info(f"{self.mail}\t开始了 txCaptcha.html 的验证")
+            #     self.captcha_token = google_re_validation(recaptcha_url)
+            #     isOk = True
+
+                recaptcha_url = recaptcha_url + "&redirect_uri=xlaccsdk01%3A%2F%2Fxbase.cloud%2Fcallback%3Fstate%3Dharbor" # 直接打开源地址打不开 没有任何内容显示 必须加上这个可以在浏览器打开
             if isOk:
                 pass
             else:
-                self.captcha_token = self.handler and self.handler.run_get_token(
-                    recaptcha_url)
+                self.captcha_token = self.handler and self.handler.run_get_token(recaptcha_url)
         else:
             error = json_data.get("error")
             if error:
@@ -723,7 +745,6 @@ class ChromePikpak():
                 return
             logger.error(f"登陆失败{json_data}")
             raise Exception(error_str)
-        
 
     def login_out(self):
         try:

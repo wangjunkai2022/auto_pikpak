@@ -3,7 +3,7 @@ import os
 import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活_Pikpsk, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取pk到纸鸢数据, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作
 import enum
 import io
 import time
@@ -44,16 +44,17 @@ loging_names = [
 
 class 模式选项(enum.Enum):
     开始 = "start"
+    选择PK新邀请 = "选择PK新邀请"
+    选择Alist_PK新邀请 = "选择Alist_PK新邀请"
+    PK保活 = "PK保活"
+    选择PK执行模拟人操作 = "选择PK执行模拟人操作"
+    PK转纸鸢 = "PK转纸鸢"
     扫描所有 = "激活所有"
     新建所有 = "新建所有"
-    选择激活 = "选择激活"
-    选择替换 = "选择替换"
     选择刷新token = '选择刷新token'
     手动替换存储 = "手动替换存储"
     查看存储库的信息 = "查看存储库的信息"
     设置打印等级 = "设置打印等级"
-    PK保活 = "PK保活"
-    选择PK执行模拟人操作 = "选择PK执行模拟人操作"
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
     重启系统服务 = "重启系统服务"
@@ -383,6 +384,51 @@ class Telegram():
             strs = strs[0:strs.find(str_end)]
         return strs
     
+    def _选择PK新邀请(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        try:
+            self.run_temp_datas = 获取所有PK帐号()
+        except Exception as e:
+            self.run_temp_datas = None
+            self.send_error(e)
+
+        if self.run_temp_datas and len(self.run_temp_datas) > 0:
+            markup = InlineKeyboardMarkup(row_width=2)
+            for pikpak in self.run_temp_datas.keys():
+                btn = InlineKeyboardButton(f"{pikpak}", callback_data=pikpak,)
+                markup.add(btn)
+
+            self.bot.send_message(message.chat.id, 模式选项.选择PK新邀请.name, reply_markup=markup)
+        else:
+            self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
+            self._task_over()
+
+
+    def _PK转纸鸢(self, message: Message):
+        if self.runing_chat:
+            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        try:
+            self.run_temp_datas = 获取所有PK帐号()
+        except Exception as e:
+            self.run_temp_datas = None
+            self.send_error(e)
+
+        if self.run_temp_datas and len(self.run_temp_datas) > 0:
+            markup = InlineKeyboardMarkup(row_width=2)
+            for pikpak in self.run_temp_datas.keys():
+                btn = InlineKeyboardButton(f"{pikpak}", callback_data=pikpak,)
+                markup.add(btn)
+
+            self.bot.send_message(message.chat.id, 模式选项.PK转纸鸢.name, reply_markup=markup)
+        else:
+            self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
+            self._task_over()
+
     def _选择PK执行模拟人操作(self, message: Message):
         if self.runing_chat:
             self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
@@ -406,7 +452,7 @@ class Telegram():
             self._task_over()
 
 
-    def _选择替换(self, message: Message):
+    def _选择Alist_PK新邀请(self, message: Message):
         if self.runing_chat:
             self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
             return
@@ -427,33 +473,7 @@ class Telegram():
                 btn = InlineKeyboardButton(f"{name} 状态:{statu} 时间:{time_str}", callback_data=str(index),)
                 markup.add(btn)
                 index += 1
-            self.bot.send_message(message.chat.id, 模式选项.选择替换.name, reply_markup=markup)
-        else:
-            self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
-            self._task_over()
-
-    def _选择激活(self, message: Message):
-        if self.runing_chat:
-            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
-            return
-        self.runing_chat = message.chat
-        try:
-            self.run_temp_datas = 所有Alist的储存库()
-        except Exception as e:
-            self.run_temp_datas = None
-            self.send_error(e)
-
-        if self.run_temp_datas and len(self.run_temp_datas) > 0:
-            markup = InlineKeyboardMarkup(row_width=2)
-            index = 0
-            for pikpak in self.run_temp_datas:
-                name = pikpak.get("name")
-                statu = pikpak.get("disabled") == True and "禁用" or "启用"
-                time_str = pikpak.get("update_time")
-                btn = InlineKeyboardButton(f"{name} 状态:{statu} 时间:{time_str}", callback_data=str(index),)
-                markup.add(btn)
-                index += 1
-            self.bot.send_message(message.chat.id, 模式选项.选择激活.name, reply_markup=markup)
+            self.bot.send_message(message.chat.id, 模式选项.选择Alist_PK新邀请.name, reply_markup=markup)
         else:
             self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
             self._task_over()
@@ -522,7 +542,7 @@ class Telegram():
 
     def __call_back(self, call: CallbackQuery):
         if call.data:
-            if call.message.text == 模式选项.选择激活.name:
+            if call.message.text == 模式选项.选择Alist_PK新邀请.name:
                 index = int(call.data)
                 pikpak = self.run_temp_datas[index]
                 pikpak_name = pikpak.get("username")
@@ -530,20 +550,6 @@ class Telegram():
                 storage_name = pikpak.get("name")
                 self.bot.send_message(call.message.chat.id,
                                       f"正在激活中 请等待邀请的库是\n{storage_name}\n{pikpak_name}\n密码:{pikpak_pd}")
-                try:
-                    new_pikpak = 激活存储库vip(pikpak)
-                    self.bot.send_message(call.message.chat.id,
-                                          f"注册新号成功\n{new_pikpak.mail}")
-                except Exception as e:
-                    self.send_error(e)
-                self._task_over()
-            elif call.message.text == 模式选项.选择替换.name:
-                index = int(call.data)
-                pikpak = self.run_temp_datas[index]
-                pikpak_name = pikpak.get("username")
-                pikpak_pd = pikpak.get("password")
-                self.bot.send_message(call.message.chat.id,
-                                      f"正在注册新号中 请等待 邀请的号是\n{pikpak_name}\n密码:{pikpak_pd}")
                 try:
                     new_pikpak = 注册新号激活AlistStorage(pikpak)
                     self.bot.send_message(call.message.chat.id,
@@ -618,6 +624,19 @@ class Telegram():
                 storage = self.run_temp_datas[pikpak_mail]
                 运行某个Pikpak模拟人操作(pikpak_mail)
                 self._task_over()
+            elif call.message.text == 模式选项.PK转纸鸢.name:
+                pikpak_mail = call.data
+                storage = self.run_temp_datas[pikpak_mail]
+                json_data = 获取pk到纸鸢数据(pikpak_mail)
+                self.send_print_to_tg(json.dumps(json_data, indent=4, ensure_ascii=False))
+                self._task_over()
+            elif call.message.text == 模式选项.选择PK新邀请.name:
+                pikpak_mail = call.data
+                storage = self.run_temp_datas[pikpak_mail]
+                json_data = 注册新号激活_Pikpsk(pikpak_mail)
+                self.send_print_to_tg(json.dumps(json_data, indent=4, ensure_ascii=False))
+                self._task_over()
+                
 
     def 输入新Pikpak账户和密码(self, message: Message):
         user, pd = extract_account_and_password(message.text)

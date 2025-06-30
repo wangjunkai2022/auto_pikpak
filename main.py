@@ -362,7 +362,7 @@ def 激活存储库vip(alist_storage) -> BasePikpakData:
             if pikpak.get_vip_day_time_left() > 0:
                 ManagerAlistPikpak().update_opation_pikpak_go(pikpak)
                 logger.info(f"已经找到有vip切未使用{pikpak.mail} 现在已经把这个帐号{pikpak.mail}修改为此alist存储")
-                return
+                return pikpak
 
     return 注册新号激活AlistStorage(alist_storage)
 
@@ -434,9 +434,9 @@ def 注册并填写邀请(邀请码: str = ""):
     PikPakMail填写邀请码(pikpak.mail, 邀请码)
     return pikpak
 
-def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
+def 运行某个Pikpak模拟人操作(mail, pd=None, auto_proxy=True)->BasePikpakData:
     logger.info(f"运行:{mail} Pikpak模拟人操作")
-    pikpak: BasePikpakData = BasePikpakData(mail)
+    pikpak: BasePikpakData = BasePikpakData(mail, pd)
     is_add2alist, alist_pikapk = ManagerAlistPikpak().mialIs2Alist(mail)
     # alist_status = False
     if is_add2alist and not alist_pikapk.get("disabled") and alist_pikapk.get("alist_data").get("status") == "work":
@@ -466,7 +466,7 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
             proxy = get_proxy()
             pikpak.set_proxy(*proxy)
             pikpak.save_self()
-            return 运行某个Pikpak模拟人操作(mail, auto_proxy)
+            return 运行某个Pikpak模拟人操作(mail, pd, auto_proxy)
         raise e
     now_time_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"运行:{mail} Pikpak模拟人操作  完成---------\n 时间:{now_time_str}")
@@ -478,7 +478,7 @@ def 运行某个Pikpak模拟人操作(mail, auto_proxy=True)->BasePikpakData:
     return pikpak
 
 def PikPakMail填写邀请码(mail, 邀请码):
-    pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, False)
+    pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, auto_proxy=False)
     pikpak.set_activation_code(邀请码)
 
 def 获取所有PK帐号():
@@ -501,7 +501,15 @@ def PiaPak保活():
     for mail in json_datas.keys():
         temp_json = json_datas.get(mail)
         if temp_json.get("create_time") and is_today_one(temp_json.get("create_time")):
-            threading.Thread(target=运行某个Pikpak模拟人操作,args=(mail, True)).start()
+            threading.Thread(target=运行某个Pikpak模拟人操作,kwargs={"mail" : mail, 'auto_proxy' : True}).start()
+
+def 获取pk到纸鸢数据(mail):
+    pikapk = BasePikpakData(mail)
+    try:
+        pikapk.login()
+    except Exception as e:
+        logger.error(f"登陆失败 {mail} 无法获取到loging信息")
+    return pikapk.red_self_to_纸鸢保活工具_data()
 
 def test():
     for index in range(1):
@@ -515,7 +523,8 @@ def main():
     # threading.Thread(target=注册新号激活_Pikpsk,args=("fldgevng827@hotmail.com",)).start()
     # threading.Thread(target=test).start()
     # threading.Thread(target=PiaPak保活).start()
-    threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
+    # threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
+    threading.Thread(target=运行某个Pikpak模拟人操作,kwargs={"mail" : "lopipi9801@giratex.com", "pd" : "098poi",}).start()
     # threading.Thread(target=获取所有PK_VIP帐号).start()
 
     pass

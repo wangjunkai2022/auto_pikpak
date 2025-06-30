@@ -1,3 +1,4 @@
+import os
 from config.read_config import get_config
 
 # mail_api = get_config('mail').get("api")
@@ -8,6 +9,9 @@ change_model = get_config("invate_change_model") or "none"
 requests = get_config("requests")
 requests_timeout = requests.get("out_time")
 requests_retry = requests.get("retry", 0)
+
+mail_type = get_config("mail_type")
+os.environ['MAIL_TYPE'] = mail_type
 
 alist = get_config("alist")
 alist_domain = alist.get("domain")
@@ -43,7 +47,7 @@ def set_log(callback=print):
 
 
 def __def_captcha_callback(url: str):
-    __str = input(f"请验证此url:\n{url}").split()
+    __str = input(f"请验证此url:\n{url}").strip()
     return __str
 
 
@@ -70,7 +74,7 @@ def set_captcha_callback(callback=__def_captcha_callback):
 
 
 def __def_email_verification_code_callback(mail: str):
-    return input(f"请输入{mail}中获取的验证码").split()
+    return input(f"请输入{mail}中获取的验证码").strip()
 
 
 _email_verification_code_callback = __def_email_verification_code_callback

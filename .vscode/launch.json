@@ -17,132 +17,11 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Py alist",
+            "name": "Py run_model_captcha",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/alist/alist.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py pikpak",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak/__init__.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}:"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py pikpak_super",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak/pikpak_super.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}:"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py chrome_pikpak",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak/chrome_pikpak.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}:"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py android_pikpak",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak/android_pikpak.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}:"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py pikpak_auto_invite",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak/auto_invite.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py chmod_captcha",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/captcha/chmod_captcha.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py save_ai_img_captcha",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/captcha/save_ai_img_captcha.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py captcha_2captcha",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/captcha/captcha_2captcha.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py captcha_killer",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/captcha/captcha_killer.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py captcha_slide_img",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/pikpak_captcha/captcha_slide_img.py",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "justMyCode": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Py yolov8_train",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/captcha/ai/yolov8_train.py",
+            // "program": "${workspaceFolder}",
+            "module": "pikpak_captcha.__init__",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
@@ -161,10 +40,11 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Py telegram_index",
+            "name": "Py run_telegram_model",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/telegram/__init__.py",
+            // "program": "${workspaceFolder}/telegram/__init__.py",
+            "module": "telegram.__init__",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
@@ -172,15 +52,27 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Py proxy_ip",
+            "name": "Py run_proxy_model",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/proxy_ip/__init__.py",
+            // "program": "${workspaceFolder}/proxy_ip/__init__.py",
+            "module": "proxy_ip.__init__",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "Py run_torrent_model",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "torrent.__init__",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal"
+        },
     ]
 }
