@@ -3,7 +3,7 @@ import os
 import re
 from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活_Pikpsk, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取pk到纸鸢数据, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作
+from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活_Pikpsk, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取pk到纸鸢数据, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作, 纸鸢数据替换本地数据
 import enum
 import io
 import time
@@ -49,6 +49,7 @@ class 模式选项(enum.Enum):
     PK保活 = "PK保活"
     选择PK执行模拟人操作 = "选择PK执行模拟人操作"
     PK转纸鸢 = "PK转纸鸢"
+    纸鸢返回更新值 = "纸鸢返回更新值"
     扫描所有 = "激活所有"
     新建所有 = "新建所有"
     选择刷新token = '选择刷新token'
@@ -58,10 +59,6 @@ class 模式选项(enum.Enum):
     结束 = "stop"
     挂载Rclone到系统 = "挂载Rclone"
     重启系统服务 = "重启系统服务"
-
-
-START_手动替换存储_STR = "_手动替换存储__"
-
 
 def extract_account_and_password(log):
     """
@@ -107,16 +104,6 @@ class Telegram():
     run_temp_datas = None
     start_chat = None
     logLevel = logging.INFO
-
-    # select手动替换存储 = {
-    #     '请选择需要替换的存储库': -1,
-    #     '输入新Pikpak账户': '',
-    #     '输入新Pikpak密码': '',
-    #     'opation_message': None
-    # }
-    # {"请选择需要替换的存储库": -1, },
-    # {"输入新Pikpak账户": ''},
-    # {"输入新Pikpak密码": ''},
 
     select手动替换存储 = -1
     input_email = ''
@@ -202,7 +189,7 @@ class Telegram():
         # markup = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = []
         for value in 模式选项:
-            value = "/"+value.value
+            value = "/" + value.value
             # markup.add(KeyboardButton(value))
             buttons.append(value)
         markup = create_reply_keyboard(buttons, 5)
@@ -405,7 +392,15 @@ class Telegram():
         else:
             self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
             self._task_over()
+    
+    def 纸鸢更新返回数据(self, message: Message):
+        content = message.text
+        纸鸢数据替换本地数据(content)
+        self.bot.send_message(message.chat.id, "保存成功", disable_notification=True)
 
+    def _纸鸢返回更新值(self, message: Message):
+        message = self.bot.send_message(message.chat.id, f'输入纸鸢返回数据')
+        self.bot.register_for_reply(message, self.纸鸢更新返回数据)
 
     def _PK转纸鸢(self, message: Message):
         if self.runing_chat:
@@ -636,7 +631,6 @@ class Telegram():
                 json_data = 注册新号激活_Pikpsk(pikpak_mail)
                 self.send_print_to_tg(json.dumps(json_data, indent=4, ensure_ascii=False))
                 self._task_over()
-                
 
     def 输入新Pikpak账户和密码(self, message: Message):
         user, pd = extract_account_and_password(message.text)

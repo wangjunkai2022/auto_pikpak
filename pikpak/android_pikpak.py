@@ -513,8 +513,9 @@ class AndroidPikPak(ChromePikpak):
         self.create_self_time = time.time()
         self.save_self()
 
-    def login(self):
-        self.read_self()
+    def login(self, redconf=True):
+        if redconf:
+            self.read_self()
         if self.authorization and self.authorization != "" and self.authorization != DEF_AUTHORIZATION:
             logger.debug("已经登陆了")
             return

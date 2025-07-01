@@ -1,16 +1,16 @@
 # 免费邮箱API 注册地址：https://rapidapi.com/hub
 # mail:
-#   api: 09415ce47cmsh57978ad964f87efp16aee3jsn3bda407d08b1
+#   api: *************
 
 # twocaptcha:
-#   api: 7f43a85477b4b3ea96af20422a690487
+#   api: **********
 
 # shanyouxiang:
-#   api: RUN78CED5IAHQB5BV3XB36TKIVGSP03I9XZMX6JUVUZIGC6I
+#   api: *********
 
 
 # telegram:
-#   api: 6526758014:AAHbkjS6ns9VvHwOiKE-Jzz2ldQ_GWP10pk
+#   api: *******
 
 # 这里的api都改为.env
 

@@ -511,6 +511,10 @@ def 获取pk到纸鸢数据(mail):
         logger.error(f"登陆失败 {mail} 无法获取到loging信息")
     return pikapk.red_self_to_纸鸢保活工具_data()
 
+def 纸鸢数据替换本地数据(json_str):
+    json_data = json.loads(json_str)
+    pikapk = BasePikpakData(json_data.get("email"))
+    pikapk.change_纸鸢保活工具_2_self(json_str)
 def test():
     for index in range(1):
         threading.Thread(target=get_proxy).start()

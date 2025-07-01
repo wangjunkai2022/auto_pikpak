@@ -308,6 +308,14 @@ class ChromePikpak():
         logger.debug(f"red_self_to_纸鸢保活工具_data : {tmp_data}")
         return tmp_data
     
+    def change_纸鸢保活工具_2_self(self, json_str):
+        json_data = json.loads(json_str)
+        self.read_self()
+        self.captcha_token = json_data.get("captcha_token")
+        self.authorization = "Bearer " + json_data.get("access_token")
+        self.refresh_token = json_data.get("refresh_token")
+        self.save_self()
+
     # 读取本地json保存的所有帐号信息
     def read_all_json_data(self) -> dict:
         try:
@@ -532,10 +540,25 @@ class ChromePikpak():
             self._change_request_values(authorization, self.authorization, headers, **kwargs)
             self._change_request_values(refresh_token, self.refresh_token, headers, **kwargs)
             return self._requests(method, url, headers, **kwargs)
-
+        
+        elif error and error == 'invalid_grant':
+            logger.error(f"{self.mail} json_data:{json_data}")
+            logger.error(f"{self.mail} 重新登陆：{self.refresh_token}")
+            authorization = self.authorization
+            refresh_token = self.refresh_token
+            old_capctah = self.captcha_token
+            self.authorization = DEF_AUTHORIZATION
+            self.refresh_token = ""
+            self.login(False)
+            self._change_request_values(old_capctah, self.captcha_token, headers, **kwargs)
+            self._change_request_values(authorization, self.authorization, headers, **kwargs)
+            self._change_request_values(refresh_token, self.refresh_token, headers, **kwargs)
+            return self._requests(method, url, headers, **kwargs)
+        
         if error and error != '':
             logger.error(f"error:{error}")
-            raise Exception(f"{self.mail}请求{url}报错：\n {error}\n code:{response.status_code} \n json_data: {json_data}")
+            error_str = f"{self.mail}请求{url}报错：\n {error}\n code:{response.status_code} \n json_data: {json_data}"
+            raise Exception(error_str)
         return json_data
 
     def get(self, url, headers=None, **kwargs):
@@ -718,8 +741,9 @@ class ChromePikpak():
         self.user_id = json_data["sub"]
         self.save_self()
 
-    def login(self):
-        self.read_self()
+    def login(self, redconf=True):
+        if redconf:
+            self.read_self()
         if self.authorization != DEF_AUTHORIZATION:
             logger.debug("已经登陆了")
             return
