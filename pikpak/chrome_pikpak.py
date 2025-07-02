@@ -196,6 +196,8 @@ version_datas = {
 }
 
 class ChromePikpak():
+    net_timeout = 60
+
     # 自动登录
     is_auto_login = False
     mail = ""
@@ -460,8 +462,7 @@ class ChromePikpak():
         headers = headers or self.headers(url)
         for count in range(net_Retry_times):
             try:
-                response = requests.request(method, url, headers=headers, proxies=self.proxies, verify=False, timeout=60, **kwargs)
-
+                response = requests.request(method, url, headers=headers, proxies=self.proxies, verify=False, timeout=self.net_timeout, **kwargs)
             except requests.exceptions.HTTPError as http_err:
                 logger.debug(f"{self.mail}----\nHttp请求异常: {http_err}")
                 break
@@ -495,7 +496,13 @@ class ChromePikpak():
                 return self._requests(method, url, headers, **kwargs)
             else:
                 raise e
-        error = json_data.get("error")
+        try:
+            error = json_data.get("error")
+        except Exception as e:
+            logger.error(f"{self.mail} \t当前url:{url}请求结果不对 无法转json :{response.text} \n 这里不抛异常 如果数据必须使用后续可能会报错 在使用点抛异常")
+            error = ""
+            json_data = {}
+                    
         if error and (error == "captcha_invalid" or error == "captcha_required"):
             logger.debug(f"{self.mail}capctha验证不通过再次验证\nurl:{url}\nresponse:{response}\nerror:{error}")
             # 使用 urlparse 解析 URL

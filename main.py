@@ -207,7 +207,7 @@ def radom_password():
 def get_proxy():
     logger.info("获取代理地址中。。。。。")
     ip, proxy_type = pop_prxy_pikpak()
-    logger.info(f"获取到的代理:{ip}")
+    logger.info(f"获取到的代理:{ip} {proxy_type}")
     return ip, proxy_type
 
 
@@ -325,7 +325,7 @@ def 替换Alist储存库(email, pd, name):
 
 
 def 刷新PikPakToken(alist_storage):
-    return 运行某个Pikpak模拟人操作(alist_storage.get("username"))
+    return 运行某个Pikpak模拟人操作(alist_storage.get("username"), alist_storage.get("password"))
 
 
 def 所有Alist的储存库() -> List[BasePikpakData]:
@@ -439,6 +439,7 @@ def 运行某个Pikpak模拟人操作(mail, pd=None, auto_proxy=True)->BasePikpa
     pikpak: BasePikpakData = BasePikpakData(mail, pd)
     is_add2alist, alist_pikapk = ManagerAlistPikpak().mialIs2Alist(mail)
     # alist_status = False
+    refresh_token = ''
     if is_add2alist and not alist_pikapk.get("disabled") and alist_pikapk.get("alist_data").get("status") == "work":
         logger.debug(f"{mail}此帐号已经在alist挂载并且已经启用")
         pikpak.read_self()

@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import traceback
 import requests
 from pikpak.android_pikpak import AndroidPikPak
 from pikpak.chrome_pikpak import ChromePikpak, Handle
@@ -135,6 +136,9 @@ class PikPakSuper(AndroidPikPak):
             logger.debug(f"down_url:{down_url}")
         except Exception as e:
             logger.error(f"文件模拟错误 error:{e}")
+            trace = traceback.print_exc()
+            logger.error(f"trace:{trace}")
+
         logger.debug(f"文件操作模拟完毕")
         
     # 快捷操作

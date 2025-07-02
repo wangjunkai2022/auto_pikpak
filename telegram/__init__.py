@@ -403,10 +403,10 @@ class Telegram():
         self.bot.register_for_reply(message, self.纸鸢更新返回数据)
 
     def _PK转纸鸢(self, message: Message):
-        if self.runing_chat:
-            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
-            return
-        self.runing_chat = message.chat
+        # if self.runing_chat:
+        #     self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+        #     return
+        # self.runing_chat = message.chat
         try:
             self.run_temp_datas = 获取所有PK帐号()
         except Exception as e:
@@ -422,7 +422,7 @@ class Telegram():
             self.bot.send_message(message.chat.id, 模式选项.PK转纸鸢.name, reply_markup=markup)
         else:
             self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
-            self._task_over()
+            # self._task_over()
 
     def _选择PK执行模拟人操作(self, message: Message):
         if self.runing_chat:
@@ -624,7 +624,7 @@ class Telegram():
                 storage = self.run_temp_datas[pikpak_mail]
                 json_data = 获取pk到纸鸢数据(pikpak_mail)
                 self.send_print_to_tg(json.dumps(json_data, indent=4, ensure_ascii=False))
-                self._task_over()
+                # self._task_over()
             elif call.message.text == 模式选项.选择PK新邀请.name:
                 pikpak_mail = call.data
                 storage = self.run_temp_datas[pikpak_mail]

@@ -359,6 +359,9 @@ class Alist(object):
             if driver == "PikPak" and storage.get("id") == id:
                 addition = json.loads(storage.get("addition"))
                 addition["refresh_token"] = token
+                platform = addition.get("platform", "")
+                if platform == "":
+                    addition['platform'] = "android"
                 storage['addition'] = json.dumps(addition)
                 return self.update_storage(storage, False)
 
