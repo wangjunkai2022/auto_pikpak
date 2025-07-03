@@ -38,12 +38,13 @@ class Rapidapi(MailBase):
         }
 
         response = requests.get(url, headers=headers)
+        json_data = response.json()
         if response.status_code != 200:
-            logger.debug(f"_get_domains 失败")
+            logger.error(f"_get_domains 失败 {json_data}")
             time.sleep(2)
             return self._get_domains()
         logger.debug(response.json())
-        return response.json()
+        return json_data
 
 
     # 创建一个临时邮箱

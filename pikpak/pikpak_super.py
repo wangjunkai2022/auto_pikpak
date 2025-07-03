@@ -2,6 +2,7 @@ import logging
 import random
 import time
 import traceback
+from types import FunctionType
 import requests
 from pikpak.android_pikpak import AndroidPikPak
 from pikpak.chrome_pikpak import ChromePikpak, Handle
@@ -37,21 +38,29 @@ class HandleSuper(Handle):
         get_proxy=None,
     ) -> None:
         super().__init__(get_token, get_mailcode, get_proxy)
-        self.get_email_address_callback = email_address or self.def_email_address
-        self.get_password_callback = get_password or self.def_password
+        self.get_email_address_callback = email_address
+        self.get_password_callback = get_password
 
     def run_get_mail_address(self) -> str:
-        return self.get_email_address_callback()
+        type__ = type(self.get_email_address_callback)
+        print(type__)
+        if self.get_email_address_callback and isinstance(self.get_email_address_callback, FunctionType):
+            return self.get_email_address_callback()
+        else:
+            return self.def_email_address()
 
     def run_get_password(self) -> str:
-        return self.get_password_callback()
+        if self.get_password_callback and isinstance(self.get_password_callback, FunctionType):
+            return self.get_password_callback()
+        else:
+            return self.def_password()
 
 
 class PikPakSuper(AndroidPikPak):
     @staticmethod
     def create(handler: HandleSuper = HandleSuper()):
-        proxy = handler.run_get_proxy()
         mail = handler.run_get_mail_address()
+        proxy = handler.run_get_proxy()
         pd = handler.run_get_password()
         _pikpak = PikPakSuper(mail, pd)
         _pikpak.setHandler(handler)

@@ -223,7 +223,7 @@ class AndroidPikPak(ChromePikpak):
 
     language = "zh-TW"
 
-    CLIENT_VERSION = "1.54.2"
+    CLIENT_VERSION = "1.51.2"
     # 手机型号
     phone_model = "Lgm-v300k"
     # 手机品牌

@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+from types import FunctionType
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 import uuid
@@ -42,18 +43,27 @@ class Handle():
 
 
     def __init__(self, get_token=None, get_mailcode=None, get_proxy=None,) -> None:
-        self.get_token_callback = get_token or self.def_getTonek
-        self.get_mailcode_callback = get_mailcode or self.def_get_mailcode
-        self.get_proxy_callback = get_proxy or self.def_proxy
+        self.get_token_callback = get_token
+        self.get_mailcode_callback = get_mailcode
+        self.get_proxy_callback = get_proxy
 
     def run_get_token(self, url):
-        return self.get_token_callback(url)
+        if self.get_token_callback and isinstance(self.get_token_callback, FunctionType):
+            return self.get_token_callback(url)
+        else:
+            return self.def_getTonek(url)
 
     def run_get_maincode(self, mail):
-        return self.get_mailcode_callback(mail)
+        if self.get_mailcode_callback and isinstance(self.get_mailcode_callback, FunctionType):
+            return self.get_mailcode_callback(mail)
+        else:
+            return self.def_get_mailcode(mail)
 
     def run_get_proxy(self):
-        return self.get_proxy_callback()
+        if self.get_proxy_callback:
+            return self.get_proxy_callback()
+        else:
+            return self.def_proxy()
 
 DEF_AUTHORIZATION = ""
 DEF_CAPTCHATOKEN = ""
