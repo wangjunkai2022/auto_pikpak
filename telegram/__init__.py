@@ -1,9 +1,8 @@
 import json
 import os
 import re
-from tools import set_def_callback
 from system_service import SystemService, SystemServiceTager
-from main import ManagerAlistPikpak, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新号激活_Pikpsk, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取pk到纸鸢数据, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作, 纸鸢数据替换本地数据
+from main import ManagerAlistPikpak, SetDefTokenCallback, PikPakMail填写邀请码, change_all_pikpak, check_all_pikpak_vip as mian_run_all, 刷新PikPakToken, 所有Alist的储存库, 替换Alist储存库, 注册新PK账户, 注册新号激活_Pikpsk, 注册新号激活AlistStorage, 激活存储库vip, PiaPak保活, 获取pk到纸鸢数据, 获取所有PK_VIP帐号, 获取所有PK帐号, 运行某个Pikpak模拟人操作, 纸鸢数据替换本地数据
 import enum
 import io
 import time
@@ -35,12 +34,19 @@ handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
 loging_names = [
-    "main", "alist", "mail", "Rclone", "telegram", "system_service",
+    "main", "alist", "mail", "mail_base", "Rclone", "telegram", "system_service",
     'Chrome_Pikpak', 'PikPakSuper', "Android_pikpak",
     'captcha', '2captcha', 'captcha_chmod', 'rapidapi', 'captcha_killer', "captch_chomd",
     "proxy__index__",
 ]
 
+environs = {
+    "MAIL_TYPE": f"mail 模块使用的判断获取邮箱和获取邮箱中收到的验证码 \n现在有选项 rapidapi、shanyouxiang、base",
+    "TWOCAPTCHA_KEY": f"2captcha 得api 也需要先设置才能使用",
+    "TELEGRAM_KEY": f"tg 机器人api 按道理这里这里不应该设置的",
+    "RAPIDAPI_KEY": f"rapidapi.com api",
+    "SHANYOUXIANG_KEY": f"闪邮箱API https://shanyouxiang.com/",
+}
 
 class 模式选项(enum.Enum):
     开始 = "start"
@@ -54,6 +60,8 @@ class 模式选项(enum.Enum):
     新建所有 = "新建所有"
     选择刷新token = '选择刷新token'
     手动替换存储 = "手动替换存储"
+    手动输入邮箱注册新PK = "手动输入邮箱注册新PK"
+    设置环境变量 = "设置环境变量"
     查看存储库的信息 = "查看存储库的信息"
     设置打印等级 = "设置打印等级"
     结束 = "stop"
@@ -96,7 +104,6 @@ def create_reply_keyboard(buttons, columns=2):
             row = []
     
     return markup
-
 
 class Telegram():
     bot: TeleBot = TeleBot(TELEGRAM_KEY)
@@ -151,7 +158,7 @@ class Telegram():
             logger.setLevel(level)
 
     def __init__(self) -> None:
-        config.config.set_captcha_callback(self.send_get_token)
+        SetDefTokenCallback(self.send_get_token)
         handler = self.CustomHandler(self.send_print_to_tg)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
@@ -164,11 +171,10 @@ class Telegram():
 
         self.bot.register_callback_query_handler(self.__call_back, self.__reply_button)
         self.bot.register_message_handler(self._command_handler, commands=[value.value for value in 模式选项])
-        self.bot.infinity_polling()
+        self.bot.infinity_polling() #这句后面的内容不会执行 这里会永远循环
         pass
 
     def _stop(self, message: Message):
-        set_def_callback()
         self.send_print_to_tg("")
         self.bot.send_message(chat_id=message.chat.id, text="取消初始化 设置token的解析方式在本地默认\n如需再次Tg解析运行start即可", disable_notification=True)
 
@@ -185,7 +191,6 @@ class Telegram():
         logger.debug(message)
         self.bot.send_message(chat_id=message.chat.id, text="初始化 设置token的解析方式在tg这里", disable_notification=True)
 
-        config.config.set_captcha_callback(self.send_get_token)
         # markup = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = []
         for value in 模式选项:
@@ -216,6 +221,72 @@ class Telegram():
         except Exception as e:
             self.send_error(e)
         self._task_over()
+
+    def _手动输入邮箱注册新PK(self, message:Message):
+        if self.runing_chat:
+            self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)
+            return
+        self.runing_chat = message.chat
+        self.bot.send_message(self.runing_chat.id, "开始手动输入邮箱注册新PK 任务", disable_notification=True)
+        class Data:
+            mail = None
+            code = None
+            inv_code = None
+
+        data = Data()
+        def mail_get_callback():
+            data.mail = None
+            def reply_callback(message:Message):
+                data.mail = message.text
+            reply_message = self.bot.send_message(self.runing_chat.id or self.start_chat.id, f"请回复需要注册的邮箱")
+            self.bot.register_for_reply(reply_message, reply_callback)
+            while not data.mail:
+                time.sleep(0.1)
+            self.bot.clear_reply_handlers(reply_message)
+            return data.mail
+        
+        def code_get_callback(mail=""):
+            data.code = None
+            def reply_callback(message:Message):
+                data.code = message.text
+            reply_message = self.bot.send_message(self.runing_chat.id or self.start_chat.id, f"请回复{mail}获取到的PK验证码")
+            self.bot.register_for_reply(reply_message, reply_callback)
+            while not data.code:
+                time.sleep(0.1)
+            self.bot.clear_reply_handlers(reply_message)
+            return data.code
+        
+        pikpak = 注册新PK账户(mail_get_callback, code_get_callback)
+        
+        # 获得邀请码
+        def inv_callback():
+            data.inv_code = None
+            def reply_callback(message:Message):
+                data.inv_code = message.text
+            reply_message = self.bot.send_message(self.runing_chat.id or self.start_chat.id, f"请输入邀请码或者需要获取邀请码的邮箱")
+            self.bot.register_for_reply(reply_message, reply_callback)
+            while not data.inv_code:
+                time.sleep(0.1)
+            self.bot.clear_reply_handlers(reply_message)
+            return data.inv_code
+
+        PikPakMail填写邀请码(pikpak.mail, inv_callback())
+
+    def _设置环境变量(self, message: Message):
+        def reply_callback(message: Message):
+            txts = message.text.split()
+            for env in txts:
+                key, value = env.split("=")
+                if key and value:
+                    self.bot.send_message(message.chat.id, f"正在设置环境变量:{key}={value}")
+                    os.environ[key] = value
+        send_message_str = f"环境变量设置：\n可以设置的环境有:"
+        for key, value in environs.items():
+            send_message_str += f"\nkey:{key}\tvalue{value}"
+        send_message_str += f"\n多个环境使用空格或者回车分割 健值对使用="
+        send_message_str += f"\n需要回复此消息才能生效"
+        reply_message = self.bot.send_message(message.chat.id, send_message_str)
+        self.bot.register_for_reply(reply_message, reply_callback)
 
     def _手动替换存储(self, message: Message):
         if self.runing_chat:
@@ -326,31 +397,27 @@ class Telegram():
             _type_: _description_
         """
         if not self.runing_chat and not self.start_chat:
-            set_def_callback()
-            config.config.get_captcha_callback()(url)
             # raise Exception("TG这里没有监听过 已经设置为默认的了")
             logger.error("TG这里没有监听过 已经设置为默认的了 并且回调过去了")
             return
-        self.token = None
         self.bot.send_message(self.runing_chat.id or self.start_chat.id, "请获取一下url的验证 并回复token到下一条消息", disable_notification=True)
-        __token_message = self.bot.send_message(self.runing_chat.id or self.start_chat.id, url)
-        self.bot.register_for_reply(__token_message, self.__reply_token)
+        token_message = self.bot.send_message(self.runing_chat.id or self.start_chat.id, url)
+        class Data:
+            token = None
+        data = Data()
+        def reply(message:Message):
+            captcha_token = message.text
+            captcha_token = self.__find_str_token(captcha_token)
+            data.token = captcha_token
+            
+        self.bot.register_for_reply(token_message, reply)
 
         # 卡线程等用户处理结果并回复token
-        while not self.token:
+        while not data.token:
             time.sleep(0.1)
-        self.bot.clear_reply_handlers(__token_message)
-        return self.token
-
-    def __reply_token(self, message: Message):
-        """用户回复token的监听
-
-        Args:
-            message (Message): 用户回复消息
-        """
-        captcha_token = message.text
-        captcha_token = self.__find_str_token(captcha_token)
-        self.token = captcha_token
+        self.bot.clear_reply_handlers(token_message)
+        self.bot.send_message(self.runing_chat.id or self.start_chat.id, f"解析后的token:{data.token}", disable_notification=True)
+        return data.token
 
     def __find_str_token(self, strs: str = "") -> str:
         """解析用户发过来的Token
@@ -393,15 +460,14 @@ class Telegram():
             self.bot.send_message(message.chat.id, "没有需要执行的任务", disable_notification=True)
             self._task_over()
     
-    def 纸鸢更新返回数据(self, message: Message):
-        content = message.text
-        纸鸢数据替换本地数据(content)
-        self.bot.send_message(message.chat.id, "保存成功", disable_notification=True)
-
     def _纸鸢返回更新值(self, message: Message):
         message = self.bot.send_message(message.chat.id, f'输入纸鸢返回数据')
-        self.bot.register_for_reply(message, self.纸鸢更新返回数据)
-
+        def reply_callback(message: Message):
+            content = message.text
+            纸鸢数据替换本地数据(content)
+            self.bot.send_message(message.chat.id, "保存成功", disable_notification=True)
+        self.bot.register_for_reply(message, reply_callback)
+        
     def _PK转纸鸢(self, message: Message):
         # if self.runing_chat:
         #     self.bot.send_message(message.chat.id, "你好！服务正在运行中。。。。。请等待结束在启动", disable_notification=True)

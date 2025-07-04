@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from types import FunctionType
+from types import FunctionType, MethodType
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 import uuid
@@ -41,26 +41,25 @@ class Handle():
     get_mailcode_callback = None
     get_proxy_callback = None
 
-
-    def __init__(self, get_token=None, get_mailcode=None, get_proxy=None,) -> None:
+    def __init__(self, get_token=None, get_mailcode=None, get_proxy=None) -> None:
         self.get_token_callback = get_token
         self.get_mailcode_callback = get_mailcode
         self.get_proxy_callback = get_proxy
 
     def run_get_token(self, url):
-        if self.get_token_callback and isinstance(self.get_token_callback, FunctionType):
+        if self.get_token_callback and (isinstance(self.get_token_callback, FunctionType) or isinstance(self.get_token_callback, MethodType)):
             return self.get_token_callback(url)
         else:
             return self.def_getTonek(url)
 
     def run_get_maincode(self, mail):
-        if self.get_mailcode_callback and isinstance(self.get_mailcode_callback, FunctionType):
+        if self.get_mailcode_callback and (isinstance(self.get_mailcode_callback, FunctionType) or isinstance(self.get_mailcode_callback, MethodType)):
             return self.get_mailcode_callback(mail)
         else:
             return self.def_get_mailcode(mail)
 
     def run_get_proxy(self):
-        if self.get_proxy_callback:
+        if self.get_proxy_callback and (isinstance(self.get_proxy_callback, FunctionType) or isinstance(self.get_proxy_callback, MethodType)):
             return self.get_proxy_callback()
         else:
             return self.def_proxy()

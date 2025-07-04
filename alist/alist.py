@@ -97,11 +97,15 @@ class Alist(object):
     def __request(self, method, url, **kwargs,):
         kwargs["verify"] = False
         kwargs["headers"] = self._get_header()
-        response = requests.request(method, url, **kwargs)
-        if response.json().get("code") == 401:
-            self.__update_token()
-            return self.__request(method, url, **kwargs,)
-        return response
+        try:
+            response = requests.request(method, url, **kwargs)
+            if response.json().get("code") == 401:
+                self.__update_token()
+                return self.__request(method, url, **kwargs,)
+            return response
+        except Exception as e:
+            logger.error(f"alist 请求报错了{url}")
+            raise e
 
     def __init__(self, user=alist_user, pd=alist_pd, domain=alist_domain) -> None:
         self.user = user

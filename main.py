@@ -4,19 +4,19 @@ import os
 import random
 import string
 import threading
+from types import FunctionType
 from typing import List
 
 import schedule
 
 import config.config as config
 import alist.alist as alist
-from mail import create_one_mail, get_new_mail_code
+from mail import create_one_mail, get_new_mail_code, SetMailFunc, SetCodeFunc
 import time
 import logging
 from pikpak.pikpak_super import HandleSuper, PikPakSuper
 from proxy_ip import pop_prxy_pikpak
 from rclone import PikPakJsonData, PikPakRclone, RCloneManager
-from tools import set_def_callback
 from proxy_ip import main_th_proxy
 logger_schedule = logging.getLogger("schedule")
 logger_schedule.setLevel(logging.INFO)
@@ -27,6 +27,13 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
+class TokenData:
+    callback = None
+    
+tokenData = TokenData()
+
+def SetDefTokenCallback(callback):
+    tokenData.callback = callback
 
 class BasePikpakData(PikPakSuper):
     name = None
@@ -38,8 +45,7 @@ class BasePikpakData(PikPakSuper):
         self.disabled = disabled
         self.setHandler(
             HandleSuper(
-                get_token=config.get_captcha_callback(),
-                get_mailcode=config.get_email_verification_code_callback(),
+                get_token=tokenData.callback,
                 email_address=create_one_mail,
                 get_password=radom_password,
                 get_proxy=get_proxy,
@@ -242,14 +248,7 @@ def change_all_pikpak():
         for count in range(3):
             try:
                 if not pikpak:
-                    handler = HandleSuper(
-                        get_token=config.get_captcha_callback(),
-                        get_mailcode=config.get_email_verification_code_callback(),
-                        email_address=create_one_mail,
-                        get_password=radom_password,
-                        get_proxy=get_proxy,
-                    )
-                    pikpak = BasePikpakData.create(handler)
+                    pikpak = 注册新PK账户()
                 else:
                     logger.info("pikpak 已经注册成功 但是后续报错 这里继续使用pikpak")
                 time.sleep(60)
@@ -281,14 +280,7 @@ def check_all_pikpak_vip():
             vip_day = pikpak_go.get_vip_day_time_left()
             logger.info(f"尝试获取vip成功 当前vip剩余天数{vip_day}")
             continue
-        handler = HandleSuper(
-            get_token=config.get_captcha_callback(),
-            get_mailcode=config.get_email_verification_code_callback(),
-            email_address=create_one_mail,
-            get_password=radom_password,
-            get_proxy=get_proxy,
-        )
-        pikpak: BasePikpakData = BasePikpakData.create(handler)
+        pikpak: BasePikpakData = 注册新PK账户()
         time.sleep(60)
         pikpak.try_get_vip()
         # pikpakdata_2_pikpakdata(pikpak_go, pikpak)
@@ -383,7 +375,7 @@ def 注册新号激活AlistStorage(alist_storage) -> BasePikpakData:
     return pikpak
 
 
-def 注册新号激活_Pikpsk(mail: str = ""):
+def 注册新号激活_Pikpsk(mail: str = "",):
     logger.info(f"给帐号 {mail} 注册新号并填写他的邀请码")
     pikpak: BasePikpakData = BasePikpakData(mail)
     pikpak.login()
@@ -422,16 +414,27 @@ def 注册并填写邀请(邀请码: str = ""):
     if not 邀请码 or 邀请码 == "":
         logger.error("邀请码不正确")
     logger.error(f"注册并邀请中{邀请码}")
+    pikpak: BasePikpakData = 注册新PK账户()
+    time.sleep(10)
+    PikPakMail填写邀请码(pikpak.mail, 邀请码)
+    return pikpak
+
+def 注册新PK账户(mail_callback=None, code_callback=None)-> BasePikpakData:
+    if mail_callback and isinstance(mail_callback,FunctionType):
+        os.environ['MAIL_TYPE'] = "base"
+    else:
+        os.environ['MAIL_TYPE'] = config.mail_type
+    SetMailFunc(mail_callback)
+    SetCodeFunc(code_callback,)
     handler = HandleSuper(
-        get_token=config.get_captcha_callback(),
-        get_mailcode=config.get_email_verification_code_callback(),
+        get_token=tokenData.callback,
+        get_mailcode=get_new_mail_code,
         email_address=create_one_mail,
         get_password=radom_password,
         get_proxy=get_proxy,
     )
     pikpak: BasePikpakData = BasePikpakData.create(handler)
     time.sleep(10)
-    PikPakMail填写邀请码(pikpak.mail, 邀请码)
     return pikpak
 
 def 运行某个Pikpak模拟人操作(mail, pd=None, auto_proxy=True)->BasePikpakData:
@@ -479,6 +482,7 @@ def 运行某个Pikpak模拟人操作(mail, pd=None, auto_proxy=True)->BasePikpa
     return pikpak
 
 def PikPakMail填写邀请码(mail, 邀请码):
+    logger.debug(f"开始填写邀请码{邀请码}到{mail}")
     pikpak: BasePikpakData = 运行某个Pikpak模拟人操作(mail, auto_proxy=False)
     pikpak.set_activation_code(邀请码)
 
@@ -546,7 +550,6 @@ schedule.every(1).second.do(main_th_proxy)
 # 3小时执行一次看看
 # schedule.every().hour.at("15:00").do(PiaPak保活) 
 if __name__ == "__main__":
-    set_def_callback()
     # 其他程序代码可以放在这里
     # 主线程会持续运行，不会被调度器阻塞
     threading.Thread(target=main).start()

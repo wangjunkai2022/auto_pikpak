@@ -166,8 +166,6 @@ class Rapidapi(MailBase):
         return response.json()
 
 
-# config.set_email_verification_code_callback(get_new_mail_code)
-
 if __name__ == "__main__":
     # mail = create_one_mail()
     mail = "ScSDK18K@cevipsa.com"

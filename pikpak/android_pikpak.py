@@ -8,10 +8,7 @@ from proxy_ip import pop_prxy_pikpak
 import uuid
 import time
 
-from config.config import get_captcha_callback
 from typing import Any, Dict, List, Optional
-
-from tools import set_def_callback
 
 # logger = logging.getLogger(os.path.splitext(os.path.split(__file__)[1])[0])
 
@@ -912,7 +909,6 @@ if __name__ == "__main__":
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
-    set_def_callback()
     # # email = "bpzaof1188@nuclene.com"
     # # password = "098poi"
     # # pikpak_ = PikPak(email, password)
