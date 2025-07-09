@@ -162,6 +162,7 @@ class Telegram():
         handler = self.CustomHandler(self.send_print_to_tg)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
+        handler.setLevel(logging.INFO)
         # logging.getLogger().setLevel(logging.DEBUG)
         # logging.getLogger().addHandler(handler)
         for logger in loging_names:

@@ -7,10 +7,10 @@ import random
 import string
 import re
 logger = logging.getLogger("mail")
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-logger.addHandler(handler)
+# logger.setLevel(logging.DEBUG)
+# handler = logging.StreamHandler()
+# handler.setLevel(logging.DEBUG)
+# logger.addHandler(handler)
 from dotenv import load_dotenv
 
 from .base import MailBase

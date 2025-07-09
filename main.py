@@ -413,7 +413,7 @@ def copye_list_2_rclone_config():
 def 注册并填写邀请(邀请码: str = ""):
     if not 邀请码 or 邀请码 == "":
         logger.error("邀请码不正确")
-    logger.error(f"注册并邀请中{邀请码}")
+    logger.info(f"注册并邀请中{邀请码}")
     pikpak: BasePikpakData = 注册新PK账户()
     time.sleep(10)
     PikPakMail填写邀请码(pikpak.mail, 邀请码)

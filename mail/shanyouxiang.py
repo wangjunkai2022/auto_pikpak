@@ -11,11 +11,11 @@ from dotenv import load_dotenv
 # 加载.env文件中的环境变量
 load_dotenv()
 
-logger = logging.getLogger("mail_shanyouxiang")
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-logger.addHandler(handler)
+logger = logging.getLogger("mail")
+# logger.setLevel(logging.DEBUG)
+# handler = logging.StreamHandler()
+# handler.setLevel(logging.DEBUG)
+# logger.addHandler(handler)
 
 # IMAP 服务器信息
 IMAP_SERVER = "imap.shanyouxiang.com"
@@ -68,9 +68,7 @@ class ShanYouXiang(MailBase):
                                 if msg.is_multipart():
                                     for part in msg.walk():
                                         if part.get_content_type() == "text/html":
-                                            body = part.get_payload(decode=True).decode(
-                                                "utf-8"
-                                            )
+                                            body = part.get_payload(decode=True).decode("utf-8")
                                             break
                                 else:
                                     body = msg.get_payload(decode=True).decode("utf-8")
@@ -80,9 +78,7 @@ class ShanYouXiang(MailBase):
                                 if match:
                                     verification_code = match.group(1)
                                     # 将字符串转换为 datetime 对象
-                                    dt = datetime.strptime(
-                                        timestamp_str, "%a, %d %b %Y %H:%M:%S %z"
-                                    )
+                                    dt = datetime.strptime(timestamp_str, "%a, %d %b %Y %H:%M:%S %z")
 
                                     # 转换为时间戳（秒）
                                     timestamp = dt.timestamp()
@@ -150,7 +146,7 @@ class ShanYouXiang(MailBase):
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
 
-    def get_one_mail(self):
+    def get_on_mail(self):
         key = os.getenv("SHANYOUXIANG_KEY")
         super().get_on_mail()
         logger.info("开始获取一个新邮箱")
@@ -169,9 +165,8 @@ class ShanYouXiang(MailBase):
             logger.error("当前卡密剩余数量是0")
         if mail_type != "":
             try:
-                response = requests.get(
-                    f"{base_url}/huoqu?card={key}&shuliang={1}&leixing={mail_type}"
-                )
+                response = requests.get(f"{base_url}/huoqu?card={key}&shuliang={1}&leixing={mail_type}")
+                logger.debug(f"response ：\n{response} \n数据。。。。。。")
                 text = response.text
                 # text = "gibtukcmnm2687@hotmail.com----SafocDVpQK----M.C540_BAY.0.U.-ChA7k!LEZ5q3pIsxgdukypa0flsv3Ufyeq6t!hLz6SsxT9cvD6BYHbhNUd2khc*DHfJgHSrTglzeww7DTzPIz2piqI2jDTE4vaQxZRxVHV8*xjNcauQ6H4loQJ1CQZsUlouI0B1jrqQiEUy1Uju9sLzmsVynnS29nCV9C0aMpmgN6DNFxqORf2dcFC083ckdTMQVN3L973xkNAYrqI6ZjvEXQVWzXTRUTrEsN2cZ9HyNzZIElaKdtfoGIrCLluQUrDirmBzBq5cBqbjtqObLuDrzekFhxhzD18IXdr6agqHwZl3LRSahx6igmoXSIs1Xd5expQ8LY6qTlS!bfD9FSkpp93ueA9IDEx9J7pH6e6GiXk8S2dkSg8!!Zn9D4PnIFCCDI2Ureg74Huq*9Hab320$----8b4ba9dd-3ea5-4e5f-86f1-ddba2230dcf2"
                 text = text.strip()
@@ -190,26 +185,26 @@ class ShanYouXiang(MailBase):
                 logger.error(f"获取邮箱失败：{e}")
         else:
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.debug(f"{time_str} 闪邮箱现在库存是0")
+            logger.info(f"{time_str} 闪邮箱现在库存是0")
 
         sleep(60)
-        return self.get_one_mail(key)
+        return self.get_on_mail()
 
 
     def get_pikpak_code(self, mail: str = ""):
         super().get_pikpak_code(mail)
-        logger.info(
-            f"开始获取验证码:{mail} 担心没有收到验证码 所以这里等待一分钟 以保证正常发送了邀请码"
-        )
+        logger.info(f"开始获取验证码:{mail} 担心没有收到验证码 所以这里等待一分钟 以保证正常发送了邀请码")
         sleep(60)
         password = self.read_json_file().get(mail).get("password")
         if password:
             codes = self._get_pikpak_codes(mail, password)
             return codes[0].get("code")
-
-
+        else:
+            logger.error(f"{mail}邮箱获取错误")
+            return self.get_pikpak_code(mail)
+        
 if __name__ == "__main__":
-    mail = ShanYouXiang().get_one_mail()
+    mail = ShanYouXiang().get_on_mail()
     if mail:
         code = ShanYouXiang().get_pikpak_code(mail)
         print(code)

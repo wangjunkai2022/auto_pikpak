@@ -59,12 +59,12 @@ class HandleSuper(Handle):
 class PikPakSuper(AndroidPikPak):
     @staticmethod
     def create(handler: HandleSuper = HandleSuper()):
-        tmp = handler.run_get_mail_address()
-        tmp = handler.run_get_maincode(tmp)
-        tmp = handler.run_get_password()
-        tmp = handler.run_get_token("https://google.com")
-        # tmp = handler.run_get_proxy()
-        return None
+        # tmp = handler.run_get_mail_address()
+        # tmp = handler.run_get_maincode(tmp)
+        # tmp = handler.run_get_password()
+        # tmp = handler.run_get_token("https://google.com")
+        # # tmp = handler.run_get_proxy()
+        # return None
 
         mail = handler.run_get_mail_address()
         proxy = handler.run_get_proxy()

@@ -2,11 +2,11 @@ import logging
 import re
 from types import FunctionType
 
-logger = logging.getLogger("mail_base")
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-logger.addHandler(handler)
+logger = logging.getLogger("mail")
+# logger.setLevel(logging.DEBUG)
+# handler = logging.StreamHandler()
+# handler.setLevel(logging.DEBUG)
+# logger.addHandler(handler)
 
 
 def _mail_func(tips: str = "请输入邮箱\n"):

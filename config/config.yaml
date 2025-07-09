@@ -15,7 +15,7 @@
 # 这里的api都改为.env
 
 # mail 获取选择api rapidapi,shanyouxiang
-mail_type: rapidapi
+mail_type: shanyouxiang
 
 # 默认的密码
 def_password: 098poi
