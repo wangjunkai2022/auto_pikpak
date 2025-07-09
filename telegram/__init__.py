@@ -153,22 +153,24 @@ class Telegram():
                 self.handleError(record)
 
     def __setLoggerLevel(self, level):
-        for logger in loging_names:
-            logger = logging.getLogger(logger)
-            logger.setLevel(level)
+        self.handler.setLevel(level)
+        # for logger in loging_names:
+        #     logger = logging.getLogger(logger)
+        #     logger.setLevel(level)
 
+    handler:logging.Handler = None
     def __init__(self) -> None:
         SetDefTokenCallback(self.send_get_token)
-        handler = self.CustomHandler(self.send_print_to_tg)
+        self.handler = self.CustomHandler(self.send_print_to_tg)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        handler.setLevel(logging.INFO)
+        self.handler.setFormatter(formatter)
+        self.handler.setLevel(logging.INFO)
         # logging.getLogger().setLevel(logging.DEBUG)
         # logging.getLogger().addHandler(handler)
         for logger in loging_names:
             logger = logging.getLogger(logger)
-            logger.setLevel(logging.INFO)
-            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
+            logger.addHandler(self.handler)
 
         self.bot.register_callback_query_handler(self.__call_back, self.__reply_button)
         self.bot.register_message_handler(self._command_handler, commands=[value.value for value in 模式选项])

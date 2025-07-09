@@ -148,7 +148,6 @@ class ShanYouXiang(MailBase):
 
     def get_on_mail(self):
         key = os.getenv("SHANYOUXIANG_KEY")
-        super().get_on_mail()
         logger.info("开始获取一个新邮箱")
         response = requests.get(f"{base_url}/kucun")
         json_data = response.json()
@@ -163,6 +162,7 @@ class ShanYouXiang(MailBase):
                 mail_type = "outlook"
         else:
             logger.error("当前卡密剩余数量是0")
+            return super().get_on_mail()
         if mail_type != "":
             try:
                 response = requests.get(f"{base_url}/huoqu?card={key}&shuliang={1}&leixing={mail_type}")
@@ -185,7 +185,7 @@ class ShanYouXiang(MailBase):
                 logger.error(f"获取邮箱失败：{e}")
         else:
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.info(f"{time_str} 闪邮箱现在库存是0")
+            logger.debug(f"{time_str} 闪邮箱现在库存是0")
 
         sleep(60)
         return self.get_on_mail()
