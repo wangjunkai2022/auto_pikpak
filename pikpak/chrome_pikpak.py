@@ -475,7 +475,7 @@ class ChromePikpak():
             except requests.exceptions.HTTPError as http_err:
                 logger.debug(f"{self.mail}----\nHttp请求异常: {http_err}")
                 break
-            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ProxyError,) as error:
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.ProxyError, requests.exceptions.ChunkedEncodingError,) as error:
                 logger.error(f"{self.mail} 请求报错:\n{error}\n{count + 1}/3")
                 logger.error(f"{self.mail} \turl:{url}\nheaders:{headers}\nkwargs:{kwargs}")
                 time.sleep(10)
