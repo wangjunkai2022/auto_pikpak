@@ -42,12 +42,12 @@ class ShanYouXiang(MailBase):
                 # 选择文件夹
                 status, _ = mail.select(folder)
                 if status != "OK":
-                    return {"code": 0, "msg": f"无法访问 {folder} 文件夹"}
+                    continue
 
                 # 搜索邮件
                 status, messages = mail.search(None, "ALL")
                 if status != "OK" or not messages[0]:
-                    return {"code": 0, "msg": f"{folder} 文件夹为空"}
+                    continue
 
                 message_ids = messages[0].split()
 
@@ -147,6 +147,7 @@ class ShanYouXiang(MailBase):
 
 
     def get_on_mail(self):
+        return "spympudwxh7574@hotmail.com"
         key = os.getenv("SHANYOUXIANG_KEY")
         logger.info("开始获取一个新邮箱")
         response = requests.get(f"{base_url}/kucun")
@@ -166,8 +167,8 @@ class ShanYouXiang(MailBase):
         if mail_type != "":
             try:
                 response = requests.get(f"{base_url}/huoqu?card={key}&shuliang={1}&leixing={mail_type}")
-                logger.debug(f"response ：\n{response} \n数据。。。。。。")
                 text = response.text
+                logger.debug(f"response ：\n{text} \n数据。。。。。。")
                 # text = "gibtukcmnm2687@hotmail.com----SafocDVpQK----M.C540_BAY.0.U.-ChA7k!LEZ5q3pIsxgdukypa0flsv3Ufyeq6t!hLz6SsxT9cvD6BYHbhNUd2khc*DHfJgHSrTglzeww7DTzPIz2piqI2jDTE4vaQxZRxVHV8*xjNcauQ6H4loQJ1CQZsUlouI0B1jrqQiEUy1Uju9sLzmsVynnS29nCV9C0aMpmgN6DNFxqORf2dcFC083ckdTMQVN3L973xkNAYrqI6ZjvEXQVWzXTRUTrEsN2cZ9HyNzZIElaKdtfoGIrCLluQUrDirmBzBq5cBqbjtqObLuDrzekFhxhzD18IXdr6agqHwZl3LRSahx6igmoXSIs1Xd5expQ8LY6qTlS!bfD9FSkpp93ueA9IDEx9J7pH6e6GiXk8S2dkSg8!!Zn9D4PnIFCCDI2Ureg74Huq*9Hab320$----8b4ba9dd-3ea5-4e5f-86f1-ddba2230dcf2"
                 text = text.strip()
                 datas = text.split("----")
@@ -187,7 +188,7 @@ class ShanYouXiang(MailBase):
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.debug(f"{time_str} 闪邮箱现在库存是0")
 
-        sleep(60)
+        sleep(60 * 5)
         return self.get_on_mail()
 
 

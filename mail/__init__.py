@@ -44,11 +44,15 @@ def create_one_mail(type_name=None):
     type_name = type_name or os.getenv("MAIL_TYPE")
     mail_base: MailBase = _getInstanceClass(type_name)
     logger.info(f"获取一个新邮箱中{type_name}")
-    return mail_base.get_on_mail()
+    mail = mail_base.get_on_mail()
+    logger.info(f'获取到的邮箱是:{mail}')
+    return mail
 
 
 def get_new_mail_code(mail, type_name=None,):
     type_name = type_name or os.getenv("MAIL_TYPE")
     mail_base: MailBase = _getInstanceClass(type_name)
     logger.info(f"获取一个新邮箱中{mail}的验证码。。。。。")
-    return mail_base.get_pikpak_code(mail)
+    code = mail_base.get_pikpak_code(mail)
+    logger.info(f"获取到的验证码是{code}")
+    return code
