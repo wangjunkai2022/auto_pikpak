@@ -161,15 +161,19 @@ class PikPakSuper(AndroidPikPak):
         
     # 快捷操作
     def random_download_magnet(self):
-        events = self.events()
-        if len(events.get("events")) == 1 and events.get("events")[0].get("type") == 'TYPE_RESTORE' and events.get("events")[0].get("type_name") == 'Add' and "PikPak" in events.get("events")[0].get("file_name"):
-            from torrent import random_one_magnet
-            magnet = random_one_magnet()
-            logger.info(f"开始下载一个种子:\n{magnet}")
-            download = self.offline_download(magnet)
-            logger.debug(download)
+        offline_list = self.offline_list()
+        if offline_list.get("tasks") and len(offline_list.get("tasks")) > 0:
+            logger.debug(f"现在已经有正在下载的选项")
         else:
-            logger.debug(f"已经下载过一次种子文件了")
+            events = self.events()
+            if len(events.get("events")) == 1 and events.get("events")[0].get("type") == 'TYPE_RESTORE' and events.get("events")[0].get("type_name") == 'Add' and "PikPak" in events.get("events")[0].get("file_name"):
+                from torrent import random_one_magnet
+                magnet = random_one_magnet()
+                logger.info(f"开始下载一个种子:\n{magnet}")
+                download = self.offline_download(magnet)
+                logger.debug(download)
+            else:
+                logger.debug(f"已经下载过一次种子文件了")
 
     def get_vip_day_time_left(self) -> int:
         """

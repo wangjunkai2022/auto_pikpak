@@ -533,10 +533,25 @@ def main():
     # threading.Thread(target=test).start()
     # threading.Thread(target=PiaPak保活).start()
     # threading.Thread(target=运行某个Pikpak模拟人操作,args=("lkaebqumsy441@hotmail.com",)).start()
-    threading.Thread(target=运行某个Pikpak模拟人操作,kwargs={"mail" : "lopipi9801@giratex.com", "pd" : "098poi",}).start()
+    # threading.Thread(target=运行某个Pikpak模拟人操作,kwargs={"mail" : "lopipi9801@giratex.com", "pd" : "098poi",}).start()
     # threading.Thread(target=获取所有PK_VIP帐号).start()
 
-    pass
+    pikpak = BasePikpakData("spympudwxh7574@hotmail.com")
+    pikpak.login()
+
+    offline_list = pikpak.offline_list()
+    if offline_list.get("tasks") and len(offline_list.get("tasks")) > 0:
+        logger.debug(f"现在已经有正在下载的选项")
+    else:
+        events = pikpak.events()
+        if len(events.get("events")) == 1 and events.get("events")[0].get("type") == 'TYPE_RESTORE' and events.get("events")[0].get("type_name") == 'Add' and "PikPak" in events.get("events")[0].get("file_name"):
+            from torrent import random_one_magnet
+            magnet = random_one_magnet()
+            logger.info(f"开始下载一个种子:\n{magnet}")
+            download = pikpak.offline_download(magnet)
+            logger.debug(download)
+        else:
+            logger.debug(f"已经下载过一次种子文件了")
 
 def schedule_run():
     while True:
@@ -544,7 +559,7 @@ def schedule_run():
         schedule.run_pending()
         time.sleep(1)
 
-schedule.every().day.at("08:30").do(PiaPak保活)
+schedule.every().day.at("08:20").do(PiaPak保活)
 # schedule.every().day.at("20:27").do(PiaPak保活)
 schedule.every(1).second.do(main_th_proxy)
 # 3小时执行一次看看

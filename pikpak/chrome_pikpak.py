@@ -1183,7 +1183,7 @@ class ChromePikpak():
         result = self.post(download_url, json=download_data)
         return result
 
-    def offline_list(self, size: int = 10000, next_page_token: Optional[str] = None, phase: Optional[List[str]] = None,) -> Dict[str, Any]:
+    def offline_list(self, size: int = 500, next_page_token: Optional[str] = None, phase: Optional[List[str]] = None,) -> Dict[str, Any]:
         """
         size: int - 每次请求的数量
         next_page_token: str - 下一页的page token
@@ -1218,7 +1218,7 @@ class ChromePikpak():
 
     def file_list(
         self,
-        size: int = 100,
+        size: int = 500,
         parent_id: Optional[str] = None,
         next_page_token: Optional[str] = None,
         additional_filters: Optional[Dict[str, Any]] = None,
@@ -1240,7 +1240,7 @@ class ChromePikpak():
         list_url = f"https://api-drive.mypikpak.com/drive/v1/files"
         list_data = {
             "parent_id": parent_id,
-            "thumbnail_size": "SIZE_MEDIUM",
+            "thumbnail_size": "SIZE_LARGE",
             "limit": size,
             "with_audit": "true",
             "page_token": next_page_token,
@@ -1250,7 +1250,7 @@ class ChromePikpak():
         return result
 
     def events(
-        self, size: int = 100, next_page_token: Optional[str] = None
+        self, size: int = 50, next_page_token: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         size: int - 每次请求的数量
@@ -1260,7 +1260,7 @@ class ChromePikpak():
         """
         list_url = f"https://api-drive.mypikpak.com/drive/v1/events"
         list_data = {
-            "thumbnail_size": "SIZE_MEDIUM",
+            "thumbnail_size": "SIZE_LARGE",
             "limit": size,
             "next_page_token": next_page_token,
         }
