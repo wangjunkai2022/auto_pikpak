@@ -697,7 +697,8 @@ class Telegram():
             elif call.message.text == 模式选项.选择PK新邀请.name:
                 pikpak_mail = call.data
                 storage = self.run_temp_datas[pikpak_mail]
-                json_data = 注册新号激活_Pikpsk(pikpak_mail)
+                pikpak = 注册新号激活_Pikpsk(pikpak_mail)
+                json_data = pikpak.save_json().get(pikpak.mail)
                 self.send_print_to_tg(json.dumps(json_data, indent=4, ensure_ascii=False))
                 self._task_over()
 
